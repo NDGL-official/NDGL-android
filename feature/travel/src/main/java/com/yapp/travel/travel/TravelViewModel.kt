@@ -1,4 +1,4 @@
-package com.yapp.travel
+package com.yapp.travel.travel
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
