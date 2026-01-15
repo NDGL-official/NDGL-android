@@ -1,30 +1,30 @@
-package com.yapp.travel.travel
+package com.yapp.travel.detail
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
-internal fun TravelRoute(
-    onNavigateToDetail: (String) -> Unit,
-    viewModel: TravelViewModel = hiltViewModel(),
+internal fun TravelDetailRoute(
+    viewModel: TravelDetailViewModel = hiltViewModel(),
 ) {
+    val travelId by viewModel.travelId.collectAsStateWithLifecycle()
 
-    TravelScreen(
-        onNavigateToDetail = onNavigateToDetail
-    )
+    TravelDetailScreen(travelId = travelId)
 }
 
 @Composable
-internal fun TravelScreen(
-    onNavigateToDetail: (String) -> Unit = {},
+internal fun TravelDetailScreen(
+    travelId: String,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -32,18 +32,22 @@ internal fun TravelScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         item {
-            Text(text = "Travel Screen")
+            Text(
+                text = "Travel Detail Screen",
+                fontSize = 24.sp
+            )
         }
         item {
-            Button(onClick = { onNavigateToDetail("travel-123") }) {
-                Text(text = "Go to Travel Detail")
-            }
+            Text(
+                text = "Travel ID: $travelId",
+                fontSize = 18.sp
+            )
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun TravelScreenPreview() {
-    TravelScreen()
+fun TravelDetailScreenPreview() {
+    TravelDetailScreen(travelId = "12345")
 }
