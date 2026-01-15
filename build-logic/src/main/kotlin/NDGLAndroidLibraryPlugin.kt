@@ -1,4 +1,3 @@
-
 import convention.configureComposeAndroid
 import convention.configureFirebase
 import extensions.configureAndroidLibrary
@@ -18,9 +17,7 @@ class NDGLAndroidLibraryPlugin : Plugin<Project> {
         configureFirebase()
         configureComposeAndroid()
 
-
         dependencies {
-            "implementation"(libs.findLibrary("lifecycle-runtime-compose").get())
             "implementation"(libs.findLibrary("kotlinx-immutable").get())
         }
     }
