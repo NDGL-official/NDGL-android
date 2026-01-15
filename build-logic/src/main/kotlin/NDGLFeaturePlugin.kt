@@ -33,6 +33,7 @@ class NDGLFeaturePlugin : Plugin<Project> {
             "implementation"(libs.findLibrary("lifecycle-viewmodel-compose").get())
             "implementation"(libs.findLibrary("lifecycle-runtime-compose").get())
             "implementation"(libs.findLibrary("kotlinx-immutable").get())
+            "implementation"(libs.findLibrary("androidx-navigation3-runtime").get())
         }
     }
 }

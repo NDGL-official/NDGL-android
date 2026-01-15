@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 @Composable
-fun TravelRoute(
+internal fun TravelRoute(
     viewModel: TravelViewModel = hiltViewModel(),
 ) {
 
