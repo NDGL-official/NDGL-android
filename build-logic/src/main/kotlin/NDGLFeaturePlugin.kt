@@ -21,7 +21,6 @@ class NDGLFeaturePlugin : Plugin<Project> {
         configureComposeAndroid()
         configureCoroutineAndroid()
 
-
         dependencies {
             "implementation"(project(":navigation"))
             "implementation"(project(":core:ui"))
@@ -31,7 +30,6 @@ class NDGLFeaturePlugin : Plugin<Project> {
             "implementation"(libs.findLibrary("navigation-compose").get())
             "implementation"(libs.findLibrary("lifecycle-viewmodel-compose").get())
             "implementation"(libs.findLibrary("lifecycle-runtime-compose").get())
-            "implementation"(libs.findLibrary("kotlinx-immutable").get())
             "implementation"(libs.findLibrary("androidx-navigation3-runtime").get())
         }
     }
