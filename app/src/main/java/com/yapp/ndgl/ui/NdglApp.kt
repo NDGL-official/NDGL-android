@@ -1,5 +1,8 @@
 package com.yapp.ndgl.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -33,13 +36,19 @@ fun NdglApp(
         travelHelperEntry(navigator)
     }
 
+    val shouldShowBottomBar = navigationState.currentKey in navigationState.topLevelKeys
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            NdglNavigationBar(
-                currentTab = navigationState.currentTopLevelKey,
-                onTabSelected = { key -> navigator.navigate(key) }
-            )
+            AnimatedVisibility(
+                visible = shouldShowBottomBar,
+            ) {
+                NdglNavigationBar(
+                    currentTab = navigationState.currentTopLevelKey,
+                    onTabSelected = { key -> navigator.navigate(key) }
+                )
+            }
         }
     ) { innerPadding ->
         NavDisplay(
