@@ -1,10 +1,20 @@
 package com.yapp.ndgl.feature.travel
 
-import androidx.lifecycle.ViewModel
+import com.yapp.ui.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 @HiltViewModel
-class TravelViewModel @Inject constructor() : ViewModel() {
-
+class TravelViewModel @Inject constructor() : BaseViewModel<TravelState, TravelIntent, TravelSideEffect>(
+    initialState = TravelState()
+) {
+    override suspend fun handleIntent(intent: TravelIntent) {
+        when (intent) {
+            is TravelIntent.OnTravelClick -> {
+                reduce { copy(displayText = "클릭된 id: ${intent.travelId}") }
+                postSideEffect(TravelSideEffect.NavigateToDetail(intent.travelId))
+            }
+        }
+    }
 }

@@ -24,19 +24,13 @@ internal fun TravelDetailRoute(
 
 @Composable
 internal fun TravelDetailScreen(
-    travelId: String,
+    travelId: Int,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        item {
-            Text(
-                text = "Travel Detail Screen",
-                fontSize = 24.sp
-            )
-        }
         item {
             Text(
                 text = "Travel ID: $travelId",
@@ -49,5 +43,5 @@ internal fun TravelDetailScreen(
 @Preview(showBackground = true)
 @Composable
 fun TravelDetailScreenPreview() {
-    TravelDetailScreen(travelId = "12345")
+    TravelDetailScreen(travelId = 45)
 }
