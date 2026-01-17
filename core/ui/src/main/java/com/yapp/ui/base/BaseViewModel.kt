@@ -25,9 +25,6 @@ abstract class BaseViewModel<S : UiState, I : UiIntent, SE : UiSideEffect>(
     private val _state = MutableStateFlow(initialState)
     val state = _state.asStateFlow()
 
-    protected val currentState: S
-        get() = _state.value
-
     private val _sideEffect: Channel<SE> = Channel(BUFFERED)
     val sideEffect = _sideEffect.receiveAsFlow()
 
@@ -40,7 +37,7 @@ abstract class BaseViewModel<S : UiState, I : UiIntent, SE : UiSideEffect>(
 
     protected fun reduce(block: S.() -> S) =
         viewModelScope.launch {
-            _state.update { currentState.block() }
+            _state.update { it.block() }
         }
 
     protected fun postSideEffect(effect: SE) =
