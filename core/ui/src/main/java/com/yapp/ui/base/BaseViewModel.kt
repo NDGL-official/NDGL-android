@@ -2,11 +2,13 @@ package com.yapp.ui.base
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -23,10 +25,10 @@ abstract class BaseViewModel<S : UiState, I : UiIntent, SE : UiSideEffect>(
     initialState: S,
 ) : ViewModel() {
     private val _state = MutableStateFlow(initialState)
-    val state = _state.asStateFlow()
+    protected val state = _state.asStateFlow()
 
     private val _sideEffect: Channel<SE> = Channel(BUFFERED)
-    val sideEffect = _sideEffect.receiveAsFlow()
+    protected val sideEffect = _sideEffect.receiveAsFlow()
 
     fun onIntent(intent: I) =
         viewModelScope.launch {
@@ -42,21 +44,28 @@ abstract class BaseViewModel<S : UiState, I : UiIntent, SE : UiSideEffect>(
 
     protected fun postSideEffect(effect: SE) =
         viewModelScope.launch { _sideEffect.send(effect) }
-}
 
-@Composable
-fun <S : UiState, I : UiIntent, SE : UiSideEffect> BaseViewModel<S, I, SE>.collectSideEffect(
-    sideEffect: (suspend (sideEffect: SE) -> Unit),
-) {
-    val sideEffectFlow = this.sideEffect
-    val lifecycleOwner = LocalLifecycleOwner.current
+    @Composable
+    fun collectAsState(
+        lifecycleState: Lifecycle.State = Lifecycle.State.STARTED,
+    ): State<S> {
+        return state.collectAsStateWithLifecycle(minActiveState = lifecycleState)
+    }
 
-    val callback by rememberUpdatedState(newValue = sideEffect)
+    @Composable
+    fun collectSideEffect(
+        sideEffect: (suspend (sideEffect: SE) -> Unit),
+    ) {
+        val sideEffectFlow = this.sideEffect
+        val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(sideEffectFlow, lifecycleOwner) {
-        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
-            withContext(Dispatchers.Main.immediate) {
-                sideEffectFlow.collect { callback(it) }
+        val callback by rememberUpdatedState(newValue = sideEffect)
+
+        LaunchedEffect(sideEffectFlow, lifecycleOwner) {
+            lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                withContext(Dispatchers.Main.immediate) {
+                    sideEffectFlow.collect { callback(it) }
+                }
             }
         }
     }
