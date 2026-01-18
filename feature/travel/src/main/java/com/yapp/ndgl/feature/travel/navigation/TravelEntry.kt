@@ -11,14 +11,16 @@ import com.yapp.ndgl.feature.travel.TravelRoute
 
 fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
     entry<Route.Travel> {
-        TravelRoute(onNavigateToDetail = { travelId ->
-            navigator.navigate(Route.TravelDetail(travelId))
-        })
+        TravelRoute(
+            navigateToDetail = { travelId ->
+                navigator.navigate(Route.TravelDetail(travelId))
+            })
     }
     entry<Route.TravelDetail> { route ->
-        val viewModel = hiltViewModel<TravelDetailViewModel, TravelDetailViewModel.Factory> { factory ->
-            factory.create(travelId = route.travelId)
-        }
+        val viewModel =
+            hiltViewModel<TravelDetailViewModel, TravelDetailViewModel.Factory> { factory ->
+                factory.create(travelId = route.travelId)
+            }
         TravelDetailRoute(viewModel = viewModel)
     }
 }
