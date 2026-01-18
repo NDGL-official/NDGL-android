@@ -11,7 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.yapp.ui.base.collectAsState
 import com.yapp.ui.base.collectSideEffect
 
 @Composable
@@ -19,21 +19,21 @@ internal fun TravelRoute(
     onNavigateToDetail: (Int) -> Unit,
     viewModel: TravelViewModel = hiltViewModel(),
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
+    val state by viewModel.collectAsState()
 
+    TravelScreen(
+        state = state,
+        onTravelClick = { id -> viewModel.onIntent(TravelIntent.OnTravelClick(id)) })
+    
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             is TravelSideEffect.NavigateToDetail -> onNavigateToDetail(sideEffect.travelId)
         }
     }
-
-    TravelScreen(
-        state = state,
-        onTravelClick = { id -> viewModel.onIntent(TravelIntent.OnTravelClick(id)) })
 }
 
 @Composable
-internal fun TravelScreen(
+private fun TravelScreen(
     state: TravelState = TravelState(),
     onTravelClick: (Int) -> Unit = {},
 ) {
@@ -61,6 +61,6 @@ internal fun TravelScreen(
 
 @Preview(showBackground = true)
 @Composable
-fun TravelScreenPreview() {
+private fun TravelScreenPreview() {
     TravelScreen()
 }

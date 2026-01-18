@@ -20,7 +20,7 @@ internal fun HomeRoute(
 }
 
 @Composable
-internal fun HomeScreen(
+private fun HomeScreen(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -35,6 +35,6 @@ internal fun HomeScreen(
 
 @Preview(showBackground = true)
 @Composable
-fun HomeScreenPreview() {
+private fun HomeScreenPreview() {
     HomeScreen()
 }
