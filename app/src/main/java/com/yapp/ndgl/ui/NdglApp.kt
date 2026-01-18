@@ -21,7 +21,7 @@ import com.yapp.ndgl.navigation.toEntries
 import com.yapp.travel.navigation.travelEntry
 
 @Composable
-fun NdglApp(
+fun NDGLApp(
     modifier: Modifier = Modifier,
 ) {
     val navigationState = rememberNavigationState(
@@ -44,7 +44,7 @@ fun NdglApp(
             AnimatedVisibility(
                 visible = shouldShowBottomBar,
             ) {
-                NdglNavigationBar(
+                BottomNavigationBar(
                     currentTab = navigationState.currentTopLevelKey,
                     onTabSelected = { key -> navigator.navigate(key) }
                 )

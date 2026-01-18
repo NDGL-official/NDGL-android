@@ -2,7 +2,7 @@ package com.yapp.ndgl.navigation
 
 import androidx.annotation.DrawableRes
 import androidx.navigation3.runtime.NavKey
-import com.yapp.ndgl.core.designsystem.R
+import com.yapp.designsystem.R
 
 enum class TopLevelRoute(
     @DrawableRes val icon: Int,

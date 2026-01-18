@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.yapp.designsystem.theme.NDGLTheme
-import com.yapp.ndgl.ui.NdglApp
+import com.yapp.ndgl.ui.NDGLApp
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -15,7 +15,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NDGLTheme {
-                NdglApp()
+                NDGLApp()
             }
         }
     }
