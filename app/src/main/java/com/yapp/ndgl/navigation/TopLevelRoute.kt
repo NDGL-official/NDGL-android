@@ -5,7 +5,7 @@ import androidx.navigation3.runtime.NavKey
 import com.yapp.designsystem.R
 
 enum class TopLevelRoute(
-    @DrawableRes val icon: Int,
+    @get:DrawableRes val icon: Int,
     val label: String,
     val navKey: NavKey,
 ) {
