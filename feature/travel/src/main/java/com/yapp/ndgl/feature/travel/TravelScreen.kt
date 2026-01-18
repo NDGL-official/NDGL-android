@@ -11,23 +11,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.yapp.ui.base.collectAsState
-import com.yapp.ui.base.collectSideEffect
 
 @Composable
 internal fun TravelRoute(
-    onNavigateToDetail: (Int) -> Unit,
+    navigateToDetail: (Int) -> Unit,
     viewModel: TravelViewModel = hiltViewModel(),
 ) {
     val state by viewModel.collectAsState()
 
     TravelScreen(
         state = state,
-        onTravelClick = { id -> viewModel.onIntent(TravelIntent.OnTravelClick(id)) })
-    
+        clickTravel = { id -> viewModel.onIntent(TravelIntent.OnTravelClick(id)) })
+
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
-            is TravelSideEffect.NavigateToDetail -> onNavigateToDetail(sideEffect.travelId)
+            is TravelSideEffect.NavigateToDetail -> navigateToDetail(sideEffect.travelId)
         }
     }
 }
@@ -35,7 +33,7 @@ internal fun TravelRoute(
 @Composable
 private fun TravelScreen(
     state: TravelState = TravelState(),
-    onTravelClick: (Int) -> Unit = {},
+    clickTravel: (Int) -> Unit = {},
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -50,7 +48,7 @@ private fun TravelScreen(
         }
         item {
             Button(onClick = {
-                onTravelClick(123)
+                clickTravel(123)
             }) {
                 Text(text = "Go to Travel Detail")
             }
