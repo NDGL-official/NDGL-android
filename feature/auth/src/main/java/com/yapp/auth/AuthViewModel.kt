@@ -1,4 +1,4 @@
-package com.yapp.ndgl.feature.auth
+package com.yapp.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

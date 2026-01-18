@@ -3,5 +3,5 @@ plugins {
 }
 
 android {
-    namespace = "com.yapp.ndgl.core.designsystem"
+    namespace = "com.yapp.designsystem"
 }
