@@ -12,7 +12,7 @@ import com.yapp.ndgl.navigation.TopLevelRoute
 
 @Composable
 internal fun BottomNavigationBar(
-    currentTab : NavKey,
+    currentTab : Route,
     onTabSelected : (Route) -> Unit,
 ) {
     NavigationBar {

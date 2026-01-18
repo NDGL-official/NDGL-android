@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
@@ -25,8 +27,7 @@ fun NDGLApp(
     modifier: Modifier = Modifier,
 ) {
     val navigationState = rememberNavigationState(
-        startRoute = Route.Home,
-        topLevelKeys = TopLevelRoute.entries.map { it.navKey }.toSet()
+        startRoute = Route.Home, topLevelKeys = TopLevelRoute.entries.map { it.navKey }.toSet()
     )
     val navigator = remember { Navigator(navigationState) }
 
@@ -36,7 +37,7 @@ fun NDGLApp(
         travelHelperEntry(navigator)
     }
 
-    val shouldShowBottomBar = navigationState.currentKey in navigationState.topLevelKeys
+    val shouldShowBottomBar by remember { derivedStateOf { navigationState.currentKey in navigationState.topLevelKeys } }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -45,12 +46,10 @@ fun NDGLApp(
                 visible = shouldShowBottomBar,
             ) {
                 BottomNavigationBar(
-                    currentTab = navigationState.currentTopLevelKey,
-                    onTabSelected = { key -> navigator.navigate(key) }
-                )
+                    currentTab = navigationState.currentTopLevelKey as Route,
+                    onTabSelected = { key -> navigator.navigate(key) })
             }
-        }
-    ) { innerPadding ->
+        }) { innerPadding ->
         NavDisplay(
             modifier = Modifier
                 .fillMaxSize()
