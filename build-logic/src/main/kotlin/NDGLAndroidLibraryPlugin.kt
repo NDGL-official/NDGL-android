@@ -1,6 +1,6 @@
 import convention.configureComposeAndroid
 import convention.configureFirebase
-import extensions.configureAndroidLibrary
+import convention.configureKotlinAndroid
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
@@ -13,7 +13,7 @@ class NDGLAndroidLibraryPlugin : Plugin<Project> {
             apply("org.jetbrains.kotlin.android")
         }
 
-        configureAndroidLibrary()
+        configureKotlinAndroid()
         configureFirebase()
         configureComposeAndroid()
 
