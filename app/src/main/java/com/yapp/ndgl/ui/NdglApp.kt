@@ -1,8 +1,6 @@
 package com.yapp.ndgl.ui
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -13,7 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import com.yapp.helper.navigation.travelHelperEntry
+import com.yapp.travel.helper.navigation.travelHelperEntry
 import com.yapp.home.navigation.homeEntry
 import com.yapp.ndgl.navigation.Navigator
 import com.yapp.ndgl.navigation.Route
