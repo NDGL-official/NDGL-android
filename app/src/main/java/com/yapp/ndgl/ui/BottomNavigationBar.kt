@@ -15,6 +15,7 @@ internal fun BottomNavigationBar(
     currentTab : Route,
     onTabSelected : (Route) -> Unit,
 ) {
+    // ToDo 네비게이션 바 디자인 수정
     NavigationBar {
         TopLevelRoute.entries.forEach { topLevelRoute ->
             NavigationBarItem(
