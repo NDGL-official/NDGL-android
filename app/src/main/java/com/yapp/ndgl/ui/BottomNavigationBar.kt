@@ -5,25 +5,25 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.painterResource
-import androidx.navigation3.runtime.NavKey
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
+import com.yapp.ndgl.navigation.BottomNavTab
 import com.yapp.ndgl.navigation.Route
-import com.yapp.ndgl.navigation.TopLevelRoute
 
 @Composable
 internal fun BottomNavigationBar(
     currentTab : Route,
     onTabSelected : (Route) -> Unit,
 ) {
-    // ToDo 네비게이션 바 디자인 수정
+    // FIXME 네비게이션 바 디자인 수정 및 추상화
     NavigationBar {
-        TopLevelRoute.entries.forEach { topLevelRoute ->
+        BottomNavTab.entries.forEach { topLevelRoute ->
             NavigationBarItem(
-                selected = currentTab == topLevelRoute.navKey,
-                onClick = { onTabSelected(topLevelRoute.navKey as Route) },
+                selected = currentTab == topLevelRoute.route,
+                onClick = { onTabSelected(topLevelRoute.route) },
                 icon = {
                     Icon(
-                        painter = painterResource(id = topLevelRoute.icon),
+                        imageVector = ImageVector.vectorResource(id = topLevelRoute.icon),
                         contentDescription = topLevelRoute.label
                     )
                 },

@@ -13,19 +13,17 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.yapp.travel.helper.navigation.travelHelperEntry
 import com.yapp.home.navigation.homeEntry
+import com.yapp.ndgl.navigation.BottomNavTab
 import com.yapp.ndgl.navigation.Navigator
 import com.yapp.ndgl.navigation.Route
-import com.yapp.ndgl.navigation.TopLevelRoute
 import com.yapp.ndgl.navigation.rememberNavigationState
 import com.yapp.ndgl.navigation.toEntries
 import com.yapp.travel.navigation.travelEntry
 
 @Composable
-fun NDGLApp(
-    modifier: Modifier = Modifier,
-) {
+fun NDGLApp() {
     val navigationState = rememberNavigationState(
-        startRoute = Route.Home, topLevelKeys = TopLevelRoute.entries.map { it.navKey }.toSet()
+        startRoute = Route.Home, topLevelKeys = BottomNavTab.entries.map { it.route }.toSet(),
     )
     val navigator = remember { Navigator(navigationState) }
 
@@ -45,9 +43,11 @@ fun NDGLApp(
             ) {
                 BottomNavigationBar(
                     currentTab = navigationState.currentTopLevelKey as Route,
-                    onTabSelected = { key -> navigator.navigate(key) })
+                    onTabSelected = { key -> navigator.navigate(key) },
+                )
             }
-        }) { innerPadding ->
+        },
+    ) { innerPadding ->
         NavDisplay(
             modifier = Modifier
                 .fillMaxSize()
