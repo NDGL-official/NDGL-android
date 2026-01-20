@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.yapp.ndgl.data.auth"
+    namespace = "com.yapp.data.auth"
 }
 
 dependencies {

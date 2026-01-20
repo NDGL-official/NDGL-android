@@ -3,5 +3,5 @@ plugins {
 }
 
 android {
-    namespace = "com.yapp.ndgl.data.core"
+    namespace = "com.yapp.data.core"
 }
