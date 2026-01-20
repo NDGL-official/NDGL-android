@@ -13,5 +13,9 @@ class NDGLDataPlugin : Plugin<Project> {
         configureKotlinAndroid()
         configureHiltAndroid()
         configureCoroutineAndroid()
+
+        if (path != ":data:core") {
+            dependencies.add("implementation", project(":data:core"))
+        }
     }
 }

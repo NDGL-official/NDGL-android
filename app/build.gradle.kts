@@ -1,9 +1,15 @@
 plugins {
     id("ndgl.application")
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
     namespace = Configuration.APPLICATION_ID
+
+    buildFeatures {
+        buildConfig = true
+    }
 
     buildTypes {
         release {
