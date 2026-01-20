@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.yapp.ndgl.navigation"
+    namespace = "com.yapp.navigation"
 }
 
 dependencies {

@@ -1,4 +1,4 @@
-package com.yapp.ndgl.navigation
+package com.yapp.navigation
 
 import androidx.navigation3.runtime.NavKey
 

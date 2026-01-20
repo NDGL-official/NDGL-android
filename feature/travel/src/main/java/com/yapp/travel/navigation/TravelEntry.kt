@@ -3,8 +3,8 @@ package com.yapp.travel.navigation
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
-import com.yapp.ndgl.navigation.Navigator
-import com.yapp.ndgl.navigation.Route
+import com.yapp.navigation.Navigator
+import com.yapp.navigation.Route
 import com.yapp.travel.detail.TravelDetailRoute
 import com.yapp.travel.detail.TravelDetailViewModel
 import com.yapp.travel.travel.TravelRoute

@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import com.yapp.ndgl.navigation.BottomNavTab
-import com.yapp.ndgl.navigation.Route
+import com.yapp.navigation.Route
 
 @Composable
 internal fun BottomNavigationBar(
