@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.yapp.designsystem.theme.NDGLTheme
+import com.yapp.ui.theme.NDGLTheme
 import com.yapp.ndgl.ui.NDGLApp
 import dagger.hilt.android.AndroidEntryPoint
 

@@ -15,7 +15,6 @@ dependencies {
     implementation(project(":feature:travel-helper"))
 
     implementation(project(":core:ui"))
-    implementation(project(":core:designsystem"))
 
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)

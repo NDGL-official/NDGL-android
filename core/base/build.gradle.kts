@@ -3,5 +3,6 @@ plugins {
 }
 
 android {
-    namespace = "com.yapp.designsystem"
+    namespace = "com.yapp.base"
 }
+

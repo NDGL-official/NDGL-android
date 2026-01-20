@@ -1,7 +1,7 @@
 package com.yapp.ndgl.navigation
 
 import androidx.annotation.DrawableRes
-import com.yapp.designsystem.R
+import com.yapp.ui.R
 
 enum class BottomNavTab(
     @get:DrawableRes val icon: Int,

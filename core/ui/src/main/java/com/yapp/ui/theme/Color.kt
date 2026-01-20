@@ -1,4 +1,4 @@
-package com.yapp.designsystem.theme
+package com.yapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
