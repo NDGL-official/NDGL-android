@@ -33,7 +33,7 @@ fun NDGLApp() {
         travelHelperEntry(navigator)
     }
 
-    val shouldShowBottomBar by remember { derivedStateOf { navigationState.currentKey in navigationState.topLevelKeys } }
+    val shouldShowBottomBar = remember(navigationState.currentKey) { navigationState.currentKey in navigationState.topLevelKeys }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
