@@ -21,7 +21,8 @@ import com.yapp.ndgl.feature.travel.navigation.travelEntry
 @Composable
 fun NDGLApp() {
     val navigationState = rememberNavigationState(
-        startRoute = Route.Home, topLevelKeys = BottomNavTab.entries.map { it.route }.toSet(),
+        startRoute = Route.Home,
+        topLevelKeys = BottomNavTab.entries.map { it.route }.toSet(),
     )
     val navigator = remember { Navigator(navigationState) }
 
@@ -31,7 +32,8 @@ fun NDGLApp() {
         travelHelperEntry(navigator)
     }
 
-    val shouldShowBottomBar = remember(navigationState.currentKey) { navigationState.currentKey in navigationState.topLevelKeys }
+    val shouldShowBottomBar =
+        remember(navigationState.currentKey) { navigationState.currentKey in navigationState.topLevelKeys }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -55,4 +57,3 @@ fun NDGLApp() {
         )
     }
 }
-

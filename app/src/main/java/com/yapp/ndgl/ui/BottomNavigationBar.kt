@@ -12,8 +12,8 @@ import com.yapp.ndgl.navigation.Route
 
 @Composable
 internal fun BottomNavigationBar(
-    currentTab : Route,
-    onTabSelected : (Route) -> Unit,
+    currentTab: Route,
+    onTabSelected: (Route) -> Unit,
 ) {
     // FIXME 네비게이션 바 디자인 수정 및 추상화
     NavigationBar {
@@ -24,10 +24,10 @@ internal fun BottomNavigationBar(
                 icon = {
                     Icon(
                         imageVector = ImageVector.vectorResource(id = topLevelRoute.icon),
-                        contentDescription = topLevelRoute.label
+                        contentDescription = topLevelRoute.label,
                     )
                 },
-                label = { Text(text = topLevelRoute.label) }
+                label = { Text(text = topLevelRoute.label) },
             )
         }
     }

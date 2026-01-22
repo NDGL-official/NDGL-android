@@ -24,5 +24,4 @@ enum class BottomNavTab(
         label = "여행",
         route = Route.Travel,
     ),
-    ;
 }

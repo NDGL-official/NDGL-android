@@ -14,7 +14,8 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
         TravelRoute(
             navigateToDetail = { travelId ->
                 navigator.navigate(Route.TravelDetail(travelId))
-            })
+            },
+        )
     }
     entry<Route.TravelDetail> { route ->
         val viewModel =
