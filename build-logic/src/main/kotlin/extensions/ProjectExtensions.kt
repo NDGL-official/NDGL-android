@@ -72,10 +72,6 @@ internal fun Project.configureAndroidLibrary() {
             jvmTarget.set(JvmTarget.fromTarget(Configuration.JVM_TARGET))
         }
     }
-    
-    dependencies {
-        "implementation"(libs.findLibrary("androidx-core-ktx").get())
-    }
 }
 
 internal fun Project.configureKotlinJvm() {

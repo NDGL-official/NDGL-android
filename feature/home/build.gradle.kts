@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.yapp.ndgl.feature.home"
+    namespace = "com.yapp.home"
 }
 
 dependencies {

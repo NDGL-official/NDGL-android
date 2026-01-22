@@ -25,6 +25,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 rootProject.name = "NDGL"
 include(":app")
 include(":navigation")
+include(":core:base")
 include(":core:ui")
 include(":core:util")
 include(":feature:home")
