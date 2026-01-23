@@ -14,17 +14,15 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 internal fun TravelHelperRoute(
     viewModel: TravelHelperViewModel = hiltViewModel(),
 ) {
-
     TravelHelperScreen()
 }
 
 @Composable
-private fun TravelHelperScreen(
-) {
+private fun TravelHelperScreen() {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         item {
             Text(text = "Travel Helper Screen")

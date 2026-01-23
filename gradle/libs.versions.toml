@@ -46,8 +46,8 @@ material = "1.13.0"
 
 # Static Analysis
 detekt = "1.23.8"
-ktlint-gradle = "14.0.1"
-ktlint-source = "1.8.0" #https://github.com/pinterest/ktlint/releases
+ktlint-gradle = "12.1.1"
+ktlint-source = "0.50.0" #https://github.com/pinterest/ktlint/releases
 
 [libraries]
 # AndroidX
