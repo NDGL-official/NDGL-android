@@ -1,26 +1,56 @@
 package com.yapp.ndgl.core.ui.theme
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.colorResource
-import com.yapp.ndgl.core.ui.R
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ReadOnlyComposable
 
-private val ColorScheme
-    @Composable get() = lightColorScheme(
-        primary = colorResource(R.color.primary_500),
-        secondary = colorResource(R.color.secondary_500),
-        background = colorResource(R.color.white),
-        surface = colorResource(R.color.white)
-    )
+object NDGLTheme {
+    val colors: NDGLColors
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalNDGLColors.current
 
+    val typography: NDGLTypography
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalNDGLTypography.current
+}
 
 @Composable
 fun NDGLTheme(
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
-    MaterialTheme(
-        colorScheme = ColorScheme,
-        content = content
-    )
+    CompositionLocalProvider(
+        LocalNDGLColors provides ndglColors,
+        LocalNDGLTypography provides ndglTypography,
+    ) {
+        val colorScheme = lightColorScheme(
+            primary = NDGLTheme.colors.primary500,
+            secondary = NDGLTheme.colors.secondary500,
+            background = NDGLTheme.colors.white,
+            surface = NDGLTheme.colors.white,
+        )
+
+        val typography = Typography(
+            headlineLarge = NDGLTheme.typography.titleLgBold,
+            headlineMedium = NDGLTheme.typography.titleMdBold,
+            titleLarge = NDGLTheme.typography.subtitleLgSemiBold,
+            titleMedium = NDGLTheme.typography.subtitleMdSemiBold,
+            bodyLarge = NDGLTheme.typography.bodyLgMedium,
+            bodyMedium = NDGLTheme.typography.bodyMdMedium,
+            bodySmall = NDGLTheme.typography.bodyMdRegular,
+            labelLarge = NDGLTheme.typography.bodySmSemiBold,
+            labelMedium = NDGLTheme.typography.bodySmMedium,
+            labelSmall = NDGLTheme.typography.bodySmRegular,
+        )
+
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = typography,
+            content = content,
+        )
+    }
 }
