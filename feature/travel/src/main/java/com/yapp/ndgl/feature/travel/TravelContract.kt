@@ -10,7 +10,7 @@ data class TravelState(
 
 
 sealed interface TravelIntent : UiIntent {
-    data class OnTravelClick(val travelId: Int) : TravelIntent
+    data class ClickTravel(val travelId: Int) : TravelIntent
 }
 
 sealed interface TravelSideEffect : UiSideEffect {

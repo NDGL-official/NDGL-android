@@ -10,10 +10,15 @@ class TravelViewModel @Inject constructor() : BaseViewModel<TravelState, TravelI
 ) {
     override suspend fun handleIntent(intent: TravelIntent) {
         when (intent) {
-            is TravelIntent.OnTravelClick -> {
-                reduce { copy(displayText = "클릭된 id: ${intent.travelId}") }
-                postSideEffect(TravelSideEffect.NavigateToDetail(intent.travelId))
+            is TravelIntent.ClickTravel -> {
+                clickTravel(intent.travelId)
             }
         }
     }
+
+    private fun clickTravel(travelId: Int) {
+        reduce { copy(displayText = "클릭된 id: ${travelId}") }
+        postSideEffect(TravelSideEffect.NavigateToDetail(travelId))
+    }
 }
+
