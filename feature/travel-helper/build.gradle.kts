@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.yapp.travel.helper"
+    namespace = "com.yapp.ndgl.feature.travelhelper"
 }
 
 dependencies {

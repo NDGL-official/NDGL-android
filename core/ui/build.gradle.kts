@@ -3,7 +3,7 @@ plugins {
 }
 
 android {
-    namespace = "com.yapp.ui"
+    namespace = "com.yapp.ndgl.core.ui"
 }
 
 dependencies {
