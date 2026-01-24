@@ -59,6 +59,7 @@ private fun TravelScreen(
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 private fun TravelScreenPreview() {
