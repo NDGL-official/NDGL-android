@@ -6,7 +6,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class TravelViewModel @Inject constructor() : BaseViewModel<TravelState, TravelIntent, TravelSideEffect>(
-    initialState = TravelState()
+    initialState = TravelState(),
 ) {
     override suspend fun handleIntent(intent: TravelIntent) {
         when (intent) {
@@ -17,8 +17,7 @@ class TravelViewModel @Inject constructor() : BaseViewModel<TravelState, TravelI
     }
 
     private fun clickTravel(travelId: Int) {
-        reduce { copy(displayText = "클릭된 id: ${travelId}") }
+        reduce { copy(displayText = "클릭된 id: $travelId") }
         postSideEffect(TravelSideEffect.NavigateToDetail(travelId))
     }
 }
-

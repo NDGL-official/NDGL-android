@@ -2,7 +2,6 @@ import convention.configureComposeAndroid
 import convention.configureHiltAndroid
 import convention.configureKotlinAndroid
 import convention.configureTimber
-import extensions.configureAndroidApplication
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -13,7 +12,6 @@ class NDGLApplicationPlugin : Plugin<Project> {
         }
 
         configureKotlinAndroid()
-        configureAndroidApplication()
         configureHiltAndroid()
         configureTimber()
         configureComposeAndroid()

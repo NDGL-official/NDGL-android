@@ -44,6 +44,11 @@ appcompat = "1.7.1"
 material = "1.13.0"
 
 
+# Static Analysis
+detekt = "1.23.8"
+ktlint-gradle = "12.1.1"
+ktlint-source = "0.50.0" #https://github.com/pinterest/ktlint/releases
+
 [libraries]
 # AndroidX
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -101,6 +106,8 @@ firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashly
 # Other
 timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugarJdkLibs" }
+detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
+
 
 # Gradle Plugins (for build-logic)
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
@@ -119,3 +126,5 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint-gradle" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }

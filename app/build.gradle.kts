@@ -4,6 +4,12 @@ plugins {
 
 android {
     namespace = Configuration.APPLICATION_ID
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+        }
+    }
 }
 
 dependencies {

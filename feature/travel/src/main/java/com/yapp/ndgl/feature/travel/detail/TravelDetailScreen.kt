@@ -29,12 +29,12 @@ internal fun TravelDetailScreen(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         item {
             Text(
                 text = "Travel ID: $travelId",
-                fontSize = 18.sp
+                fontSize = 18.sp,
             )
         }
     }

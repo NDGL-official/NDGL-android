@@ -21,7 +21,8 @@ internal fun TravelRoute(
 
     TravelScreen(
         state = state,
-        clickTravel = { id -> viewModel.onIntent(TravelIntent.ClickTravel(id)) })
+        clickTravel = { id -> viewModel.onIntent(TravelIntent.ClickTravel(id)) },
+    )
 
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
@@ -38,7 +39,7 @@ private fun TravelScreen(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         item {
             Text(text = "Travel Screen")
@@ -47,15 +48,16 @@ private fun TravelScreen(
             Text(text = state.displayText)
         }
         item {
-            Button(onClick = {
-                clickTravel(123)
-            }) {
+            Button(
+                onClick = {
+                    clickTravel(123)
+                },
+            ) {
                 Text(text = "Go to Travel Detail")
             }
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
