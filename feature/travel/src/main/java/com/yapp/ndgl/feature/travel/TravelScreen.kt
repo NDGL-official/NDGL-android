@@ -21,7 +21,7 @@ internal fun TravelRoute(
 
     TravelScreen(
         state = state,
-        clickTravel = { id -> viewModel.onIntent(TravelIntent.OnTravelClick(id)) })
+        clickTravel = { id -> viewModel.onIntent(TravelIntent.ClickTravel(id)) })
 
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
