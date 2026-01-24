@@ -15,9 +15,9 @@ class TravelViewModel @Inject constructor() : BaseViewModel<TravelState, TravelI
             }
         }
     }
-    
+
     private fun clickTravel(travelId: Int) {
-        reduce { copy(displayText = "클릭된 id: ${travelId}") }
+        reduce { copy(displayText = "클릭된 id: $travelId") }
         postSideEffect(TravelSideEffect.NavigateToDetail(travelId))
     }
 }
