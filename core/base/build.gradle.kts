@@ -3,6 +3,5 @@ plugins {
 }
 
 android {
-    namespace = "com.yapp.base"
+    namespace = "com.yapp.ndgl.core.base"
 }
-
