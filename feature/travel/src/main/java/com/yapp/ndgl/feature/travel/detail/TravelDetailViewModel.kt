@@ -11,14 +11,14 @@ import kotlinx.coroutines.flow.asStateFlow
 
 @HiltViewModel(assistedFactory = TravelDetailViewModel.Factory::class)
 class TravelDetailViewModel @AssistedInject constructor(
-    @Assisted travelId: String,
+    @Assisted travelId: Int,
 ) : ViewModel() {
 
     private val _travelId = MutableStateFlow(travelId)
-    val travelId: StateFlow<String> = _travelId.asStateFlow()
+    val travelId: StateFlow<Int> = _travelId.asStateFlow()
 
     @AssistedFactory
     interface Factory {
-        fun create(travelId: String): TravelDetailViewModel
+        fun create(travelId: Int): TravelDetailViewModel
     }
 }

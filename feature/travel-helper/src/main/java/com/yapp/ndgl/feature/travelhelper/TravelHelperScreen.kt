@@ -19,7 +19,7 @@ internal fun TravelHelperRoute(
 }
 
 @Composable
-internal fun TravelHelperScreen(
+private fun TravelHelperScreen(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -34,6 +34,6 @@ internal fun TravelHelperScreen(
 
 @Preview(showBackground = true)
 @Composable
-fun TravelHelperScreenPreview() {
+private fun TravelHelperScreenPreview() {
     TravelHelperScreen()
 }

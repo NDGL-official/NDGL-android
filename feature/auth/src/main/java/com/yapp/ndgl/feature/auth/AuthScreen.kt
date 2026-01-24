@@ -21,7 +21,7 @@ fun AuthRoute(
 }
 
 @Composable
-internal fun AuthScreen(
+private fun AuthScreen(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -36,6 +36,6 @@ internal fun AuthScreen(
 
 @Preview(showBackground = true)
 @Composable
-fun AuthScreenPreview() {
+private fun AuthScreenPreview() {
     AuthScreen()
 }

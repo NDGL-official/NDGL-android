@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -13,18 +14,26 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 @Composable
 internal fun TravelRoute(
-    onNavigateToDetail: (String) -> Unit,
+    navigateToDetail: (Int) -> Unit,
     viewModel: TravelViewModel = hiltViewModel(),
 ) {
+    val state by viewModel.collectAsState()
 
     TravelScreen(
-        onNavigateToDetail = onNavigateToDetail
-    )
+        state = state,
+        clickTravel = { id -> viewModel.onIntent(TravelIntent.ClickTravel(id)) })
+
+    viewModel.collectSideEffect { sideEffect ->
+        when (sideEffect) {
+            is TravelSideEffect.NavigateToDetail -> navigateToDetail(sideEffect.travelId)
+        }
+    }
 }
 
 @Composable
-internal fun TravelScreen(
-    onNavigateToDetail: (String) -> Unit = {},
+private fun TravelScreen(
+    state: TravelState = TravelState(),
+    clickTravel: (Int) -> Unit = {},
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -35,15 +44,21 @@ internal fun TravelScreen(
             Text(text = "Travel Screen")
         }
         item {
-            Button(onClick = { onNavigateToDetail("travel-123") }) {
+            Text(text = state.displayText)
+        }
+        item {
+            Button(onClick = {
+                clickTravel(123)
+            }) {
                 Text(text = "Go to Travel Detail")
             }
         }
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
-fun TravelScreenPreview() {
+private fun TravelScreenPreview() {
     TravelScreen()
 }
