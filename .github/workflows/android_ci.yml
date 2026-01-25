@@ -30,6 +30,9 @@ jobs:
     - name: Set up local.properties
       run: echo "${{ secrets.LOCAL_PROPERTIES }}" > local.properties
 
+    - name: Set up google-services.json
+      run: echo '${{ secrets.GOOGLE_SERVICES }}' | base64 -d > app/google-services.json
+
     - name: Code style checks
       run: ./gradlew ktlintCheck detekt
 
