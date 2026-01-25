@@ -10,5 +10,5 @@ data class BaseResponse<T>(
 )
 
 fun <T> BaseResponse<T>.getData(): T {
-    return data ?: Unit as T
+    return data ?: error("Response data is null. code=$code, message=$message")
 }
