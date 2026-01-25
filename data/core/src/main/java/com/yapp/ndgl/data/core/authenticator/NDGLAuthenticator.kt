@@ -11,6 +11,7 @@ import okhttp3.Authenticator
 import okhttp3.Request
 import okhttp3.Response
 import okhttp3.Route
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -40,20 +41,24 @@ class NDGLAuthenticator @Inject constructor(
             return null
         }
 
-        val uuid = runBlocking { localAuthDataSource.getUuid() }
-
         val authResponse = runBlocking {
             mutex.withLock {
-                ndglApi.get().login(LoginRequest(uuid))
-            }
-        }.getData()
+                try {
+                    val uuid = localAuthDataSource.getUuid()
+                    if (uuid.isNullOrEmpty()) {
+                        return@withLock null
+                    }
 
-        runBlocking {
-            localAuthDataSource.apply {
-                setAccessToken(authResponse.accessToken)
-                setUuid(authResponse.uuid)
+                    val response = ndglApi.get().login(LoginRequest(uuid)).getData()
+                    localAuthDataSource.setAccessToken(response.accessToken)
+                    localAuthDataSource.setUuid(response.uuid)
+                    response
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to refresh token")
+                    null
+                }
             }
-        }
+        } ?: return null
 
         val newRequest = originRequest.newBuilder()
             .header(RETRY_HEADER, (retryCount + 1).toString())
