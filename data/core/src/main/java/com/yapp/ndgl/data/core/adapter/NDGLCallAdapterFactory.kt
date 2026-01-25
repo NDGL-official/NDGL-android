@@ -11,6 +11,7 @@ import retrofit2.CallAdapter
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
+import timber.log.Timber
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 import javax.inject.Inject
@@ -59,6 +60,7 @@ private class NDGLCall<T : Any>(
                         val errorResponse = try {
                             json.decodeFromString<ErrorResponse>(errorBody)
                         } catch (e: Exception) {
+                            Timber.e(e, "Failed to parse error response")
                             null
                         }
 

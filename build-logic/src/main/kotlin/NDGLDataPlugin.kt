@@ -1,6 +1,7 @@
 import convention.configureCoroutineAndroid
 import convention.configureHiltAndroid
 import convention.configureKotlinAndroid
+import convention.configureTimber
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -13,6 +14,7 @@ class NDGLDataPlugin : Plugin<Project> {
         configureKotlinAndroid()
         configureHiltAndroid()
         configureCoroutineAndroid()
+        configureTimber()
 
         if (path != ":data:core") {
             dependencies.add("implementation", project(":data:core"))
