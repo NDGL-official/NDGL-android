@@ -14,11 +14,7 @@ android {
             load(rootProject.file("local.properties").bufferedReader())
         }
 
-        buildConfigField(
-            "String",
-            "NDGL_BASE_URL",
-            localProperties["NDGL_BASE_URL"] as String,
-        )
+        buildConfigField("String", "NDGL_BASE_URL", "\"${localProperties["NDGL_BASE_URL"]}\"")
     }
 
     buildFeatures {
