@@ -1,8 +1,8 @@
 package com.yapp.ndgl.feature.home
 
-import com.yapp.ui.base.UiIntent
-import com.yapp.ui.base.UiSideEffect
-import com.yapp.ui.base.UiState
+import com.yapp.ndgl.core.base.UiIntent
+import com.yapp.ndgl.core.base.UiSideEffect
+import com.yapp.ndgl.core.base.UiState
 
 data class HomeState(
     val isLoading: Boolean = false,

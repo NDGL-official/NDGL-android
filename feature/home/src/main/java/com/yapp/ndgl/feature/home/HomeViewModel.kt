@@ -1,9 +1,9 @@
 package com.yapp.ndgl.feature.home
 
 import androidx.lifecycle.viewModelScope
+import com.yapp.ndgl.core.base.BaseViewModel
 import com.yapp.ndgl.core.util.suspendRunCatching
 import com.yapp.ndgl.data.auth.repository.AuthRepository
-import com.yapp.ui.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import timber.log.Timber
