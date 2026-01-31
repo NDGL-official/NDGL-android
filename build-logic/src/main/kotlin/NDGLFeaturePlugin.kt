@@ -1,6 +1,4 @@
-import convention.configureComposeAndroid
 import convention.configureCoroutineAndroid
-import convention.configureFirebase
 import convention.configureHiltAndroid
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -18,6 +16,7 @@ class NDGLFeaturePlugin : Plugin<Project> {
 
         dependencies {
             "implementation"(project(":navigation"))
+            "implementation"(project(":core:base"))
             "implementation"(project(":core:ui"))
             "implementation"(project(":core:util"))
 

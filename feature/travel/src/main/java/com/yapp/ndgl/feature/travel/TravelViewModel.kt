@@ -1,6 +1,6 @@
 package com.yapp.ndgl.feature.travel
 
-import com.yapp.ui.base.BaseViewModel
+import com.yapp.ndgl.core.base.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
