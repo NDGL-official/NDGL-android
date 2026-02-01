@@ -28,8 +28,8 @@ fun NDGLTheme(
         LocalNDGLTypography provides ndglTypography,
     ) {
         val colorScheme = lightColorScheme(
-            primary = NDGLTheme.colors.primary500,
-            secondary = NDGLTheme.colors.secondary500,
+            primary = NDGLTheme.colors.green500,
+            secondary = NDGLTheme.colors.black500,
             background = NDGLTheme.colors.white,
             surface = NDGLTheme.colors.white,
         )
