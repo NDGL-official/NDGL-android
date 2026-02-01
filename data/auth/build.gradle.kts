@@ -7,5 +7,5 @@ android {
 }
 
 dependencies {
-    implementation(project(":data:core"))
+    implementation(libs.androidx.datastore)
 }

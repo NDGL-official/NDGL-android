@@ -1,4 +1,4 @@
-package com.yapp.ndgl.data.core.local.di
+package com.yapp.ndgl.data.auth.local.di
 
 import android.content.Context
 import androidx.datastore.core.DataStore

@@ -1,14 +1,13 @@
-package com.yapp.ndgl.data.core.api
+package com.yapp.ndgl.data.auth.api
 
+import com.yapp.ndgl.data.auth.model.AuthResponse
+import com.yapp.ndgl.data.auth.model.CreateUserRequest
+import com.yapp.ndgl.data.auth.model.LoginRequest
 import com.yapp.ndgl.data.core.model.BaseResponse
-import com.yapp.ndgl.data.core.model.auth.AuthResponse
-import com.yapp.ndgl.data.core.model.auth.CreateUserRequest
-import com.yapp.ndgl.data.core.model.auth.LoginRequest
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-interface NDGLApi {
-    // Auth
+interface AuthApi {
     @POST("/api/v1/auth/users")
     suspend fun createUser(
         @Body request: CreateUserRequest,

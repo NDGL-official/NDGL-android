@@ -1,6 +1,4 @@
-import convention.configureComposeAndroid
 import convention.configureCoroutineAndroid
-import convention.configureFirebase
 import convention.configureHiltAndroid
 import org.gradle.api.Plugin
 import org.gradle.api.Project

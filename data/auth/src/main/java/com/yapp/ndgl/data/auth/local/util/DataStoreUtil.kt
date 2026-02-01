@@ -1,4 +1,4 @@
-package com.yapp.ndgl.data.core.local.util
+package com.yapp.ndgl.data.auth.local.util
 
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.emptyPreferences

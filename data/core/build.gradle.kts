@@ -3,7 +3,6 @@ import kotlin.apply
 
 plugins {
     id("ndgl.data")
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -23,10 +22,5 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.datastore)
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.kotlinx.serialization.json)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
 }
