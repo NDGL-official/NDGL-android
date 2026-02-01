@@ -2,18 +2,27 @@ package com.yapp.ndgl.core.ui.theme
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.yapp.ndgl.core.ui.R
 
 private val Pretendard = FontFamily(
-    Font(R.font.pretendard, FontWeight.Normal),
-    Font(R.font.pretendard, FontWeight.Medium),
-    Font(R.font.pretendard, FontWeight.SemiBold),
-    Font(R.font.pretendard, FontWeight.Bold),
+    FontWeight.Normal.pretendardFont(),
+    FontWeight.Medium.pretendardFont(),
+    FontWeight.SemiBold.pretendardFont(),
+    FontWeight.Bold.pretendardFont(),
+)
+
+@OptIn(ExperimentalTextApi::class)
+private fun FontWeight.pretendardFont() = Font(
+    R.font.pretendard,
+    weight = this,
+    variationSettings = FontVariation.Settings(FontVariation.weight(weight)),
 )
 
 @Immutable

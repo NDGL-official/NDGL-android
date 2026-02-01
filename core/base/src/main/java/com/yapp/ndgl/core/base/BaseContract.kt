@@ -1,4 +1,4 @@
-package com.yapp.ui.base
+package com.yapp.ndgl.core.base
 
 interface UiState
 

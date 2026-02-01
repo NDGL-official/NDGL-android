@@ -1,4 +1,4 @@
-package com.yapp.ui.base
+package com.yapp.ndgl.core.base
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
