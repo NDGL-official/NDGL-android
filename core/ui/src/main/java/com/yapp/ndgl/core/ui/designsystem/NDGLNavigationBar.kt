@@ -3,6 +3,7 @@ package com.yapp.ndgl.core.ui.designsystem
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -45,8 +46,8 @@ fun NDGLNavigationBar(
         modifier = modifier
             .fillMaxWidth()
             .height(48.dp)
-            .padding(horizontal = 24.dp, vertical = 12.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+            .padding(horizontal = 24.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         leadingIcon?.let { icon ->
@@ -69,8 +70,10 @@ fun NDGLNavigationBar(
             )
         } ?: Spacer(modifier = Modifier.weight(1f))
 
-        trailingContents?.let { contents ->
-            contents()
+        if (trailingContents != null) {
+            trailingContents()
+        } else {
+            Box(modifier = Modifier.size(40.dp))
         }
     }
 }
@@ -84,10 +87,11 @@ fun NDGLNavigationIcon(
         imageVector = ImageVector.vectorResource(icon),
         contentDescription = null,
         modifier = Modifier
-            .size(28.dp)
+            .size(40.dp)
             .clip(CircleShape)
-            .clickable(onClick = onClick),
-        tint = NDGLTheme.colors.black700,
+            .clickable(onClick = onClick)
+            .padding(6.dp),
+        tint = NDGLTheme.colors.black600,
     )
 }
 
@@ -109,6 +113,36 @@ private fun NDGLNavigationBarCenterPreview() {
                     onClick = {},
                 )
             },
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NDGLNavigationBarPreview() {
+    NDGLTheme {
+        NDGLNavigationBar(
+            textAlignType = NDGLNavigationBarAttr.TextAlignType.CENTER,
+            headline = "미리보기",
+            leadingIcon = R.drawable.ic_28_chevron_left,
+            trailingContents = {
+                NDGLNavigationIcon(
+                    icon = R.drawable.ic_28_search,
+                    onClick = {},
+                )
+            },
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun NDGLNavigationBarNoTrailingPreview() {
+    NDGLTheme {
+        NDGLNavigationBar(
+            textAlignType = NDGLNavigationBarAttr.TextAlignType.CENTER,
+            headline = "미리보기",
+            leadingIcon = R.drawable.ic_28_chevron_left,
         )
     }
 }
