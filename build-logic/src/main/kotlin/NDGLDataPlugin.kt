@@ -24,6 +24,7 @@ class NDGLDataPlugin : Plugin<Project> {
         }
 
         dependencies {
+            "implementation"(project(":core:util"))
             "implementation"(libs.findLibrary("retrofit").get())
             "implementation"(libs.findLibrary("retrofit-kotlinx-serialization-json").get())
             "implementation"(libs.findLibrary("kotlinx-serialization-json").get())
