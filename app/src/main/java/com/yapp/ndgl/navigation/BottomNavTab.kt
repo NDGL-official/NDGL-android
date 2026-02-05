@@ -9,17 +9,17 @@ enum class BottomNavTab(
     val route: Route,
 ) {
     TRAVEL_HELPER(
-        icon = R.drawable.ic_nav_helper,
+        icon = R.drawable.ic_24_tool,
         label = "여행 도구",
         route = Route.TravelHelper,
     ),
     HOME(
-        icon = R.drawable.ic_nav_home,
+        icon = R.drawable.ic_24_home,
         label = "홈",
         route = Route.Home,
     ),
     TRAVEL(
-        icon = R.drawable.ic_nav_travel,
+        icon = R.drawable.ic_24_bag,
         label = "여행",
         route = Route.Travel,
     ),
