@@ -183,6 +183,12 @@ class TravelDetailViewModel @AssistedInject constructor(
             is TravelDetailIntent.ClickAddCost -> clickAddCost()
             is TravelDetailIntent.ClickAddMemo -> clickAddMemo()
             is TravelDetailIntent.ClickFindRoute -> clickFindRoute(intent.googleMapsUri)
+            is TravelDetailIntent.DismissTimeBottomSheet -> dismissTimeBottomSheet()
+            is TravelDetailIntent.ConfirmDuration -> confirmDuration(intent.duration)
+            is TravelDetailIntent.DismissCostModal -> dismissCostModal()
+            is TravelDetailIntent.ConfirmCost -> confirmCost(intent.cost)
+            is TravelDetailIntent.DismissMemoModal -> dismissMemoModal()
+            is TravelDetailIntent.ConfirmMemo -> confirmMemo(intent.memo)
         }
     }
 
@@ -383,15 +389,110 @@ class TravelDetailViewModel @AssistedInject constructor(
     }
 
     private fun clickAddTime() {
-        // TODO
+        reduce {
+            copy(showTimeBottomSheet = true)
+        }
+    }
+
+    private fun dismissTimeBottomSheet() {
+        reduce {
+            copy(showTimeBottomSheet = false)
+        }
+    }
+
+    private fun confirmDuration(duration: Duration) {
+        reduce {
+            var updatedPlace: TravelPlace? = null
+            val updatedItineraries = itineraries.map { itinerary ->
+                itinerary.copy(
+                    places = itinerary.places.map { place ->
+                        if (place.id == selectedPlace?.id) {
+                            val existingUserData = place.userData ?: TravelPlace.UserData()
+                            val updated = place.copy(userData = existingUserData.copy(customDuration = duration))
+                            updatedPlace = updated
+                            updated
+                        } else {
+                            place
+                        }
+                    },
+                )
+            }
+            copy(
+                itineraries = updatedItineraries,
+                selectedPlace = updatedPlace,
+                showTimeBottomSheet = false,
+            )
+        }
     }
 
     private fun clickAddCost() {
-        // TODO
+        reduce {
+            copy(showCostModal = true)
+        }
+    }
+
+    private fun dismissCostModal() {
+        reduce { copy(showCostModal = false) }
+    }
+
+    private fun confirmCost(cost: Int) {
+        reduce {
+            var updatedPlace: TravelPlace? = null
+            val updatedItineraries = itineraries.map { itinerary ->
+                itinerary.copy(
+                    places = itinerary.places.map { place ->
+                        if (place.id == selectedPlace?.id) {
+                            val existingUserData = place.userData ?: TravelPlace.UserData()
+                            val updated = place.copy(userData = existingUserData.copy(cost = cost))
+                            updatedPlace = updated
+                            updated
+                        } else {
+                            place
+                        }
+                    },
+                )
+            }
+            copy(
+                itineraries = updatedItineraries,
+                selectedPlace = updatedPlace,
+                showCostModal = false,
+            )
+        }
     }
 
     private fun clickAddMemo() {
-        // TODO
+        reduce {
+            copy(showMemoModal = true)
+        }
+    }
+
+    private fun dismissMemoModal() {
+        reduce { copy(showMemoModal = false) }
+    }
+
+    private fun confirmMemo(memo: String) {
+        reduce {
+            var updatedPlace: TravelPlace? = null
+            val updatedItineraries = itineraries.map { itinerary ->
+                itinerary.copy(
+                    places = itinerary.places.map { place ->
+                        if (place.id == selectedPlace?.id) {
+                            val existingUserData = place.userData ?: TravelPlace.UserData()
+                            val updated = place.copy(userData = existingUserData.copy(memo = memo.trim()))
+                            updatedPlace = updated
+                            updated
+                        } else {
+                            place
+                        }
+                    },
+                )
+            }
+            copy(
+                itineraries = updatedItineraries,
+                selectedPlace = updatedPlace,
+                showMemoModal = false,
+            )
+        }
     }
 
     private fun clickFindRoute(url: String) {

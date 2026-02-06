@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.designsystem.NDGLBottomSheet
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
+import com.yapp.ndgl.core.ui.util.noRippleClickable
+import com.yapp.ndgl.core.util.formatDecimal
 import com.yapp.ndgl.core.util.formatString
 import com.yapp.ndgl.feature.travel.traveldetail.PlaceType
 import com.yapp.ndgl.feature.travel.traveldetail.TravelPlace
@@ -100,12 +102,22 @@ internal fun PlaceBottomSheet(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "${stringResource(place.placeType.labelRes)} • ${
-                                stringResource(
-                                    R.string.estimated_duration_format,
-                                    place.estimatedDuration.formatString(),
-                                )
-                            }",
+                            text = stringResource(place.placeType.labelRes),
+                            style = NDGLTheme.typography.bodyMdMedium,
+                            color = NDGLTheme.colors.black500,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "•",
+                            style = NDGLTheme.typography.bodyMdMedium,
+                            color = NDGLTheme.colors.black500,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(
+                                R.string.estimated_duration_format,
+                                (place.userData?.customDuration ?: place.estimatedDuration).formatString(),
+                            ),
                             style = NDGLTheme.typography.bodyMdMedium,
                             color = NDGLTheme.colors.black500,
                         )
@@ -113,7 +125,7 @@ internal fun PlaceBottomSheet(
                             modifier = Modifier
                                 .size(20.dp)
                                 .clip(CircleShape)
-                                .clickable { navigateToPlaceDetail() },
+                                .noRippleClickable { onAddTimeClick(place.id) },
                             imageVector = ImageVector.vectorResource(R.drawable.ic_20_chevron_right),
                             contentDescription = null,
                             tint = NDGLTheme.colors.black600,
@@ -127,74 +139,96 @@ internal fun PlaceBottomSheet(
                     )
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    // FIXME("기획 변경으로 디자인 수정 예정")
                     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(
-                            modifier = Modifier.clickable {
-                                onAddTimeClick(place.id)
-                            },
+                            modifier = Modifier.noRippleClickable { onAddMemoClick(place.id) },
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
-                                imageVector = ImageVector.vectorResource(R.drawable.ic_20_clock),
+                                imageVector = ImageVector.vectorResource(R.drawable.ic_20_clipboard),
                                 contentDescription = null,
                                 tint = NDGLTheme.colors.black400,
                             )
-                            Text(stringResource(R.string.add_time), color = NDGLTheme.colors.black400, style = NDGLTheme.typography.bodyMdMedium)
+                            Text(
+                                stringResource(R.string.add_memo),
+                                color = NDGLTheme.colors.black400,
+                                style = NDGLTheme.typography.bodyMdMedium,
+                            )
+                            place.userData?.memo?.let { memo ->
+                                Text(
+                                    text = memo,
+                                    color = NDGLTheme.colors.black500,
+                                    style = NDGLTheme.typography.bodyMdMedium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(R.drawable.ic_20_chevron_right),
+                                    contentDescription = null,
+                                    tint = NDGLTheme.colors.black600,
+                                )
+                            }
                         }
                         Row(
-                            modifier = Modifier.clickable {
-                                onAddCostClick(place.id)
-                            },
+                            modifier = Modifier.noRippleClickable { onAddCostClick(place.id) },
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
                                 imageVector = ImageVector.vectorResource(R.drawable.ic_20_card),
                                 contentDescription = null,
                                 tint = NDGLTheme.colors.black400,
                             )
-                            Text(stringResource(R.string.add_cost), color = NDGLTheme.colors.black400, style = NDGLTheme.typography.bodyMdMedium)
-                        }
-//                        Row(
-//                            modifier = Modifier.clickable {
-//                                onAddMemoClick(place.id)
-//                            },
-//                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-//                        ) {
-//                            Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_20_memo), contentDescription = null)
-//                            Text("메모 추가")
-//                        }
-                    }
-                    Spacer(modifier = Modifier.height(40.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable {
-                                onFindRouteClick(place.googleMapsUri)
+                            Text(
+                                stringResource(R.string.add_cost),
+                                color = NDGLTheme.colors.black400,
+                                style = NDGLTheme.typography.bodyMdMedium,
+                            )
+                            place.userData?.cost?.let { cost ->
+                                Text(
+                                    text = "${cost.formatDecimal()}원",
+                                    color = NDGLTheme.colors.black500,
+                                    style = NDGLTheme.typography.bodyMdMedium,
+                                )
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(R.drawable.ic_20_chevron_right),
+                                    contentDescription = null,
+                                    tint = NDGLTheme.colors.black600,
+                                )
                             }
-                            .background(NDGLTheme.colors.white)
-                            .border(1.dp, NDGLTheme.colors.black100, RoundedCornerShape(8.dp))
-                            .padding(vertical = 17.5.dp),
-                        horizontalArrangement = Arrangement.spacedBy(
-                            space = 8.dp,
-                            alignment = Alignment.CenterHorizontally,
-                        ),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.find_route),
-                            style = NDGLTheme.typography.bodyLgSemiBold,
-                            color = NDGLTheme.colors.black600,
-                        )
-                        Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.ic_24_map),
-                            contentDescription = null,
-                            tint = NDGLTheme.colors.black600,
-                        )
+                        }
+                        Spacer(modifier = Modifier.height(40.dp))
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    onFindRouteClick(place.googleMapsUri)
+                                }
+                                .background(NDGLTheme.colors.white)
+                                .border(1.dp, NDGLTheme.colors.black100, RoundedCornerShape(8.dp))
+                                .padding(vertical = 17.5.dp),
+                            horizontalArrangement = Arrangement.spacedBy(
+                                space = 8.dp,
+                                alignment = Alignment.CenterHorizontally,
+                            ),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = stringResource(R.string.find_route),
+                                style = NDGLTheme.typography.bodyLgSemiBold,
+                                color = NDGLTheme.colors.black600,
+                            )
+                            Icon(
+                                imageVector = ImageVector.vectorResource(R.drawable.ic_24_map),
+                                contentDescription = null,
+                                tint = NDGLTheme.colors.black600,
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
                     }
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
         }

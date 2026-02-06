@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +37,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -45,6 +49,7 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButton
 import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButtonAttr
 import com.yapp.ndgl.core.ui.designsystem.NDGLChipTab
 import com.yapp.ndgl.core.ui.designsystem.NDGLChipTabAttr
+import com.yapp.ndgl.core.ui.designsystem.NDGLInputModal
 import com.yapp.ndgl.core.ui.designsystem.NDGLModal
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
@@ -53,6 +58,7 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.dropShadow
 import com.yapp.ndgl.core.ui.util.launchBrowser
 import com.yapp.ndgl.feature.travel.traveldetail.component.ContentCard
+import com.yapp.ndgl.feature.travel.traveldetail.component.DurationPickerContent
 import com.yapp.ndgl.feature.travel.traveldetail.component.EditControlBar
 import com.yapp.ndgl.feature.travel.traveldetail.component.EditablePlaceItem
 import com.yapp.ndgl.feature.travel.traveldetail.component.PlaceBottomSheet
@@ -115,6 +121,14 @@ internal fun TravelDetailRoute(
         clickAddMemo = { viewModel.onIntent(TravelDetailIntent.ClickAddMemo(it)) },
         clickAddCost = { viewModel.onIntent(TravelDetailIntent.ClickAddCost(it)) },
         clickFindRoute = { viewModel.onIntent(TravelDetailIntent.ClickFindRoute(it)) },
+        dismissTimeBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissTimeBottomSheet) },
+        confirmDuration = {
+            viewModel.onIntent(TravelDetailIntent.ConfirmDuration(it))
+        },
+        dismissCostModal = { viewModel.onIntent(TravelDetailIntent.DismissCostModal) },
+        confirmCost = { viewModel.onIntent(TravelDetailIntent.ConfirmCost(it)) },
+        dismissMemoModal = { viewModel.onIntent(TravelDetailIntent.DismissMemoModal) },
+        confirmMemo = { viewModel.onIntent(TravelDetailIntent.ConfirmMemo(it)) },
     )
 }
 
@@ -145,6 +159,12 @@ private fun TravelDetailScreen(
     clickFindRoute: (String) -> Unit,
     dismissPlaceBottomSheet: () -> Unit,
     navigateToPlaceDetail: (String) -> Unit,
+    dismissTimeBottomSheet: () -> Unit,
+    confirmDuration: (Duration) -> Unit,
+    dismissCostModal: () -> Unit,
+    confirmCost: (Int) -> Unit,
+    dismissMemoModal: () -> Unit,
+    confirmMemo: (String) -> Unit,
 ) {
     BackHandler(enabled = state.isEditMode) {
         clickBack()
@@ -432,6 +452,77 @@ private fun TravelDetailScreen(
                 onFindRouteClick = clickFindRoute,
             )
         }
+
+        if (state.showTimeBottomSheet && state.selectedPlace != null) {
+            NDGLBottomSheet(
+                onDismissRequest = dismissTimeBottomSheet,
+                showDragHandle = false,
+            ) {
+                val currentDuration = state.selectedPlace.userData?.customDuration
+                    ?: state.selectedPlace.estimatedDuration
+                DurationPickerContent(
+                    currentDuration = currentDuration,
+                    onDismissRequest = dismissTimeBottomSheet,
+                    onConfirm = { duration ->
+                        confirmDuration(duration)
+                    },
+                )
+            }
+        }
+
+        if (state.showCostModal && state.selectedPlace != null) {
+            var cost by remember { mutableStateOf(state.selectedPlace.userData?.cost?.toString() ?: "") }
+
+            NDGLInputModal(
+                onDismissRequest = dismissCostModal,
+                title = stringResource(R.string.cost_modal_title),
+                value = cost,
+                onValueChange = { newValue ->
+                    if (newValue.isEmpty() || newValue.all { it.isDigit() }) {
+                        cost = newValue
+                    }
+                },
+                placeholder = stringResource(R.string.cost_modal_placeholder),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done,
+                ),
+                positiveButtonText = stringResource(R.string.cost_modal_confirm),
+                onPositiveButtonClick = {
+                    cost.toIntOrNull()?.let { costValue ->
+                        confirmCost(costValue)
+                    }
+                },
+                negativeButtonText = stringResource(R.string.cost_modal_cancel),
+                textAlign = TextAlign.Center,
+                placeholderStyle = NDGLTheme.typography.subtitleLgSemiBold,
+                textStyle = NDGLTheme.typography.subtitleLgSemiBold,
+            )
+        }
+
+        if (state.showMemoModal && state.selectedPlace != null) {
+            var memo by remember { mutableStateOf(state.selectedPlace.userData?.memo ?: "") }
+
+            NDGLInputModal(
+                onDismissRequest = dismissMemoModal,
+                title = stringResource(R.string.memo_modal_title),
+                value = memo,
+                onValueChange = { memo = it },
+                placeholder = stringResource(R.string.memo_modal_placeholder),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Default,
+                ),
+                positiveButtonText = stringResource(R.string.memo_modal_confirm),
+                onPositiveButtonClick = {
+                    confirmMemo(memo)
+                },
+                negativeButtonText = stringResource(R.string.cost_modal_cancel),
+                minHeight = 180.dp,
+                placeholderStyle = NDGLTheme.typography.bodyLgMedium,
+                textStyle = NDGLTheme.typography.bodyLgRegular,
+            )
+        }
     }
 }
 
@@ -527,6 +618,12 @@ private fun TravelDetailScreenPreview() {
             clickFindRoute = {},
             dismissPlaceBottomSheet = {},
             navigateToPlaceDetail = {},
+            dismissTimeBottomSheet = {},
+            confirmDuration = { _ -> },
+            dismissCostModal = {},
+            confirmCost = { _ -> },
+            dismissMemoModal = {},
+            confirmMemo = { _ -> },
         )
     }
 }
@@ -623,6 +720,12 @@ private fun TravelDetailScreenEditModePreview() {
             clickFindRoute = {},
             dismissPlaceBottomSheet = {},
             navigateToPlaceDetail = {},
+            dismissTimeBottomSheet = {},
+            confirmDuration = { _ -> },
+            dismissCostModal = {},
+            confirmCost = { _ -> },
+            dismissMemoModal = {},
+            confirmMemo = { _ -> },
         )
     }
 }

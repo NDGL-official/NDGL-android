@@ -27,6 +27,9 @@ data class TravelDetailState(
     val endTime: Duration = 0.hours,
     val selectedPlace: TravelPlace? = null,
     val showPlaceBottomSheet: Boolean = false,
+    val showTimeBottomSheet: Boolean = false,
+    val showCostModal: Boolean = false,
+    val showMemoModal: Boolean = false,
 ) : UiState
 
 data class ContentInfo(
@@ -80,7 +83,14 @@ data class TravelPlace(
     val regularOpeningHours: String,
     val googleMapsUri: String,
     val placeType: PlaceType,
-)
+    val userData: UserData? = null,
+) {
+    data class UserData(
+        val memo: String? = null,
+        val cost: Int? = null,
+        val customDuration: Duration? = null,
+    )
+}
 
 enum class PlaceType(@get:StringRes val labelRes: Int, @get:DrawableRes val iconRes: Int) {
     ACCOMMODATION(R.string.place_type_accommodation, R.drawable.ic_14_home),
@@ -154,6 +164,12 @@ sealed interface TravelDetailIntent : UiIntent {
     data class ClickFindRoute(val googleMapsUri: String) : TravelDetailIntent
     data object DismissPlaceBottomSheet : TravelDetailIntent
     data class NavigateToPlaceDetail(val placeId: String) : TravelDetailIntent
+    data object DismissTimeBottomSheet : TravelDetailIntent
+    data class ConfirmDuration(val duration: Duration) : TravelDetailIntent
+    data object DismissCostModal : TravelDetailIntent
+    data class ConfirmCost(val cost: Int) : TravelDetailIntent
+    data object DismissMemoModal : TravelDetailIntent
+    data class ConfirmMemo(val memo: String) : TravelDetailIntent
 }
 
 sealed interface TravelDetailSideEffect : UiSideEffect {
