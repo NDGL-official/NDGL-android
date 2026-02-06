@@ -8,6 +8,8 @@ import com.yapp.ndgl.feature.travel.datepicker.DatePickerRoute
 import com.yapp.ndgl.feature.travel.datepicker.DatePickerViewModel
 import com.yapp.ndgl.feature.travel.followtravel.FollowTravelRoute
 import com.yapp.ndgl.feature.travel.followtravel.FollowTravelViewModel
+import com.yapp.ndgl.feature.travel.placedetail.PlaceDetailRoute
+import com.yapp.ndgl.feature.travel.placedetail.PlaceDetailViewModel
 import com.yapp.ndgl.feature.travel.travel.TravelRoute
 import com.yapp.ndgl.feature.travel.traveldetail.TravelDetailRoute
 import com.yapp.ndgl.feature.travel.traveldetail.TravelDetailViewModel
@@ -46,6 +48,20 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator, innerPadding: P
             }
         TravelDetailRoute(
             viewModel = viewModel,
+            navigateBack = { navigator.goBack() },
+            navigateToPlaceDetail = { placeId ->
+                navigator.navigate(Route.PlaceDetail(placeId))
+            },
+        )
+    }
+    entry<Route.PlaceDetail> { route ->
+        val viewModel =
+            hiltViewModel<PlaceDetailViewModel, PlaceDetailViewModel.Factory> { factory ->
+                factory.create(placeId = route.placeId)
+            }
+        PlaceDetailRoute(
+            viewModel = viewModel,
+            innerPadding = innerPadding,
             navigateBack = { navigator.goBack() },
         )
     }
