@@ -11,6 +11,7 @@
     <string name="find_route">길찾기</string>
     <string name="add_cost">비용 추가</string>
     <string name="add_time">시간 추가</string>
+    <string name="add_memo">메모 추가</string>
 
     <!-- Transport Segment -->
     <string name="transport_segment_format">약 %1$s • %2$s</string>
@@ -73,6 +74,22 @@
     <string name="timeline_save_time">시간 저장하기</string>
     <string name="timeline_time_exceeds_warning">* 일정 마무리 시간은 24:00를 넘깁니다\n소요시간, 대중교통 수정을 권장합니다.</string>
     <string name="close">닫기</string>
+
+    <!-- Duration Picker -->
+    <string name="duration_picker_title">체류 시간</string>
+    <string name="duration_picker_save">체류 시간 저장</string>
+
+    <!-- Cost Modal -->
+    <string name="cost_modal_title">비용 추가</string>
+    <string name="cost_modal_placeholder">비용을 추가해 보세요</string>
+    <string name="cost_modal_confirm">확인</string>
+    <string name="cost_modal_cancel">취소</string>
+
+    <!-- Memo Modal -->
+    <string name="memo_modal_title">메모 추가</string>
+    <string name="memo_modal_placeholder">정보들을 메모해 보세요</string>
+    <string name="memo_modal_confirm">확인</string>
+    <string name="memo_modal_cancel">취소</string>
 
     <!-- Place Detail -->
     <string name="place_detail_tab_info">정보</string>
