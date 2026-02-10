@@ -68,13 +68,16 @@ data class Itinerary(
     val budget: Budget = Budget(0),
     val places: List<TravelPlace> = emptyList(),
     val transportSegments: List<TransportSegment> = emptyList(),
-)
+) {
+    val totalDuration: Duration
+        get() = places.fold(0.hours) { acc, place -> acc + place.duration } +
+            transportSegments.fold(0.hours) { acc, segment -> acc + segment.duration }
+}
 
 data class TravelPlace(
     val id: Int,
     val day: Int,
     val sequence: Int,
-    val estimatedDuration: Duration,
     val googlePlaceId: String,
     val thumbnail: String,
     val latitude: Double,
@@ -85,10 +88,13 @@ data class TravelPlace(
     val placeType: PlaceType,
     val userData: UserData? = null,
 ) {
+    val duration: Duration
+        get() = userData?.estimatedDuration ?: 0.hours
+
     data class UserData(
         val memo: String? = null,
         val cost: Int? = null,
-        val customDuration: Duration? = null,
+        val estimatedDuration: Duration? = null,
     )
 }
 
@@ -141,7 +147,7 @@ enum class TransportType(@get:StringRes val labelRes: Int, @get:DrawableRes val 
 
 sealed interface TravelDetailIntent : UiIntent {
     data class SelectDay(val day: Int) : TravelDetailIntent
-    data object ClickTimelineAutoSetting : TravelDetailIntent
+    data object ClickStartTimeSetting : TravelDetailIntent
     data object ClickEditTravel : TravelDetailIntent
     data object ClickAddScheduleButton : TravelDetailIntent
     data class CheckPlaceItem(val placeId: Int) : TravelDetailIntent

@@ -35,7 +35,6 @@ class TravelDetailViewModel @AssistedInject constructor(
                         id = 1,
                         day = 1,
                         sequence = 1,
-                        estimatedDuration = 90.minutes,
                         googlePlaceId = "ChIJCewJkL2LGGAR3Qmk0vCTGkg",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.6585805,
@@ -44,12 +43,12 @@ class TravelDetailViewModel @AssistedInject constructor(
                         regularOpeningHours = "09:00~23:00",
                         googleMapsUri = "",
                         placeType = PlaceType.ATTRACTION,
+                        userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
                     ),
                     TravelPlace(
                         id = 2,
                         day = 1,
                         sequence = 2,
-                        estimatedDuration = 60.minutes,
                         googlePlaceId = "ChIJexample2",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.6654,
@@ -58,12 +57,12 @@ class TravelDetailViewModel @AssistedInject constructor(
                         regularOpeningHours = "11:00~22:00",
                         googleMapsUri = "",
                         placeType = PlaceType.RESTAURANT,
+                        userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
                     ),
                     TravelPlace(
                         id = 3,
                         day = 1,
                         sequence = 3,
-                        estimatedDuration = 120.minutes,
                         googlePlaceId = "ChIJexample3",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.6812,
@@ -72,12 +71,12 @@ class TravelDetailViewModel @AssistedInject constructor(
                         regularOpeningHours = "24시간",
                         googleMapsUri = "",
                         placeType = PlaceType.ACCOMMODATION,
+                        userData = TravelPlace.UserData(estimatedDuration = 120.minutes),
                     ),
                     TravelPlace(
                         id = 4,
                         day = 1,
                         sequence = 4,
-                        estimatedDuration = 90.minutes,
                         googlePlaceId = "ChIJexample7",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.6944,
@@ -86,6 +85,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         regularOpeningHours = "17:00~24:00",
                         googleMapsUri = "",
                         placeType = PlaceType.RESTAURANT,
+                        userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
                     ),
                 ),
                 transportSegments = listOf(
@@ -101,7 +101,6 @@ class TravelDetailViewModel @AssistedInject constructor(
                         id = 8,
                         day = 2,
                         sequence = 1,
-                        estimatedDuration = 90.minutes,
                         googlePlaceId = "ChIJexample4",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.7148,
@@ -110,12 +109,12 @@ class TravelDetailViewModel @AssistedInject constructor(
                         regularOpeningHours = "06:00~17:00",
                         googleMapsUri = "",
                         placeType = PlaceType.ATTRACTION,
+                        userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
                     ),
                     TravelPlace(
                         id = 9,
                         day = 2,
                         sequence = 2,
-                        estimatedDuration = 45.minutes,
                         googlePlaceId = "ChIJexample5",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.7120,
@@ -124,6 +123,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         regularOpeningHours = "08:00~20:00",
                         googleMapsUri = "",
                         placeType = PlaceType.CAFE,
+                        userData = TravelPlace.UserData(estimatedDuration = 45.minutes),
                     ),
                 ),
                 transportSegments = listOf(
@@ -160,7 +160,7 @@ class TravelDetailViewModel @AssistedInject constructor(
     override suspend fun handleIntent(intent: TravelDetailIntent) {
         when (intent) {
             is TravelDetailIntent.SelectDay -> selectDay(intent.day)
-            is TravelDetailIntent.ClickTimelineAutoSetting -> clickTimelineAutoSetting()
+            is TravelDetailIntent.ClickStartTimeSetting -> clickStartTimeSetting()
             is TravelDetailIntent.ClickEditTravel -> clickEditTravel()
             is TravelDetailIntent.ClickAddScheduleButton -> clickAddScheduleButton()
             is TravelDetailIntent.CheckPlaceItem -> checkPlaceItem(intent.placeId)
@@ -196,7 +196,7 @@ class TravelDetailViewModel @AssistedInject constructor(
         reduce { copy(selectedDay = day) }
     }
 
-    private fun clickTimelineAutoSetting() {
+    private fun clickStartTimeSetting() {
         reduce { copy(showTimelineBottomSheet = true) }
     }
 
@@ -318,9 +318,10 @@ class TravelDetailViewModel @AssistedInject constructor(
 
     private fun changeStartTime(duration: Duration) {
         reduce {
+            val totalDuration = itineraries.getOrNull(selectedDay - 1)?.totalDuration ?: 0.hours
             copy(
                 startTime = duration,
-                endTime = duration + 15.hours, // FIXME
+                endTime = duration + totalDuration,
             )
         }
     }
@@ -408,7 +409,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                     places = itinerary.places.map { place ->
                         if (place.id == selectedPlace?.id) {
                             val existingUserData = place.userData ?: TravelPlace.UserData()
-                            val updated = place.copy(userData = existingUserData.copy(customDuration = duration))
+                            val updated = place.copy(userData = existingUserData.copy(estimatedDuration = duration))
                             updatedPlace = updated
                             updated
                         } else {

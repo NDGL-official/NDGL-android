@@ -45,7 +45,7 @@
     <string name="date_picker_error_insufficient">* 선택한 여행 기간이 따라가기 일정보다 짧아요.\n 기간을 넘는 일정은 지정되지 않습니다.</string>
 
     <!-- Travel Detail -->
-    <string name="timeline_auto_setting">타임라인 자동생성</string>
+    <string name="start_time_setting">여행 시작 시간 설정</string>
     <string name="edit_travel">편집하기</string>
     <string name="edit_done">편집 완료</string>
     <string name="add_schedule">일정 추가하기</string>
@@ -65,15 +65,14 @@
     <string name="delete_place_dialog_cancel">취소</string>
     <string name="delete_place_dialog_confirm">삭제하기</string>
 
-    <!-- Timeline Auto Setting -->
-    <string name="timeline_auto_setting_title">타임라인 자동생성</string>
-    <string name="timeline_start_time">일정 시작 시간</string>
-    <string name="timeline_end_time">일정 마무리 시간</string>
-    <string name="timeline_auto_calculated">자동 계산됨</string>
-    <string name="timeline_set_time">시간 설정하기</string>
-    <string name="timeline_save_time">시간 저장하기</string>
-    <string name="timeline_time_exceeds_warning">* 일정 마무리 시간은 24:00를 넘깁니다\n소요시간, 대중교통 수정을 권장합니다.</string>
-    <string name="close">닫기</string>
+    <!-- schedule Setting -->
+    <string name="schedule_setting_title">여행 시작 시간 설정</string>
+    <string name="schedule_start_time">여행 시작 시간</string>
+    <string name="schedule_end_time">여행 마무리 시간</string>
+    <string name="schedule_set_time">시간 설정하기</string>
+    <string name="schedule_save_time">시간 저장하기</string>
+    <string name="schedule_time_exceeds_warning">* 일정 마무리 시간은 24:00를 넘깁니다\n소요시간, 대중교통 수정을 권장합니다.</string>
+    <string name="schedule_start">일정 시작</string>
 
     <!-- Duration Picker -->
     <string name="duration_picker_title">체류 시간</string>
@@ -99,7 +98,7 @@
     <string name="place_detail_menu">메뉴</string>
     <string name="place_detail_plan_b_message">아래에서 플랜 B를 알아봐요!</string>
     <string name="place_detail_content_tip">콘텐츠 속 꿀팁</string>
-    <string name="place_detail_creator_tip_format">%s의 꿀팁</string>
+    <string name="place_detail_creator_tip_format">%s의 한마디</string>
     <string name="place_detail_change_place">장소 변경하기</string>
     <string name="place_detail_modal_change_title">장소 변경</string>
     <string name="place_detail_modal_change_body">장소를 다음과 같이 변경할까요?</string>

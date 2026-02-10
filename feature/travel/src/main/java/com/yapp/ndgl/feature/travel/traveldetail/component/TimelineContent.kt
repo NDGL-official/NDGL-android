@@ -72,7 +72,7 @@ internal fun TimelineContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = stringResource(R.string.timeline_auto_setting_title),
+                text = stringResource(R.string.schedule_setting_title),
                 color = NDGLTheme.colors.black900,
                 style = NDGLTheme.typography.titleMdSemiBold,
             )
@@ -87,7 +87,7 @@ internal fun TimelineContent(
             ) {
                 Icon(
                     imageVector = ImageVector.vectorResource(R.drawable.ic_24_close),
-                    contentDescription = stringResource(R.string.close),
+                    contentDescription = null,
                     tint = NDGLTheme.colors.black900,
                 )
             }
@@ -98,8 +98,8 @@ internal fun TimelineContent(
             val hourItems = remember { (0..23).toList() }
             val minuteItems = remember { (0..55 step 5).toList() }
 
-            var selectedHour by remember { mutableIntStateOf(hourItems[0]) }
-            var selectedMinute by remember { mutableIntStateOf(minuteItems[0]) }
+            var selectedHour by remember { mutableIntStateOf(selectedStartTime.inWholeHours.toInt()) }
+            var selectedMinute by remember { mutableIntStateOf((selectedStartTime.inWholeMinutes % 60).toInt()) }
 
             Box(
                 modifier = Modifier
@@ -125,12 +125,12 @@ internal fun TimelineContent(
                     WheelPicker(
                         items = hourItems,
                         onItemSelected = { selectedHour = it },
-                        initialIndex = 12,
+                        initialIndex = selectedHour,
                     )
                     WheelPicker(
                         items = minuteItems,
                         onItemSelected = { selectedMinute = it },
-                        initialIndex = 0,
+                        initialIndex = minuteItems.indexOf((selectedMinute / 5) * 5).coerceAtLeast(0),
                         padEnabled = true,
                     )
                 }
@@ -142,7 +142,7 @@ internal fun TimelineContent(
                 type = NDGLCTAButtonAttr.Type.PRIMARY,
                 size = NDGLCTAButtonAttr.Size.LARGE,
                 status = NDGLCTAButtonAttr.Status.ACTIVE,
-                label = stringResource(R.string.timeline_save_time),
+                label = stringResource(R.string.schedule_save_time),
                 onClick = {
                     val totalMinutes = (selectedHour * 60) + selectedMinute
                     selectedStartTime = totalMinutes.minutes
@@ -152,10 +152,11 @@ internal fun TimelineContent(
             )
         } else {
             val isEndTimeExceeds24Hours = selectedEndTime.inWholeHours >= 24
+            val isEndTimeExceeds48Hours = selectedEndTime.inWholeHours >= 48
             val isTimeSet = selectedStartTime.inWholeHours > 0 && selectedEndTime.inWholeHours > 0
 
             Text(
-                text = stringResource(R.string.timeline_start_time),
+                text = stringResource(R.string.schedule_start_time),
                 color = NDGLTheme.colors.black700,
                 style = NDGLTheme.typography.bodyMdMedium,
             )
@@ -183,7 +184,7 @@ internal fun TimelineContent(
             }
             Spacer(Modifier.height(20.dp))
             Text(
-                text = stringResource(R.string.timeline_end_time),
+                text = stringResource(R.string.schedule_end_time),
                 color = NDGLTheme.colors.black700,
                 style = NDGLTheme.typography.bodyMdMedium,
             )
@@ -206,7 +207,7 @@ internal fun TimelineContent(
             if (isEndTimeExceeds24Hours) {
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = stringResource(R.string.timeline_time_exceeds_warning),
+                    text = stringResource(R.string.schedule_time_exceeds_warning),
                     color = NDGLTheme.colors.red500,
                     style = NDGLTheme.typography.bodySmMedium,
                 )
@@ -216,12 +217,12 @@ internal fun TimelineContent(
                 modifier = Modifier.fillMaxWidth(),
                 type = NDGLCTAButtonAttr.Type.PRIMARY,
                 size = NDGLCTAButtonAttr.Size.LARGE,
-                status = if (isTimeSet && !isEndTimeExceeds24Hours) {
+                status = if (isTimeSet && !isEndTimeExceeds48Hours) {
                     NDGLCTAButtonAttr.Status.ACTIVE
                 } else {
                     NDGLCTAButtonAttr.Status.DISABLED
                 },
-                label = stringResource(R.string.timeline_set_time),
+                label = stringResource(R.string.schedule_set_time),
                 onClick = {
                     onConfirm(selectedStartTime)
                 },
@@ -241,7 +242,7 @@ private fun <T> WheelPicker(
     padEnabled: Boolean = false,
 ) {
     val totalItemsCount = Int.MAX_VALUE
-    val startIndex = (totalItemsCount / 2) - (totalItemsCount / 2 % items.size) + initialIndex
+    val startIndex = (totalItemsCount / 2) - (totalItemsCount / 2 % items.size) + initialIndex - 2
 
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = startIndex)
     val snapFlingBehavior = rememberSnapFlingBehavior(lazyListState = listState)

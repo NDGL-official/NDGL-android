@@ -81,7 +81,7 @@ internal fun DurationPickerContent(
             ) {
                 Icon(
                     imageVector = ImageVector.vectorResource(R.drawable.ic_24_close),
-                    contentDescription = stringResource(R.string.close),
+                    contentDescription = null,
                     tint = NDGLTheme.colors.black900,
                 )
             }
@@ -146,7 +146,7 @@ private fun <T> WheelPicker(
     padEnabled: Boolean = false,
 ) {
     val totalItemsCount = Int.MAX_VALUE
-    val startIndex = (totalItemsCount / 2) - (totalItemsCount / 2 % items.size) + initialIndex
+    val startIndex = (totalItemsCount / 2) - (totalItemsCount / 2 % items.size) + initialIndex - 2
 
     val listState = rememberLazyListState(initialFirstVisibleItemIndex = startIndex)
     val snapFlingBehavior = rememberSnapFlingBehavior(lazyListState = listState)

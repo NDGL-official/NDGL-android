@@ -1,6 +1,5 @@
 package com.yapp.ndgl.feature.travel.traveldetail.component
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,10 +17,15 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
+import com.yapp.ndgl.core.ui.util.noRippleClickable
+import com.yapp.ndgl.core.util.toAmPmTimeString
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 
 @Composable
 internal fun TravelDetailToolBar(
-    clickTimelineAutoSetting: () -> Unit,
+    startTime: Duration,
+    clickStartTimeSetting: () -> Unit,
     clickEditTravel: () -> Unit,
 ) {
     Row(
@@ -29,29 +33,37 @@ internal fun TravelDetailToolBar(
         horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TimelineAutoSettingButton(onClick = clickTimelineAutoSetting)
+        StartTimeSettingButton(startTime = startTime, onClick = clickStartTimeSetting)
         Spacer(modifier = Modifier.width(16.dp))
         EditTravelButton(onClick = clickEditTravel)
     }
 }
 
 @Composable
-private fun TimelineAutoSettingButton(
+private fun StartTimeSettingButton(
+    startTime: Duration,
     onClick: () -> Unit,
 ) {
+    val buttonText = if (startTime > 0.hours) {
+        "${startTime.toAmPmTimeString()} ${stringResource(R.string.schedule_start)}"
+    } else {
+        stringResource(R.string.start_time_setting)
+    }
     Row(
-        modifier = Modifier.wrapContentWidth().clickable {
-            onClick()
-        },
+        modifier = Modifier
+            .wrapContentWidth()
+            .noRippleClickable {
+                onClick()
+            },
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = stringResource(R.string.timeline_auto_setting),
+            text = buttonText,
             color = NDGLTheme.colors.black400,
             style = NDGLTheme.typography.bodyMdMedium,
         )
-        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_20_refresh), contentDescription = null)
+        Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_20_clock), contentDescription = null)
     }
 }
 
@@ -60,9 +72,11 @@ private fun EditTravelButton(
     onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.wrapContentWidth().clickable {
-            onClick()
-        },
+        modifier = Modifier
+            .wrapContentWidth()
+            .noRippleClickable {
+                onClick()
+            },
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

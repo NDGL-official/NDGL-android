@@ -37,12 +37,14 @@ import com.yapp.ndgl.core.util.formatDecimal
 import com.yapp.ndgl.core.util.formatString
 import com.yapp.ndgl.feature.travel.traveldetail.PlaceType
 import com.yapp.ndgl.feature.travel.traveldetail.TravelPlace
+import kotlin.Int
+import kotlin.String
 import kotlin.time.Duration.Companion.hours
 
 @Composable
 internal fun PlaceBottomSheet(
     place: TravelPlace,
-    onDismiss: () -> Unit,
+    onDismissRequest: () -> Unit,
     navigateToPlaceDetail: () -> Unit,
     onAddTimeClick: (Int) -> Unit,
     onAddCostClick: (Int) -> Unit,
@@ -50,7 +52,7 @@ internal fun PlaceBottomSheet(
     onFindRouteClick: (String) -> Unit,
 ) {
     NDGLBottomSheet(
-        onDismissRequest = onDismiss,
+        onDismissRequest = onDismissRequest,
         showDragHandle = false,
     ) {
         Column(
@@ -93,30 +95,27 @@ internal fun PlaceBottomSheet(
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         Icon(
                             imageVector = ImageVector.vectorResource(place.placeType.iconRes),
                             contentDescription = null,
                             tint = Color.Unspecified,
                             modifier = Modifier.size(14.dp),
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = stringResource(place.placeType.labelRes),
                             style = NDGLTheme.typography.bodyMdMedium,
                             color = NDGLTheme.colors.black500,
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = "•",
                             style = NDGLTheme.typography.bodyMdMedium,
                             color = NDGLTheme.colors.black500,
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                         Text(
                             text = stringResource(
                                 R.string.estimated_duration_format,
-                                (place.userData?.customDuration ?: place.estimatedDuration).formatString(),
+                                place.duration.formatString(),
                             ),
                             style = NDGLTheme.typography.bodyMdMedium,
                             color = NDGLTheme.colors.black500,
@@ -126,7 +125,7 @@ internal fun PlaceBottomSheet(
                                 .size(20.dp)
                                 .clip(CircleShape)
                                 .noRippleClickable { onAddTimeClick(place.id) },
-                            imageVector = ImageVector.vectorResource(R.drawable.ic_20_chevron_right),
+                            imageVector = ImageVector.vectorResource(R.drawable.ic_20_pen),
                             contentDescription = null,
                             tint = NDGLTheme.colors.black600,
                         )
@@ -137,12 +136,10 @@ internal fun PlaceBottomSheet(
                         style = NDGLTheme.typography.bodyMdMedium,
                         color = NDGLTheme.colors.black500,
                     )
-                    Spacer(modifier = Modifier.height(32.dp))
-
+                    Spacer(modifier = Modifier.height(24.dp))
                     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(
                             modifier = Modifier.noRippleClickable { onAddMemoClick(place.id) },
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
@@ -150,12 +147,14 @@ internal fun PlaceBottomSheet(
                                 contentDescription = null,
                                 tint = NDGLTheme.colors.black400,
                             )
+                            Spacer(Modifier.width(4.dp))
                             Text(
                                 stringResource(R.string.add_memo),
                                 color = NDGLTheme.colors.black400,
                                 style = NDGLTheme.typography.bodyMdMedium,
                             )
                             place.userData?.memo?.let { memo ->
+                                Spacer(Modifier.width(16.dp))
                                 Text(
                                     text = memo,
                                     color = NDGLTheme.colors.black500,
@@ -163,6 +162,7 @@ internal fun PlaceBottomSheet(
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )
+                                Spacer(Modifier.weight(1f))
                                 Icon(
                                     imageVector = ImageVector.vectorResource(R.drawable.ic_20_chevron_right),
                                     contentDescription = null,
@@ -172,7 +172,6 @@ internal fun PlaceBottomSheet(
                         }
                         Row(
                             modifier = Modifier.noRippleClickable { onAddCostClick(place.id) },
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
@@ -180,17 +179,20 @@ internal fun PlaceBottomSheet(
                                 contentDescription = null,
                                 tint = NDGLTheme.colors.black400,
                             )
+                            Spacer(Modifier.width(4.dp))
                             Text(
                                 stringResource(R.string.add_cost),
                                 color = NDGLTheme.colors.black400,
                                 style = NDGLTheme.typography.bodyMdMedium,
                             )
                             place.userData?.cost?.let { cost ->
+                                Spacer(Modifier.width(16.dp))
                                 Text(
                                     text = "${cost.formatDecimal()}원",
                                     color = NDGLTheme.colors.black500,
                                     style = NDGLTheme.typography.bodyMdMedium,
                                 )
+                                Spacer(Modifier.weight(1f))
                                 Icon(
                                     imageVector = ImageVector.vectorResource(R.drawable.ic_20_chevron_right),
                                     contentDescription = null,
@@ -208,7 +210,7 @@ internal fun PlaceBottomSheet(
                                     onFindRouteClick(place.googleMapsUri)
                                 }
                                 .background(NDGLTheme.colors.white)
-                                .border(1.dp, NDGLTheme.colors.black100, RoundedCornerShape(8.dp))
+                                .border(1.dp, NDGLTheme.colors.black200, RoundedCornerShape(8.dp))
                                 .padding(vertical = 17.5.dp),
                             horizontalArrangement = Arrangement.spacedBy(
                                 space = 8.dp,
@@ -242,7 +244,6 @@ private fun PlaceBottomSheetPreview() {
         id = 1,
         day = 1,
         sequence = 1,
-        estimatedDuration = 1.hours,
         googlePlaceId = "",
         thumbnail = "",
         latitude = 0.0,
@@ -251,14 +252,18 @@ private fun PlaceBottomSheetPreview() {
         regularOpeningHours = "11:00~23:00",
         googleMapsUri = "",
         placeType = PlaceType.CAFE,
-        description = "",
+        userData = TravelPlace.UserData(
+            memo = "장소에 대한 메모",
+            cost = 20000,
+            estimatedDuration = 1.hours,
+        ),
     )
 
     NDGLTheme {
         Box(Modifier.fillMaxSize()) {
             PlaceBottomSheet(
                 place = mockPlace,
-                onDismiss = {},
+                onDismissRequest = {},
                 navigateToPlaceDetail = {},
                 onFindRouteClick = {},
                 onAddTimeClick = {},
