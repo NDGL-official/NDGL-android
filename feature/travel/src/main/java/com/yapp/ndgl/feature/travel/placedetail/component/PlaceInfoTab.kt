@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
+import com.yapp.ndgl.core.ui.util.noRippleClickable
 import com.yapp.ndgl.core.util.formatString
 import com.yapp.ndgl.feature.travel.placedetail.AlternativePlace
 import com.yapp.ndgl.feature.travel.placedetail.PlaceInfo
@@ -52,8 +54,7 @@ internal fun PlaceInfoTab(
     onChangePlaceClick: (AlternativePlace) -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(
@@ -64,7 +65,10 @@ internal fun PlaceInfoTab(
         ) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .noRippleClickable {
+                        clickAddress()
+                    },
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -88,7 +92,11 @@ internal fun PlaceInfoTab(
                 )
             }
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .noRippleClickable {
+                        clickAddress()
+                    },
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_24_book), contentDescription = null, tint = NDGLTheme.colors.green500)
@@ -165,73 +173,81 @@ private fun PlaceTipsPager(
 ) {
     val pagerState = rememberPagerState(pageCount = { tips.size })
 
-    HorizontalPager(
-        state = pagerState,
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 35.dp),
-        pageSpacing = 10.dp,
-    ) { page ->
-        val tip = tips[page]
-        val tipCardBrush = Brush.linearGradient(
-            0.6f to NDGLTheme.colors.white.copy(alpha = 0.6f),
-            0.8f to Color(0xFFFFFFF9).copy(alpha = 0.8f),
-        )
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(218.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, NDGLTheme.colors.white, RoundedCornerShape(12.dp)),
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.bg_place_tip_card),
-                contentDescription = null,
-                modifier = Modifier.matchParentSize(),
-                contentScale = ContentScale.Crop,
+    Box(
+        modifier = Modifier.wrapContentSize(),
+    ) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 35.dp),
+            pageSpacing = 10.dp,
+        ) { page ->
+            val tip = tips[page]
+            val tipCardBrush = Brush.linearGradient(
+                0.6f to NDGLTheme.colors.white.copy(alpha = 0.6f),
+                0.8f to Color(0xFFFFFFF9).copy(alpha = 0.8f),
             )
 
-            Column(
+            Box(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(vertical = 20.dp, horizontal = 24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
+                    .fillMaxWidth()
+                    .height(218.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .border(1.dp, NDGLTheme.colors.white, RoundedCornerShape(12.dp)),
             ) {
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(34.dp))
-                        .background(tipCardBrush)
-                        .border(0.5.dp, NDGLTheme.colors.white, RoundedCornerShape(34.dp))
-                        .padding(vertical = 4.dp, horizontal = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        text = stringResource(R.string.place_detail_content_tip),
-                        color = NDGLTheme.colors.black500,
-                        style = NDGLTheme.typography.bodySmMedium,
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = stringResource(R.string.place_detail_creator_tip_format, creatorName),
-                    color = NDGLTheme.colors.black900,
-                    style = NDGLTheme.typography.bodyLgSemiBold,
+                Image(
+                    painter = painterResource(id = R.drawable.bg_place_tip_card),
+                    contentDescription = null,
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = ContentScale.Crop,
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("\"$tip\"", color = NDGLTheme.colors.black700, style = NDGLTheme.typography.bodyLgRegular)
-                Spacer(Modifier.weight(1f))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    repeat(tips.size) { index ->
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    NDGLTheme.colors.black400.copy(alpha = if (index == pagerState.currentPage) 1f else 0.6f),
-                                ),
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(vertical = 20.dp, horizontal = 24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(34.dp))
+                            .background(tipCardBrush)
+                            .border(0.5.dp, NDGLTheme.colors.white, RoundedCornerShape(34.dp))
+                            .padding(vertical = 4.dp, horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.place_detail_content_tip),
+                            color = NDGLTheme.colors.black500,
+                            style = NDGLTheme.typography.bodySmMedium,
                         )
                     }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(R.string.place_detail_creator_tip_format, creatorName),
+                        color = NDGLTheme.colors.black900,
+                        style = NDGLTheme.typography.bodyLgSemiBold,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("\"$tip\"", color = NDGLTheme.colors.black700, style = NDGLTheme.typography.bodyLgRegular)
                 }
+            }
+        }
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 20.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            repeat(tips.size) { index ->
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(
+                            NDGLTheme.colors.black400.copy(alpha = if (index == pagerState.currentPage) 1f else 0.6f),
+                        ),
+                )
             }
         }
     }

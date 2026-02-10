@@ -1,7 +1,5 @@
 package com.yapp.ndgl.feature.travel.placedetail
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,16 +16,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -93,14 +97,41 @@ private fun PlaceDetailScreen(
 ) {
     val placeInfo = state.placeInfo
     val listState = rememberLazyListState()
+    val density = LocalDensity.current
+    val thumbnailHeight = 230.dp
+    val navBarSectionHeight = 48.dp
+    val thumbnailHeightPx = with(density) { thumbnailHeight.toPx() }
+    val navBarSectionHeightPx = with(density) { navBarSectionHeight.toPx() }
+    val maxCollapseHeightPx = navBarSectionHeightPx + thumbnailHeightPx
 
-    val isHeaderSticky by remember {
-        derivedStateOf {
-            val firstItem = listState.layoutInfo.visibleItemsInfo.firstOrNull()
-            val result = firstItem?.index == 1 && firstItem.offset <= 0
-            result
+    var collapseOffset by remember { mutableFloatStateOf(0f) }
+
+    val nestedScrollConnection = remember {
+        object : NestedScrollConnection {
+            // 아래로 스크롤 시 LazyColumn 보다 먼저 헤더를 축소
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (available.y < 0f) {
+                    val oldOffset = collapseOffset
+                    collapseOffset = (collapseOffset - available.y).coerceIn(0f, maxCollapseHeightPx)
+                    return Offset(0f, -(collapseOffset - oldOffset))
+                }
+                return Offset.Zero
+            }
+
+            // 위로 스크롤 시 LazyColumn이 끝까지 올라간 후 헤더를 다시 펼침
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset {
+                if (available.y > 0f) {
+                    val oldOffset = collapseOffset
+                    collapseOffset = (collapseOffset - available.y).coerceIn(0f, maxCollapseHeightPx)
+                    return Offset(0f, oldOffset - collapseOffset)
+                }
+                return Offset.Zero
+            }
         }
     }
+
+    val navBarProgress = (1f - collapseOffset / navBarSectionHeightPx).coerceIn(0f, 1f)
+    val thumbnailProgress = (1f - (collapseOffset - navBarSectionHeightPx).coerceAtLeast(0f) / thumbnailHeightPx).coerceIn(0f, 1f)
 
     Box(
         modifier = Modifier
@@ -108,71 +139,69 @@ private fun PlaceDetailScreen(
             .background(NDGLTheme.colors.white)
             .padding(innerPadding),
     ) {
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 60.dp),
-            state = listState,
+                .nestedScroll(nestedScrollConnection),
         ) {
-            item {
-                NDGLNavigationBar(
-                    textAlignType = NDGLNavigationBarAttr.TextAlignType.CENTER,
-                    leadingIcon = R.drawable.ic_28_chevron_left,
-                    onLeadingIconClick = clickBackButton,
-                )
-                Spacer(Modifier.height(20.dp))
+            if (navBarProgress > 0f) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height((navBarSectionHeight * navBarProgress).coerceAtLeast(0.dp))
+                        .clipToBounds(),
+                ) {
+                    NDGLNavigationBar(
+                        textAlignType = NDGLNavigationBarAttr.TextAlignType.CENTER,
+                        leadingIcon = R.drawable.ic_28_chevron_left,
+                        onLeadingIconClick = clickBackButton,
+                    )
+                    Spacer(Modifier.height(20.dp))
+                }
             }
 
-            stickyHeader {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .background(NDGLTheme.colors.white)
-                        .padding(horizontal = 24.dp)
-                        .padding(top = if (isHeaderSticky) 8.dp else 0.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(placeInfo.name, color = NDGLTheme.colors.black800, style = NDGLTheme.typography.titleMdSemiBold)
-                    Text(
-                        text = buildAnnotatedString {
-                            withStyle(style = SpanStyle(color = NDGLTheme.colors.black500)) {
-                                append("식당 • $20~40 • 리뷰 ${placeInfo.rating}")
-                            }
-                            withStyle(style = SpanStyle(color = NDGLTheme.colors.black200)) {
-                                append("(${placeInfo.formattedRatingCount})")
-                            }
-                        },
-                        style = NDGLTheme.typography.bodyMdMedium,
-                    )
-                }
-
-                Spacer(
-                    Modifier
-                        .fillMaxWidth()
-                        .height(20.dp)
-                        .background(NDGLTheme.colors.white),
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .background(NDGLTheme.colors.white)
+                    .padding(horizontal = 24.dp)
+                    .padding(top = if (navBarProgress == 0f) 8.dp else 0.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(placeInfo.name, color = NDGLTheme.colors.black800, style = NDGLTheme.typography.titleMdSemiBold)
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(style = SpanStyle(color = NDGLTheme.colors.black500)) {
+                            append("식당 • $20~40 • 리뷰 ${placeInfo.rating}")
+                        }
+                        withStyle(style = SpanStyle(color = NDGLTheme.colors.black200)) {
+                            append("(${placeInfo.formattedRatingCount})")
+                        }
+                    },
+                    style = NDGLTheme.typography.bodyMdMedium,
                 )
+            }
+            Spacer(
+                Modifier
+                    .fillMaxWidth()
+                    .height(20.dp)
+                    .background(NDGLTheme.colors.white),
+            )
 
-                val thumbnailAlpha by animateFloatAsState(
-                    targetValue = if (isHeaderSticky) 0f else 1f,
-                    animationSpec = tween(durationMillis = 300),
-                    label = "ThumbnailAlpha",
+            if (thumbnailProgress > 0f) {
+                AsyncImage(
+                    model = state.placeInfo.thumbnail,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(thumbnailHeight * thumbnailProgress)
+                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                        .background(Color.LightGray),
+                    contentScale = ContentScale.Crop,
                 )
+            }
 
-                if (thumbnailAlpha > 0f) {
-                    AsyncImage(
-                        model = state.placeInfo.thumbnail,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(230.dp * thumbnailAlpha)
-                            .alpha(thumbnailAlpha)
-                            .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                            .background(Color.LightGray),
-                        contentScale = ContentScale.Crop,
-                    )
-                }
-
+            Column(Modifier.background(NDGLTheme.colors.white)) {
                 PlaceDetailTabRow(
                     selectedTab = state.selectedTab,
                     onTabSelected = selectTab,
@@ -180,39 +209,46 @@ private fun PlaceDetailScreen(
                 HorizontalDivider(thickness = 1.dp, color = NDGLTheme.colors.black200)
             }
 
-            when (state.selectedTab) {
-                PlaceDetailTab.INFO -> {
-                    item {
-                        Spacer(Modifier.height(24.dp))
-                        PlaceInfoTab(
-                            placeInfo = state.placeInfo,
-                            clickAddress = clickAddress,
-                            clickMenu = clickMenu,
-                            onChangePlaceClick = clickChangePlace,
-                        )
-                    }
-                }
-
-                PlaceDetailTab.PHOTO -> {
-                    val (leftPhotos, rightPhotos) = state.photos.foldIndexed(
-                        initial = mutableListOf<PlacePhoto>() to mutableListOf<PlacePhoto>(),
-                    ) { index, lists, photo ->
-                        if (index % 2 == 0) {
-                            lists.first.add(photo)
-                        } else {
-                            lists.second.add(photo)
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(bottom = 60.dp),
+                state = listState,
+            ) {
+                when (state.selectedTab) {
+                    PlaceDetailTab.INFO -> {
+                        item {
+                            Spacer(Modifier.height(24.dp))
+                            PlaceInfoTab(
+                                placeInfo = state.placeInfo,
+                                clickAddress = clickAddress,
+                                clickMenu = clickMenu,
+                                onChangePlaceClick = clickChangePlace,
+                            )
                         }
-                        lists
                     }
 
-                    item {
-                        Spacer(Modifier.height(20.dp))
-                        PlacePhotoTab(leftPhotos = leftPhotos, rightPhotos = rightPhotos)
+                    PlaceDetailTab.PHOTO -> {
+                        val (leftPhotos, rightPhotos) = state.photos.foldIndexed(
+                            initial = mutableListOf<PlacePhoto>() to mutableListOf<PlacePhoto>(),
+                        ) { index, lists, photo ->
+                            if (index % 2 == 0) {
+                                lists.first.add(photo)
+                            } else {
+                                lists.second.add(photo)
+                            }
+                            lists
+                        }
+
+                        item {
+                            Spacer(Modifier.height(20.dp))
+                            PlacePhotoTab(leftPhotos = leftPhotos, rightPhotos = rightPhotos)
+                        }
                     }
                 }
-            }
 
-            item { Spacer(Modifier.height(60.dp)) }
+                item { Spacer(Modifier.height(60.dp)) }
+            }
         }
 
         Column(
