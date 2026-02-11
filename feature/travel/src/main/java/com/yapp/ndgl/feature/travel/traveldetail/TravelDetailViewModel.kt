@@ -198,7 +198,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             is TravelDetailIntent.LongClickPlaceItem -> longClickPlaceItem()
             is TravelDetailIntent.DismissTimelineBottomSheet -> dismissTimelineBottomSheet()
             is TravelDetailIntent.ConfirmTimelineSetting -> confirmTimelineSetting(intent.startTime)
-            is TravelDetailIntent.ReorderPlaces -> reorderPlaces(intent.fromIndex, intent.toIndex)
+            is TravelDetailIntent.ReorderPlaces -> reorderPlaces(intent.dayIndex, intent.fromIndex, intent.toIndex)
             is TravelDetailIntent.ConfirmEditMode -> confirmEditMode()
             is TravelDetailIntent.ClickPlaceItem -> clickPlaceItem(intent.place)
             is TravelDetailIntent.DismissPlaceBottomSheet -> dismissPlaceBottomSheet()
@@ -376,27 +376,18 @@ class TravelDetailViewModel @AssistedInject constructor(
         }
     }
 
-    private fun reorderPlaces(fromIndex: Int, toIndex: Int) {
+    private fun reorderPlaces(dayIndex: Int, fromIndex: Int, toIndex: Int) {
         reduce {
-            val updatedItineraries = tempItineraries.map { itinerary ->
+            val updatedItineraries = tempItineraries.mapIndexed { index, itinerary ->
+                if (index != dayIndex) return@mapIndexed itinerary
                 val mutablePlaces = itinerary.places.toMutableList()
-
-                if (fromIndex in mutablePlaces.indices && toIndex in mutablePlaces.indices) {
-                    val movedItem = mutablePlaces.removeAt(fromIndex)
-                    mutablePlaces.add(toIndex, movedItem)
-
-                    val reorderedPlaces = mutablePlaces.mapIndexed { index, place ->
-                        place.copy(sequence = index + 1)
-                    }
-
-                    itinerary.copy(
-                        places = reorderedPlaces,
-                    )
-                } else {
-                    itinerary
-                }
+                if (fromIndex !in mutablePlaces.indices || toIndex !in mutablePlaces.indices) return@mapIndexed itinerary
+                val movedItem = mutablePlaces.removeAt(fromIndex)
+                mutablePlaces.add(toIndex, movedItem)
+                itinerary.copy(
+                    places = mutablePlaces.mapIndexed { i, place -> place.copy(sequence = i + 1) },
+                )
             }
-
             copy(tempItineraries = updatedItineraries)
         }
     }

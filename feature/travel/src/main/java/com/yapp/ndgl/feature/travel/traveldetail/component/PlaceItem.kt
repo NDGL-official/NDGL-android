@@ -91,7 +91,7 @@ internal fun EditablePlaceItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(
-                    color = NDGLTheme.colors.white,
+                    color = Color.Transparent,
                     shape = RoundedCornerShape(16.dp),
                 )
                 .padding(horizontal = 0.dp),

@@ -162,7 +162,7 @@ sealed interface TravelDetailIntent : UiIntent {
     data object LongClickPlaceItem : TravelDetailIntent
     data object DismissTimelineBottomSheet : TravelDetailIntent
     data class ConfirmTimelineSetting(val startTime: Duration) : TravelDetailIntent
-    data class ReorderPlaces(val fromIndex: Int, val toIndex: Int) : TravelDetailIntent
+    data class ReorderPlaces(val dayIndex: Int, val fromIndex: Int, val toIndex: Int) : TravelDetailIntent
     data object ConfirmEditMode : TravelDetailIntent
     data class ClickPlaceItem(val place: TravelPlace) : TravelDetailIntent
     data class ClickAddTime(val placeId: Int) : TravelDetailIntent
