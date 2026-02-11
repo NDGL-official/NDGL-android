@@ -69,6 +69,7 @@ import com.yapp.ndgl.feature.travel.traveldetail.component.TravelDetailToolBar
 import com.yapp.ndgl.feature.travel.traveldetail.component.TravelMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 @Composable
@@ -434,7 +435,7 @@ private fun TravelDetailScreen(
             ) {
                 TimelineContent(
                     startTime = state.startTime,
-                    endTime = state.endTime,
+                    totalDuration = state.itineraries.getOrNull(state.selectedDay - 1)?.totalDuration ?: 0.hours,
                     onDismissRequest = dismissTimelineBottomSheet,
                     onConfirm = confirmTimelineSetting,
                 )

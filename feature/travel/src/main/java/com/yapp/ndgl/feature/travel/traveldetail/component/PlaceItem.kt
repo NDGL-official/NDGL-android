@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -43,6 +44,8 @@ import com.yapp.ndgl.core.util.formatString
 import com.yapp.ndgl.feature.travel.traveldetail.PlaceType
 import com.yapp.ndgl.feature.travel.traveldetail.TravelPlace
 import com.yapp.ndgl.feature.travel.traveldetail.getColor
+import java.util.Locale
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
 @Composable
@@ -65,9 +68,9 @@ internal fun PlaceItem(
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        PlaceNumber(number = place.sequence, placeType = place.placeType)
+        PlaceNumber(number = place.sequence, startTime = place.startTime, placeType = place.placeType)
         Spacer(Modifier.width(8.dp))
-        PlaceCard(place = place, isEditMode = false, interactionSource = interactionSource)
+        PlaceCard(place = place, interactionSource = interactionSource)
     }
 }
 
@@ -103,7 +106,6 @@ internal fun EditablePlaceItem(
                         onCheck()
                     },
                 place = place,
-                isEditMode = true,
             )
             Icon(
                 modifier = modifier,
@@ -118,20 +120,34 @@ internal fun EditablePlaceItem(
 @Composable
 private fun PlaceNumber(
     number: Int,
+    startTime: Duration? = null,
     placeType: PlaceType,
 ) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(24.dp)
-            .clip(CircleShape)
-            .background(placeType.getColor()),
-    ) {
-        Text(
-            text = number.toString(),
-            color = NDGLTheme.colors.white,
-            style = NDGLTheme.typography.bodySmSemiBold,
-        )
+    Column(modifier = Modifier.wrapContentWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(24.dp)
+                .clip(CircleShape)
+                .background(placeType.getColor()),
+        ) {
+            Text(
+                text = number.toString(),
+                color = NDGLTheme.colors.white,
+                style = NDGLTheme.typography.bodySmSemiBold,
+            )
+        }
+
+        if (startTime != null) {
+            val totalMinutes = startTime.inWholeMinutes
+            val hours = totalMinutes / 60
+            val minutes = totalMinutes % 60
+            Text(
+                text = String.format(Locale.getDefault(), "%02d:%02d", hours, minutes),
+                style = NDGLTheme.typography.bodySmSemiBold,
+                color = NDGLTheme.colors.black500,
+            )
+        }
     }
 }
 
@@ -139,7 +155,6 @@ private fun PlaceNumber(
 private fun PlaceCard(
     modifier: Modifier = Modifier,
     place: TravelPlace,
-    isEditMode: Boolean,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     Card(

@@ -19,10 +19,10 @@ data class PlaceDetailState(
 ) : UiState
 
 data class PlaceInfo(
-    // TODO("priceLevel, category, tips 추후 변경)
+    // TODO("priceLevel 추후 변경")
     val id: String = "",
     val name: String = "",
-    val category: String = "",
+    val placeType: PlaceType = PlaceType.ATTRACTION,
     val address: String = "",
     val phoneNumber: String = "",
     val openingHours: String = "",
@@ -42,7 +42,7 @@ data class PlaceInfo(
         get() = userRatingCount.formatDecimal()
 }
 
-enum class PlaceDetailTab(@StringRes val titleRes: Int) {
+enum class PlaceDetailTab(@get:StringRes val titleRes: Int) {
     INFO(R.string.place_detail_tab_info),
     PHOTO(R.string.place_detail_tab_photo),
 }
@@ -63,7 +63,7 @@ data class AlternativePlace(
     val placeType: PlaceType,
 )
 
-enum class PlaceType(@StringRes val labelRes: Int, @DrawableRes val iconRes: Int) {
+enum class PlaceType(@get:StringRes val labelRes: Int, @get:DrawableRes val iconRes: Int) {
     ACCOMMODATION(R.string.place_type_accommodation, R.drawable.ic_14_home),
     RESTAURANT(R.string.place_type_restaurant, R.drawable.ic_14_restaurant),
     ATTRACTION(R.string.place_type_attraction, R.drawable.ic_14_flag),

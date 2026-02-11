@@ -205,6 +205,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             copy(
                 isEditMode = true,
                 selectedPlaceIds = emptySet(),
+                tempItineraries = itineraries,
             )
         }
     }
@@ -227,8 +228,7 @@ class TravelDetailViewModel @AssistedInject constructor(
 
     private fun checkSelectAll() {
         reduce {
-            val currentItineraries = if (isEditMode) tempItineraries else itineraries
-            val currentDayPlaceIds = currentItineraries.getOrNull(selectedDay - 1)
+            val currentDayPlaceIds = tempItineraries.getOrNull(selectedDay - 1)
                 ?.places?.map { it.id }?.toSet() ?: emptySet()
 
             copy(
@@ -312,17 +312,43 @@ class TravelDetailViewModel @AssistedInject constructor(
     }
 
     private fun confirmTimelineSetting(startTime: Duration) {
-        changeStartTime(startTime)
-        reduce { copy(showTimelineBottomSheet = false) }
+        reduce {
+            val dayIndex = selectedDay - 1
+            val updatedItineraries = itineraries.mapIndexed { index, itinerary ->
+                if (index == dayIndex) {
+                    itinerary.copy(
+                        places = calculatePlaceStartTimes(itinerary.places, itinerary.transportSegments, startTime),
+                    )
+                } else {
+                    itinerary
+                }
+            }
+            val totalDuration = itineraries.getOrNull(dayIndex)?.totalDuration ?: 0.hours
+
+            copy(
+                startTime = startTime,
+                endTime = startTime + totalDuration,
+                itineraries = updatedItineraries,
+                tempItineraries = updatedItineraries,
+                showTimelineBottomSheet = false,
+            )
+        }
     }
 
-    private fun changeStartTime(duration: Duration) {
-        reduce {
-            val totalDuration = itineraries.getOrNull(selectedDay - 1)?.totalDuration ?: 0.hours
-            copy(
-                startTime = duration,
-                endTime = duration + totalDuration,
-            )
+    private fun calculatePlaceStartTimes(
+        places: List<TravelPlace>,
+        transportSegments: List<TransportSegment>,
+        startTime: Duration,
+    ): List<TravelPlace> {
+        if (places.isEmpty()) return places
+        var currentTime = startTime
+        return places.mapIndexed { index, place ->
+            val updatedPlace = place.copy(startTime = currentTime)
+            currentTime += place.duration
+            if (index < transportSegments.size) {
+                currentTime += transportSegments[index].duration
+            }
+            updatedPlace
         }
     }
 
@@ -405,22 +431,29 @@ class TravelDetailViewModel @AssistedInject constructor(
         reduce {
             var updatedPlace: TravelPlace? = null
             val updatedItineraries = itineraries.map { itinerary ->
-                itinerary.copy(
-                    places = itinerary.places.map { place ->
-                        if (place.id == selectedPlace?.id) {
-                            val existingUserData = place.userData ?: TravelPlace.UserData()
-                            val updated = place.copy(userData = existingUserData.copy(estimatedDuration = duration))
-                            updatedPlace = updated
-                            updated
-                        } else {
-                            place
-                        }
-                    },
-                )
+                if (itinerary.places.none { it.id == selectedPlace?.id }) return@map itinerary
+
+                val durationUpdatedPlaces = itinerary.places.map { place ->
+                    if (place.id == selectedPlace?.id) {
+                        place.copy(userData = place.userData.copy(estimatedDuration = duration))
+                    } else {
+                        place
+                    }
+                }
+                val firstPlaceStartTime = durationUpdatedPlaces.firstOrNull()?.startTime
+                val recalculatedPlaces = if (firstPlaceStartTime != null) {
+                    calculatePlaceStartTimes(durationUpdatedPlaces, itinerary.transportSegments, firstPlaceStartTime)
+                } else {
+                    durationUpdatedPlaces
+                }
+                updatedPlace = recalculatedPlaces.find { it.id == selectedPlace?.id }
+                itinerary.copy(places = recalculatedPlaces)
             }
+            val totalDuration = updatedItineraries.getOrNull(selectedDay - 1)?.totalDuration ?: 0.hours
             copy(
                 itineraries = updatedItineraries,
                 selectedPlace = updatedPlace,
+                endTime = startTime + totalDuration,
                 showTimeBottomSheet = false,
             )
         }
@@ -443,8 +476,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                 itinerary.copy(
                     places = itinerary.places.map { place ->
                         if (place.id == selectedPlace?.id) {
-                            val existingUserData = place.userData ?: TravelPlace.UserData()
-                            val updated = place.copy(userData = existingUserData.copy(cost = cost))
+                            val updated = place.copy(userData = place.userData.copy(cost = cost))
                             updatedPlace = updated
                             updated
                         } else {
@@ -478,8 +510,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                 itinerary.copy(
                     places = itinerary.places.map { place ->
                         if (place.id == selectedPlace?.id) {
-                            val existingUserData = place.userData ?: TravelPlace.UserData()
-                            val updated = place.copy(userData = existingUserData.copy(memo = memo.trim()))
+                            val updated = place.copy(userData = place.userData.copy(memo = memo.trim()))
                             updatedPlace = updated
                             updated
                         } else {

@@ -24,7 +24,7 @@ class PlaceDetailViewModel @AssistedInject constructor(
                 placeInfo = PlaceInfo(
                     id = placeId,
                     name = "젤라테리아 파씨 (Gelateria Fassi)",
-                    category = "이탈리아 • 젤라또 • 디저트 카페",
+                    placeType = PlaceType.RESTAURANT,
                     address = "Via Principe Eugenio, 65, 00185 Roma RM, Italy",
                     phoneNumber = "+39 06 446 4740",
                     openingHours = "매일 12:00 ~ 24:00",

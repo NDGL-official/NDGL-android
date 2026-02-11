@@ -54,13 +54,13 @@ import kotlin.time.Duration.Companion.minutes
 @Composable
 internal fun TimelineContent(
     startTime: Duration,
-    endTime: Duration,
+    totalDuration: Duration,
     onDismissRequest: () -> Unit,
     onConfirm: (Duration) -> Unit,
 ) {
     var isSettingStartTime by remember { mutableStateOf(false) }
     var selectedStartTime by remember { mutableStateOf(startTime) }
-    var selectedEndTime by remember { mutableStateOf(endTime) }
+    val previewEndTime by remember(selectedStartTime) { derivedStateOf { selectedStartTime + totalDuration } }
 
     Column(
         modifier = Modifier
@@ -146,14 +146,13 @@ internal fun TimelineContent(
                 onClick = {
                     val totalMinutes = (selectedHour * 60) + selectedMinute
                     selectedStartTime = totalMinutes.minutes
-                    selectedEndTime = selectedStartTime + 15.hours
                     isSettingStartTime = false
                 },
             )
         } else {
-            val isEndTimeExceeds24Hours = selectedEndTime.inWholeHours >= 24
-            val isEndTimeExceeds48Hours = selectedEndTime.inWholeHours >= 48
-            val isTimeSet = selectedStartTime.inWholeHours > 0 && selectedEndTime.inWholeHours > 0
+            val isEndTimeExceeds24Hours = previewEndTime.inWholeHours >= 24
+            val isEndTimeExceeds48Hours = previewEndTime.inWholeHours >= 48
+            val isTimeSet = selectedStartTime.inWholeHours > 0 && previewEndTime.inWholeHours > 0
 
             Text(
                 text = stringResource(R.string.schedule_start_time),
@@ -198,7 +197,7 @@ internal fun TimelineContent(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    text = selectedEndTime.toTimeString(),
+                    text = previewEndTime.toTimeString(),
                     color = NDGLTheme.colors.black400,
                     style = NDGLTheme.typography.bodyMdMedium,
                 )
@@ -320,7 +319,7 @@ private fun TimelineContentPreview() {
     NDGLTheme {
         TimelineContent(
             startTime = 9.hours,
-            endTime = 25.hours,
+            totalDuration = 16.hours,
             onDismissRequest = {},
             onConfirm = {},
         )

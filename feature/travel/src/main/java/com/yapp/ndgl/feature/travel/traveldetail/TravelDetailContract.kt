@@ -86,15 +86,16 @@ data class TravelPlace(
     val regularOpeningHours: String,
     val googleMapsUri: String,
     val placeType: PlaceType,
-    val userData: UserData? = null,
+    val userData: UserData = UserData(),
+    val startTime: Duration? = null,
 ) {
     val duration: Duration
-        get() = userData?.estimatedDuration ?: 0.hours
+        get() = userData.estimatedDuration
 
     data class UserData(
         val memo: String? = null,
         val cost: Int? = null,
-        val estimatedDuration: Duration? = null,
+        val estimatedDuration: Duration = 0.hours,
     )
 }
 
