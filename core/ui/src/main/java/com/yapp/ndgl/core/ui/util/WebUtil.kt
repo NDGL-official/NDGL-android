@@ -10,6 +10,6 @@ fun Context.launchBrowser(url: String) {
         val intent = Intent(Intent.ACTION_VIEW, url.toUri())
         startActivity(intent)
     } catch (e: Exception) {
-        Timber.e("Failed to launch browser: $url")
+        Timber.e("Failed to launch browser: $url, exception: $e")
     }
 }

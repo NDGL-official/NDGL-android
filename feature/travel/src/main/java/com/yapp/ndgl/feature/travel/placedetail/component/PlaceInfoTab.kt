@@ -95,7 +95,7 @@ internal fun PlaceInfoTab(
                 modifier = Modifier
                     .fillMaxWidth()
                     .noRippleClickable {
-                        clickAddress()
+                        clickMenu()
                     },
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {

@@ -60,7 +60,7 @@ internal fun TimelineContent(
 ) {
     var isSettingStartTime by remember { mutableStateOf(false) }
     var selectedStartTime by remember { mutableStateOf(startTime) }
-    val previewEndTime by remember(selectedStartTime) { derivedStateOf { selectedStartTime + totalDuration } }
+    val previewEndTime by remember(selectedStartTime, totalDuration) { derivedStateOf { selectedStartTime + totalDuration } }
 
     Column(
         modifier = Modifier

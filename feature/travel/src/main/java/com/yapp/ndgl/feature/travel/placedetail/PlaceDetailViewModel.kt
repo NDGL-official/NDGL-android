@@ -98,6 +98,7 @@ class PlaceDetailViewModel @AssistedInject constructor(
         reduce { copy(selectedAlternativePlace = alternativePlace, showChangeModal = true) }
     }
 
+    // TODO("Plan B 장소 변경 로직")
     private fun confirmChangePlace() {
         reduce {
             copy(

@@ -323,7 +323,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                     itinerary
                 }
             }
-            val totalDuration = itineraries.getOrNull(dayIndex)?.totalDuration ?: 0.hours
+            val totalDuration = updatedItineraries.getOrNull(dayIndex)?.totalDuration ?: 0.hours
 
             copy(
                 startTime = startTime,

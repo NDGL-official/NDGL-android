@@ -178,6 +178,7 @@ private fun PlaceDetailScreen(
                     Text(
                         text = buildAnnotatedString {
                             withStyle(style = SpanStyle(color = NDGLTheme.colors.black500)) {
+                                // TODO: API 응답이 정해지면 하드코딩 제거
                                 append("식당 • $20~40 • 리뷰 ${placeInfo.rating}")
                             }
                             withStyle(style = SpanStyle(color = NDGLTheme.colors.black200)) {
