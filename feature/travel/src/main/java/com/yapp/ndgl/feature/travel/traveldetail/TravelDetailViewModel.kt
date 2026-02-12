@@ -28,18 +28,15 @@ class TravelDetailViewModel @AssistedInject constructor(
 
     private fun applyDefaultStartTime() {
         reduce {
-            val baseTime = startTime ?: DEFAULT_START_TIME.hours
             val updatedItineraries = itineraries.map { itinerary ->
+                val baseStartTime = itinerary.startTime ?: DEFAULT_START_TIME.hours
+                val updatedPlaces = calculatePlaceStartTimes(itinerary.places, baseStartTime)
                 itinerary.copy(
-                    places = calculatePlaceStartTimes(itinerary.places, itinerary.transportSegments, baseTime),
+                    places = updatedPlaces,
                 )
             }
-            val totalDuration = updatedItineraries.getOrNull(selectedDay - 1)?.totalDuration ?: 0.hours
-            copy(
-                itineraries = updatedItineraries,
-                tempItineraries = updatedItineraries,
-                endTime = if (startTime != null) baseTime + totalDuration else endTime,
-            )
+
+            copy(itineraries = updatedItineraries)
         }
     }
 
@@ -47,7 +44,6 @@ class TravelDetailViewModel @AssistedInject constructor(
         // TODO: Load from repository
         val loadedItineraries = listOf(
             Itinerary(
-                budget = Budget(300000),
                 places = listOf(
                     TravelPlace(
                         id = 1,
@@ -62,6 +58,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         googleMapsUri = "",
                         placeType = PlaceType.ATTRACTION,
                         userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                        transportToNext = TransportSegment(type = TransportType.CAR, duration = 25.minutes, distance = 3500),
                         startTime = 0.hours,
                     ),
                     TravelPlace(
@@ -77,6 +74,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         googleMapsUri = "",
                         placeType = PlaceType.RESTAURANT,
                         userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                        transportToNext = TransportSegment(type = TransportType.WALK, duration = 10.minutes, distance = 800),
                         startTime = 0.hours,
                     ),
                     TravelPlace(
@@ -93,6 +91,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         placeType = PlaceType.ACCOMMODATION,
                         userData = TravelPlace.UserData(estimatedDuration = 120.minutes),
                         startTime = 0.hours,
+                        transportToNext = TransportSegment(type = TransportType.CAR, duration = 15.minutes, distance = 2100),
                     ),
                     TravelPlace(
                         id = 4,
@@ -108,16 +107,11 @@ class TravelDetailViewModel @AssistedInject constructor(
                         placeType = PlaceType.RESTAURANT,
                         userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
                         startTime = 0.hours,
+                        transportToNext = null,
                     ),
-                ),
-                transportSegments = listOf(
-                    TransportSegment(type = TransportType.CAR, duration = 25.minutes, distance = 3500),
-                    TransportSegment(type = TransportType.WALK, duration = 10.minutes, distance = 800),
-                    TransportSegment(type = TransportType.CAR, duration = 15.minutes, distance = 2100),
                 ),
             ),
             Itinerary(
-                budget = Budget(250000),
                 places = listOf(
                     TravelPlace(
                         id = 8,
@@ -133,6 +127,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         placeType = PlaceType.ATTRACTION,
                         userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
                         startTime = 0.hours,
+                        transportToNext = TransportSegment(type = TransportType.WALK, duration = 8.minutes, distance = 600),
                     ),
                     TravelPlace(
                         id = 9,
@@ -148,11 +143,8 @@ class TravelDetailViewModel @AssistedInject constructor(
                         placeType = PlaceType.CAFE,
                         userData = TravelPlace.UserData(estimatedDuration = 45.minutes),
                         startTime = 0.hours,
+                        transportToNext = null,
                     ),
-                ),
-                transportSegments = listOf(
-                    TransportSegment(type = TransportType.WALK, duration = 8.minutes, distance = 600),
-                    TransportSegment(type = TransportType.TRAIN, duration = 30.minutes, distance = 8500),
                 ),
             ),
         )
@@ -164,8 +156,8 @@ class TravelDetailViewModel @AssistedInject constructor(
                     country = "태국",
                     city = "방콕",
                     budgetPerPerson = Budget(1200000),
-                    nights = 3,
-                    days = 4,
+                    nights = 1,
+                    days = 2,
                     videoInfo = VideoInfo(
                         title = "방콕 풀코스, 동남아 안 가본 곽튜브와 함께 【방콕】",
                         name = "빠니보틀",
@@ -200,6 +192,9 @@ class TravelDetailViewModel @AssistedInject constructor(
             is TravelDetailIntent.ConfirmTimelineSetting -> confirmTimelineSetting(intent.startTime)
             is TravelDetailIntent.ReorderPlaces -> reorderPlaces(intent.dayIndex, intent.fromIndex, intent.toIndex)
             is TravelDetailIntent.ConfirmEditMode -> confirmEditMode()
+            is TravelDetailIntent.ClickTransportSegment -> clickTransportSegment(intent.place)
+            is TravelDetailIntent.DismissTransportBottomSheet -> dismissTransportBottomSheet()
+            is TravelDetailIntent.ConfirmChangeTransportSegment -> confirmChangeTransportSegment(intent.segment)
             is TravelDetailIntent.ClickPlaceItem -> clickPlaceItem(intent.place)
             is TravelDetailIntent.DismissPlaceBottomSheet -> dismissPlaceBottomSheet()
             is TravelDetailIntent.NavigateToPlaceDetail -> navigateToPlaceDetail(intent.placeId)
@@ -282,17 +277,8 @@ class TravelDetailViewModel @AssistedInject constructor(
             val updatedItineraries = tempItineraries.map { itinerary ->
                 val remainingPlaces = itinerary.places
                     .filter { it.id !in selectedPlaceIds }
-                    .mapIndexed { newIndex, place ->
-                        place.copy(sequence = newIndex + 1)
-                    }
-
-                // TODO Place 삭제하면 교통수단 어떻게 다시 들어갈지 고민 필요
-                val remainingTransportCount = (remainingPlaces.size - 1).coerceAtLeast(0)
-                val remainingTransports = itinerary.transportSegments.take(remainingTransportCount)
-                itinerary.copy(
-                    places = remainingPlaces,
-                    transportSegments = remainingTransports,
-                )
+                    .mapIndexed { newIndex, place -> place.copy(sequence = newIndex + 1) }
+                itinerary.copy(places = recalculateTransportSegments(remainingPlaces))
             }
 
             copy(
@@ -341,19 +327,17 @@ class TravelDetailViewModel @AssistedInject constructor(
             val updatedItineraries = itineraries.mapIndexed { index, itinerary ->
                 if (index == dayIndex) {
                     itinerary.copy(
-                        places = calculatePlaceStartTimes(itinerary.places, itinerary.transportSegments, startTime),
+                        places = calculatePlaceStartTimes(itinerary.places, startTime),
+                        startTime = startTime,
+                        endTime = startTime + itinerary.totalDuration,
                     )
                 } else {
                     itinerary
                 }
             }
-            val totalDuration = updatedItineraries.getOrNull(dayIndex)?.totalDuration ?: 0.hours
 
             copy(
-                startTime = startTime,
-                endTime = startTime + totalDuration,
                 itineraries = updatedItineraries,
-                tempItineraries = updatedItineraries,
                 showTimelineBottomSheet = false,
             )
         }
@@ -361,17 +345,13 @@ class TravelDetailViewModel @AssistedInject constructor(
 
     private fun calculatePlaceStartTimes(
         places: List<TravelPlace>,
-        transportSegments: List<TransportSegment>,
         startTime: Duration,
     ): List<TravelPlace> {
         if (places.isEmpty()) return places
         var currentTime = startTime
-        return places.mapIndexed { index, place ->
+        return places.map { place ->
             val updatedPlace = place.copy(startTime = currentTime)
-            currentTime += place.duration
-            if (index < transportSegments.size) {
-                currentTime += transportSegments[index].duration
-            }
+            currentTime += place.duration + (place.transportToNext?.duration ?: 0.hours)
             updatedPlace
         }
     }
@@ -384,9 +364,8 @@ class TravelDetailViewModel @AssistedInject constructor(
                 if (fromIndex !in mutablePlaces.indices || toIndex !in mutablePlaces.indices) return@mapIndexed itinerary
                 val movedItem = mutablePlaces.removeAt(fromIndex)
                 mutablePlaces.add(toIndex, movedItem)
-                itinerary.copy(
-                    places = mutablePlaces.mapIndexed { i, place -> place.copy(sequence = i + 1) },
-                )
+                val resequenced = mutablePlaces.mapIndexed { i, place -> place.copy(sequence = i + 1) }
+                itinerary.copy(places = recalculateTransportSegments(resequenced))
             }
             copy(tempItineraries = updatedItineraries)
         }
@@ -400,6 +379,44 @@ class TravelDetailViewModel @AssistedInject constructor(
                 selectedPlaceIds = emptySet(),
             )
         }
+    }
+
+    private fun clickTransportSegment(place: TravelPlace) {
+        reduce {
+            copy(
+                selectedPlace = place,
+                showTransportBottomSheet = true,
+            )
+        }
+    }
+
+    private fun confirmChangeTransportSegment(newTransportSegment: TransportSegment) {
+        reduce {
+            val updatedItineraries = itineraries.mapIndexed { index, dayItinerary ->
+                if (index == selectedDay - 1) {
+                    val updatedPlaces = dayItinerary.places.map { place ->
+                        if (place.id == selectedPlace?.id) {
+                            place.copy(transportToNext = newTransportSegment)
+                        } else {
+                            place
+                        }
+                    }
+                    val timedPlaces = calculatePlaceStartTimes(
+                        places = updatedPlaces,
+                        startTime = dayItinerary.startTime ?: DEFAULT_START_TIME.hours,
+                    )
+
+                    dayItinerary.copy(places = timedPlaces)
+                } else {
+                    dayItinerary
+                }
+            }
+            copy(itineraries = updatedItineraries)
+        }
+    }
+
+    private fun dismissTransportBottomSheet() {
+        reduce { copy(selectedPlace = null, showTransportBottomSheet = false) }
     }
 
     private fun clickPlaceItem(place: TravelPlace) {
@@ -444,7 +461,6 @@ class TravelDetailViewModel @AssistedInject constructor(
 
     private fun confirmDuration(duration: Duration) {
         reduce {
-            var updatedPlace: TravelPlace? = null
             val updatedItineraries = itineraries.map { itinerary ->
                 if (itinerary.places.none { it.id == selectedPlace?.id }) return@map itinerary
 
@@ -455,17 +471,14 @@ class TravelDetailViewModel @AssistedInject constructor(
                         place
                     }
                 }
-                val firstPlaceStartTime = durationUpdatedPlaces.firstOrNull()?.startTime ?: DEFAULT_START_TIME.hours
-                val recalculatedPlaces =
-                    calculatePlaceStartTimes(durationUpdatedPlaces, itinerary.transportSegments, firstPlaceStartTime)
-                updatedPlace = recalculatedPlaces.find { it.id == selectedPlace?.id }
-                itinerary.copy(places = recalculatedPlaces)
+                itinerary.copy(
+                    places = calculatePlaceStartTimes(durationUpdatedPlaces, itinerary.startTime ?: DEFAULT_START_TIME.hours),
+                    endTime = (itinerary.startTime ?: DEFAULT_START_TIME.hours) + itinerary.totalDuration,
+                )
             }
-            val totalDuration = updatedItineraries.getOrNull(selectedDay - 1)?.totalDuration ?: 0.hours
             copy(
                 itineraries = updatedItineraries,
-                selectedPlace = updatedPlace,
-                endTime = (startTime ?: DEFAULT_START_TIME.hours) + totalDuration,
+                selectedPlace = null,
                 showTimeBottomSheet = false,
             )
         }
@@ -541,6 +554,20 @@ class TravelDetailViewModel @AssistedInject constructor(
 
     private fun clickFindRoute(url: String) {
         postSideEffect(TravelDetailSideEffect.NavigateToBrowser(url))
+    }
+
+    // TODO: 실제 라우팅 API 연동 시 교체
+    private fun createTransportSegment(from: TravelPlace, to: TravelPlace): TransportSegment {
+        return TransportSegment(type = TransportType.CAR, duration = 15.minutes, distance = 1000)
+    }
+
+    private fun recalculateTransportSegments(places: List<TravelPlace>): List<TravelPlace> {
+        return places.mapIndexed { index, place ->
+            val nextPlace = places.getOrNull(index + 1)
+            place.copy(
+                transportToNext = if (nextPlace != null) createTransportSegment(place, nextPlace) else null,
+            )
+        }
     }
 
     @AssistedFactory

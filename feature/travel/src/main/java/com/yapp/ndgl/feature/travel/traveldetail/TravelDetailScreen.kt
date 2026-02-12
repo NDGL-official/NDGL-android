@@ -71,6 +71,7 @@ import com.yapp.ndgl.feature.travel.traveldetail.component.EditablePlaceItem
 import com.yapp.ndgl.feature.travel.traveldetail.component.PlaceBottomSheet
 import com.yapp.ndgl.feature.travel.traveldetail.component.PlaceItem
 import com.yapp.ndgl.feature.travel.traveldetail.component.TimelineContent
+import com.yapp.ndgl.feature.travel.traveldetail.component.TransportBottomSheet
 import com.yapp.ndgl.feature.travel.traveldetail.component.TransportSegment
 import com.yapp.ndgl.feature.travel.traveldetail.component.TravelDetailToolBar
 import com.yapp.ndgl.feature.travel.traveldetail.component.TravelMap
@@ -121,6 +122,9 @@ internal fun TravelDetailRoute(
         dismissTimelineBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissTimelineBottomSheet) },
         confirmTimelineSetting = { startTime -> viewModel.onIntent(TravelDetailIntent.ConfirmTimelineSetting(startTime)) },
         reorderPlaces = { dayIndex, fromIndex, toIndex -> viewModel.onIntent(TravelDetailIntent.ReorderPlaces(dayIndex, fromIndex, toIndex)) },
+        clickTransportSegment = { place -> viewModel.onIntent(TravelDetailIntent.ClickTransportSegment(place)) },
+        confirmChangeTransport = { segment -> viewModel.onIntent(TravelDetailIntent.ConfirmChangeTransportSegment(segment)) },
+        dismissTransportBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissTransportBottomSheet) },
         confirmEditMode = { viewModel.onIntent(TravelDetailIntent.ConfirmEditMode) },
         clickPlaceItem = { viewModel.onIntent(TravelDetailIntent.ClickPlaceItem(it)) },
         dismissPlaceBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissPlaceBottomSheet) },
@@ -160,6 +164,9 @@ private fun TravelDetailScreen(
     confirmTimelineSetting: (Duration) -> Unit,
     reorderPlaces: (Int, Int, Int) -> Unit,
     confirmEditMode: () -> Unit,
+    clickTransportSegment: (TravelPlace) -> Unit,
+    confirmChangeTransport: (TransportSegment) -> Unit,
+    dismissTransportBottomSheet: () -> Unit,
     clickPlaceItem: (TravelPlace) -> Unit,
     clickAddTime: (Int) -> Unit,
     clickAddMemo: (Int) -> Unit,
@@ -198,7 +205,6 @@ private fun TravelDetailScreen(
     val currentItineraries = if (state.isEditMode) state.tempItineraries else state.itineraries
     val currentItinerary = currentItineraries.getOrNull(state.selectedDay - 1)
     val currentPlaces = currentItinerary?.places.orEmpty()
-    val currentTransportSegments = currentItinerary?.transportSegments.orEmpty()
 
     // 헤더(0) + stickyHeader(1) + 맵 아이템(2) = 3개가 장소 아이템 앞에 위치
     val placesOffset = 3
@@ -309,7 +315,7 @@ private fun TravelDetailScreen(
                                 )
                             } else {
                                 TravelDetailToolBar(
-                                    startTime = state.startTime,
+                                    startTime = itinerary.startTime,
                                     clickStartTimeSetting = clickStartTimeSetting,
                                     clickEditTravel = clickEditTravel,
                                 )
@@ -366,14 +372,6 @@ private fun TravelDetailScreen(
                             checked = state.selectedPlaceIds.contains(place.id),
                             onCheck = { checkPlaceItem(place.id) },
                         )
-
-//                        if (isDragging) {
-//                            Box(
-//                                modifier = Modifier
-//                                    .matchParentSize()
-//                                    .background(NDGLTheme.colors.black50.copy(0.9f)),
-//                            )
-//                        }
                     }
                 }
             } else {
@@ -397,9 +395,9 @@ private fun TravelDetailScreen(
 
                             if (index < currentPlaces.size - 1) {
                                 key("transport_${state.selectedDay}_${place.id}") {
-                                    currentTransportSegments.getOrNull(index)?.let { segment ->
+                                    place.transportToNext?.let { segment ->
                                         Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-                                            TransportSegment(segment = segment)
+                                            TransportSegment(segment = segment, onClick = { clickTransportSegment(place) })
                                         }
                                     }
                                 }
@@ -498,11 +496,30 @@ private fun TravelDetailScreen(
                 title = stringResource(R.string.schedule_setting_title),
             ) {
                 TimelineContent(
-                    startTime = state.startTime ?: 8.hours,
+                    startTime = currentItinerary?.startTime ?: 8.hours,
                     totalDuration = state.itineraries.getOrNull(state.selectedDay - 1)?.totalDuration ?: 0.hours,
                     onConfirm = confirmTimelineSetting,
                 )
             }
+        }
+
+        if (state.showTransportBottomSheet && state.selectedPlace != null && state.selectedPlace.transportToNext != null) {
+            // TODO: 실제 교통수단 후보로 수정
+            val mockAvailableTransports = mutableListOf(
+                TransportSegment(TransportType.WALK, 15.minutes, 1200),
+                TransportSegment(TransportType.CAR, 10.minutes, 5400),
+                TransportSegment(TransportType.BUS, 25.minutes, 4800),
+                TransportSegment(TransportType.TRAIN, 40.minutes, 12000),
+            )
+            mockAvailableTransports.remove(state.selectedPlace.transportToNext)
+            mockAvailableTransports.add(state.selectedPlace.transportToNext)
+
+            TransportBottomSheet(
+                initialTransport = state.selectedPlace.transportToNext,
+                availableTransports = mockAvailableTransports,
+                onDismissRequest = dismissTransportBottomSheet,
+                onConfirm = confirmChangeTransport,
+            )
         }
 
         if (state.showPlaceBottomSheet && state.selectedPlace != null) {
@@ -614,7 +631,6 @@ private fun TravelDetailScreenPreview() {
                 selectedDay = 1,
                 itineraries = listOf(
                     Itinerary(
-                        budget = Budget(300000),
                         places = listOf(
                             TravelPlace(
                                 id = 1,
@@ -629,7 +645,8 @@ private fun TravelDetailScreenPreview() {
                                 googleMapsUri = "",
                                 placeType = PlaceType.ATTRACTION,
                                 userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
-                                startTime = 0.hours,
+                                transportToNext = TransportSegment(type = TransportType.CAR, duration = 25.minutes, distance = 3500),
+                                startTime = 8.hours,
                             ),
                             TravelPlace(
                                 id = 2,
@@ -645,13 +662,7 @@ private fun TravelDetailScreenPreview() {
                                 placeType = PlaceType.RESTAURANT,
                                 userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
                                 startTime = 0.hours,
-                            ),
-                        ),
-                        transportSegments = listOf(
-                            TransportSegment(
-                                type = TransportType.CAR,
-                                duration = 25.minutes,
-                                distance = 3500,
+                                transportToNext = null,
                             ),
                         ),
                     ),
@@ -689,6 +700,9 @@ private fun TravelDetailScreenPreview() {
             confirmCost = { _ -> },
             dismissMemoModal = {},
             confirmMemo = { _ -> },
+            clickTransportSegment = {},
+            confirmChangeTransport = { _ -> },
+            dismissTransportBottomSheet = {},
         )
     }
 }
@@ -718,7 +732,6 @@ private fun TravelDetailScreenEditModePreview() {
                 selectedDay = 1,
                 itineraries = listOf(
                     Itinerary(
-                        budget = Budget(300000),
                         places = listOf(
                             TravelPlace(
                                 id = 1,
@@ -733,6 +746,7 @@ private fun TravelDetailScreenEditModePreview() {
                                 googleMapsUri = "",
                                 placeType = PlaceType.ATTRACTION,
                                 userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                                transportToNext = TransportSegment(type = TransportType.CAR, duration = 25.minutes, distance = 3500),
                                 startTime = 0.hours,
                             ),
                             TravelPlace(
@@ -747,14 +761,9 @@ private fun TravelDetailScreenEditModePreview() {
                                 regularOpeningHours = "11:00~22:00",
                                 googleMapsUri = "",
                                 placeType = PlaceType.RESTAURANT,
-                                userData = TravelPlace.UserData(estimatedDuration = 60.minutes), startTime = 0.hours,
-                            ),
-                        ),
-                        transportSegments = listOf(
-                            TransportSegment(
-                                type = TransportType.CAR,
-                                duration = 25.minutes,
-                                distance = 3500,
+                                userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                                transportToNext = null,
+                                startTime = 8.hours,
                             ),
                         ),
                     ),
@@ -792,6 +801,9 @@ private fun TravelDetailScreenEditModePreview() {
             confirmCost = { _ -> },
             dismissMemoModal = {},
             confirmMemo = { _ -> },
+            clickTransportSegment = {},
+            confirmChangeTransport = { _ -> },
+            dismissTransportBottomSheet = {},
         )
     }
 }
