@@ -495,11 +495,11 @@ private fun TravelDetailScreen(
             NDGLBottomSheet(
                 onDismissRequest = dismissTimelineBottomSheet,
                 showDragHandle = false,
+                title = stringResource(R.string.schedule_setting_title),
             ) {
                 TimelineContent(
                     startTime = state.startTime ?: 8.hours,
                     totalDuration = state.itineraries.getOrNull(state.selectedDay - 1)?.totalDuration ?: 0.hours,
-                    onDismissRequest = dismissTimelineBottomSheet,
                     onConfirm = confirmTimelineSetting,
                 )
             }
