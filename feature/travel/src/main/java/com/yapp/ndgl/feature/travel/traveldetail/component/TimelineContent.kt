@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -236,6 +237,7 @@ private fun <T> WheelPicker(
     items: List<T>,
     onItemSelected: (T) -> Unit,
     initialIndex: Int = 0,
+    itemWidth: Dp = 40.dp,
     itemHeight: Dp = 40.dp,
     visibleItemCount: Int = 5,
     padEnabled: Boolean = false,
@@ -269,6 +271,7 @@ private fun <T> WheelPicker(
 
     Box(
         modifier = modifier
+            .width(itemWidth)
             .height(itemHeight * visibleItemCount)
             .nestedScroll(nestedScrollConnection),
         contentAlignment = Alignment.Center,
