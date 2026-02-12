@@ -257,6 +257,7 @@ private fun PlaceBottomSheetPreview() {
             cost = 20000,
             estimatedDuration = 1.hours,
         ),
+        startTime = 8.hours,
     )
 
     NDGLTheme {

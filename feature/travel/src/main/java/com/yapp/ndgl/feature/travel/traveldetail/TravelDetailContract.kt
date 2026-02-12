@@ -23,8 +23,8 @@ data class TravelDetailState(
     val showDeleteModal: Boolean = false,
     val showCancelEditModal: Boolean = false,
     val showTimelineBottomSheet: Boolean = false,
-    val startTime: Duration = 0.hours,
-    val endTime: Duration = 0.hours,
+    val startTime: Duration? = null,
+    val endTime: Duration? = null,
     val selectedPlace: TravelPlace? = null,
     val showPlaceBottomSheet: Boolean = false,
     val showTimeBottomSheet: Boolean = false,
@@ -87,7 +87,7 @@ data class TravelPlace(
     val googleMapsUri: String,
     val placeType: PlaceType,
     val userData: UserData = UserData(),
-    val startTime: Duration? = null,
+    val startTime: Duration,
 ) {
     val duration: Duration
         get() = userData.estimatedDuration

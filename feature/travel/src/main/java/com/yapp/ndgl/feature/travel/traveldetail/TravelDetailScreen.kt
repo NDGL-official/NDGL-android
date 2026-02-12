@@ -434,7 +434,7 @@ private fun TravelDetailScreen(
                 showDragHandle = false,
             ) {
                 TimelineContent(
-                    startTime = state.startTime,
+                    startTime = state.startTime ?: 8.hours,
                     totalDuration = state.itineraries.getOrNull(state.selectedDay - 1)?.totalDuration ?: 0.hours,
                     onDismissRequest = dismissTimelineBottomSheet,
                     onConfirm = confirmTimelineSetting,
@@ -471,7 +471,7 @@ private fun TravelDetailScreen(
         }
 
         if (state.showCostModal && state.selectedPlace != null) {
-            var cost by remember { mutableStateOf(state.selectedPlace.userData?.cost?.toString() ?: "") }
+            var cost by remember { mutableStateOf(state.selectedPlace.userData.cost?.toString() ?: "") }
 
             NDGLInputModal(
                 onDismissRequest = dismissCostModal,
@@ -501,7 +501,7 @@ private fun TravelDetailScreen(
         }
 
         if (state.showMemoModal && state.selectedPlace != null) {
-            var memo by remember { mutableStateOf(state.selectedPlace.userData?.memo ?: "") }
+            var memo by remember { mutableStateOf(state.selectedPlace.userData.memo ?: "") }
 
             NDGLInputModal(
                 onDismissRequest = dismissMemoModal,
@@ -566,6 +566,7 @@ private fun TravelDetailScreenPreview() {
                                 googleMapsUri = "",
                                 placeType = PlaceType.ATTRACTION,
                                 userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                                startTime = 0.hours,
                             ),
                             TravelPlace(
                                 id = 2,
@@ -580,6 +581,7 @@ private fun TravelDetailScreenPreview() {
                                 googleMapsUri = "",
                                 placeType = PlaceType.RESTAURANT,
                                 userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                                startTime = 0.hours,
                             ),
                         ),
                         transportSegments = listOf(
@@ -668,6 +670,7 @@ private fun TravelDetailScreenEditModePreview() {
                                 googleMapsUri = "",
                                 placeType = PlaceType.ATTRACTION,
                                 userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                                startTime = 0.hours,
                             ),
                             TravelPlace(
                                 id = 2,
@@ -681,7 +684,7 @@ private fun TravelDetailScreenEditModePreview() {
                                 regularOpeningHours = "11:00~22:00",
                                 googleMapsUri = "",
                                 placeType = PlaceType.RESTAURANT,
-                                userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                                userData = TravelPlace.UserData(estimatedDuration = 60.minutes), startTime = 0.hours,
                             ),
                         ),
                         transportSegments = listOf(

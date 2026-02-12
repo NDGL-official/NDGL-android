@@ -23,6 +23,24 @@ class TravelDetailViewModel @AssistedInject constructor(
 ) {
     init {
         loadTravelData()
+        applyDefaultStartTime()
+    }
+
+    private fun applyDefaultStartTime() {
+        reduce {
+            val baseTime = startTime ?: DEFAULT_START_TIME.hours
+            val updatedItineraries = itineraries.map { itinerary ->
+                itinerary.copy(
+                    places = calculatePlaceStartTimes(itinerary.places, itinerary.transportSegments, baseTime),
+                )
+            }
+            val totalDuration = updatedItineraries.getOrNull(selectedDay - 1)?.totalDuration ?: 0.hours
+            copy(
+                itineraries = updatedItineraries,
+                tempItineraries = updatedItineraries,
+                endTime = if (startTime != null) baseTime + totalDuration else endTime,
+            )
+        }
     }
 
     private fun loadTravelData() {
@@ -44,6 +62,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         googleMapsUri = "",
                         placeType = PlaceType.ATTRACTION,
                         userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                        startTime = 0.hours,
                     ),
                     TravelPlace(
                         id = 2,
@@ -58,6 +77,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         googleMapsUri = "",
                         placeType = PlaceType.RESTAURANT,
                         userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                        startTime = 0.hours,
                     ),
                     TravelPlace(
                         id = 3,
@@ -72,6 +92,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         googleMapsUri = "",
                         placeType = PlaceType.ACCOMMODATION,
                         userData = TravelPlace.UserData(estimatedDuration = 120.minutes),
+                        startTime = 0.hours,
                     ),
                     TravelPlace(
                         id = 4,
@@ -86,6 +107,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         googleMapsUri = "",
                         placeType = PlaceType.RESTAURANT,
                         userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                        startTime = 0.hours,
                     ),
                 ),
                 transportSegments = listOf(
@@ -110,6 +132,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         googleMapsUri = "",
                         placeType = PlaceType.ATTRACTION,
                         userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                        startTime = 0.hours,
                     ),
                     TravelPlace(
                         id = 9,
@@ -124,6 +147,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         googleMapsUri = "",
                         placeType = PlaceType.CAFE,
                         userData = TravelPlace.UserData(estimatedDuration = 45.minutes),
+                        startTime = 0.hours,
                     ),
                 ),
                 transportSegments = listOf(
@@ -440,12 +464,9 @@ class TravelDetailViewModel @AssistedInject constructor(
                         place
                     }
                 }
-                val firstPlaceStartTime = durationUpdatedPlaces.firstOrNull()?.startTime
-                val recalculatedPlaces = if (firstPlaceStartTime != null) {
+                val firstPlaceStartTime = durationUpdatedPlaces.firstOrNull()?.startTime ?: DEFAULT_START_TIME.hours
+                val recalculatedPlaces =
                     calculatePlaceStartTimes(durationUpdatedPlaces, itinerary.transportSegments, firstPlaceStartTime)
-                } else {
-                    durationUpdatedPlaces
-                }
                 updatedPlace = recalculatedPlaces.find { it.id == selectedPlace?.id }
                 itinerary.copy(places = recalculatedPlaces)
             }
@@ -453,7 +474,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             copy(
                 itineraries = updatedItineraries,
                 selectedPlace = updatedPlace,
-                endTime = startTime + totalDuration,
+                endTime = (startTime ?: DEFAULT_START_TIME.hours) + totalDuration,
                 showTimeBottomSheet = false,
             )
         }
@@ -534,5 +555,9 @@ class TravelDetailViewModel @AssistedInject constructor(
     @AssistedFactory
     interface Factory {
         fun create(travelId: Int): TravelDetailViewModel
+    }
+
+    companion object {
+        private const val DEFAULT_START_TIME = 8
     }
 }

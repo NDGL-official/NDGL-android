@@ -20,11 +20,10 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.noRippleClickable
 import com.yapp.ndgl.core.util.toAmPmTimeString
 import kotlin.time.Duration
-import kotlin.time.Duration.Companion.hours
 
 @Composable
 internal fun TravelDetailToolBar(
-    startTime: Duration,
+    startTime: Duration? = null,
     clickStartTimeSetting: () -> Unit,
     clickEditTravel: () -> Unit,
 ) {
@@ -41,10 +40,10 @@ internal fun TravelDetailToolBar(
 
 @Composable
 private fun StartTimeSettingButton(
-    startTime: Duration,
+    startTime: Duration? = null,
     onClick: () -> Unit,
 ) {
-    val buttonText = if (startTime > 0.hours) {
+    val buttonText = if (startTime != null) {
         "${startTime.toAmPmTimeString()} ${stringResource(R.string.schedule_start)}"
     } else {
         stringResource(R.string.start_time_setting)

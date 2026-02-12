@@ -46,6 +46,7 @@ import com.yapp.ndgl.feature.travel.traveldetail.TravelPlace
 import com.yapp.ndgl.feature.travel.traveldetail.getColor
 import java.util.Locale
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 @Composable
@@ -120,10 +121,14 @@ internal fun EditablePlaceItem(
 @Composable
 private fun PlaceNumber(
     number: Int,
-    startTime: Duration? = null,
+    startTime: Duration,
     placeType: PlaceType,
 ) {
-    Column(modifier = Modifier.wrapContentWidth(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(
+        modifier = Modifier.wrapContentWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -138,16 +143,14 @@ private fun PlaceNumber(
             )
         }
 
-        if (startTime != null) {
-            val totalMinutes = startTime.inWholeMinutes
-            val hours = totalMinutes / 60
-            val minutes = totalMinutes % 60
-            Text(
-                text = String.format(Locale.getDefault(), "%02d:%02d", hours, minutes),
-                style = NDGLTheme.typography.bodySmSemiBold,
-                color = NDGLTheme.colors.black500,
-            )
-        }
+        val totalMinutes = startTime.inWholeMinutes
+        val hours = totalMinutes / 60
+        val minutes = totalMinutes % 60
+        Text(
+            text = String.format(Locale.getDefault(), "%02d:%02d", hours, minutes),
+            style = NDGLTheme.typography.bodySmSemiBold,
+            color = NDGLTheme.colors.black500,
+        )
     }
 }
 
@@ -231,6 +234,7 @@ private fun PlaceItemPreview() {
                 googleMapsUri = "",
                 placeType = PlaceType.ATTRACTION,
                 userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                startTime = 10.hours,
             ),
             onClick = {},
             onLongClick = {},
@@ -256,6 +260,7 @@ private fun EditablePlaceItemUncheckedPreview() {
                 googleMapsUri = "",
                 placeType = PlaceType.ATTRACTION,
                 userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                startTime = 12.hours,
             ),
             checked = false,
             onCheck = {},
@@ -281,6 +286,7 @@ private fun EditablePlaceItemCheckedPreview() {
                 googleMapsUri = "",
                 placeType = PlaceType.ATTRACTION,
                 userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                startTime = 12.hours,
             ),
             checked = true,
             onCheck = {},
