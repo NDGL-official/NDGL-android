@@ -22,7 +22,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
@@ -45,13 +44,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.yapp.ndgl.core.ui.R
-import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButton
-import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButtonAttr
 import com.yapp.ndgl.core.ui.designsystem.NDGLModal
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
-import com.yapp.ndgl.core.ui.util.dropShadow
 import com.yapp.ndgl.core.ui.util.launchBrowser
 import com.yapp.ndgl.feature.travel.placedetail.component.PlaceDetailTabRow
 import com.yapp.ndgl.feature.travel.placedetail.component.PlaceInfoTab
@@ -219,8 +215,7 @@ private fun PlaceDetailScreen(
 
             LazyColumn(
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(bottom = 60.dp),
+                    .weight(1f),
                 state = listState,
             ) {
                 when (state.selectedTab) {
@@ -257,31 +252,6 @@ private fun PlaceDetailScreen(
 
                 item { Spacer(Modifier.height(60.dp)) }
             }
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .dropShadow(
-                    shape = RoundedCornerShape(16.dp),
-                    color = Color.Black.copy(alpha = 0.06f),
-                    blur = 20.dp,
-                    offsetY = (-10).dp,
-                )
-                .align(Alignment.BottomCenter)
-                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                .background(NDGLTheme.colors.white)
-                .padding(top = 20.dp, bottom = 16.dp)
-                .padding(horizontal = 24.dp),
-        ) {
-            NDGLCTAButton(
-                modifier = Modifier.fillMaxWidth(),
-                type = NDGLCTAButtonAttr.Type.PRIMARY,
-                size = NDGLCTAButtonAttr.Size.LARGE,
-                status = NDGLCTAButtonAttr.Status.ACTIVE,
-                label = stringResource(R.string.place_detail_add_schedule),
-                onClick = clickAddScheduleButton,
-            )
         }
     }
 
