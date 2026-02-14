@@ -23,6 +23,24 @@ class TravelDetailViewModel @AssistedInject constructor(
 ) {
     init {
         loadTravelData()
+        applyDefaultStartTime()
+    }
+
+    private fun applyDefaultStartTime() {
+        reduce {
+            val baseTime = startTime ?: DEFAULT_START_TIME.hours
+            val updatedItineraries = itineraries.map { itinerary ->
+                itinerary.copy(
+                    places = calculatePlaceStartTimes(itinerary.places, itinerary.transportSegments, baseTime),
+                )
+            }
+            val totalDuration = updatedItineraries.getOrNull(selectedDay - 1)?.totalDuration ?: 0.hours
+            copy(
+                itineraries = updatedItineraries,
+                tempItineraries = updatedItineraries,
+                endTime = if (startTime != null) baseTime + totalDuration else endTime,
+            )
+        }
     }
 
     private fun loadTravelData() {
@@ -35,7 +53,6 @@ class TravelDetailViewModel @AssistedInject constructor(
                         id = 1,
                         day = 1,
                         sequence = 1,
-                        estimatedDuration = 90.minutes,
                         googlePlaceId = "ChIJCewJkL2LGGAR3Qmk0vCTGkg",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.6585805,
@@ -44,12 +61,13 @@ class TravelDetailViewModel @AssistedInject constructor(
                         regularOpeningHours = "09:00~23:00",
                         googleMapsUri = "",
                         placeType = PlaceType.ATTRACTION,
+                        userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                        startTime = 0.hours,
                     ),
                     TravelPlace(
                         id = 2,
                         day = 1,
                         sequence = 2,
-                        estimatedDuration = 60.minutes,
                         googlePlaceId = "ChIJexample2",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.6654,
@@ -58,12 +76,13 @@ class TravelDetailViewModel @AssistedInject constructor(
                         regularOpeningHours = "11:00~22:00",
                         googleMapsUri = "",
                         placeType = PlaceType.RESTAURANT,
+                        userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                        startTime = 0.hours,
                     ),
                     TravelPlace(
                         id = 3,
                         day = 1,
                         sequence = 3,
-                        estimatedDuration = 120.minutes,
                         googlePlaceId = "ChIJexample3",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.6812,
@@ -72,12 +91,13 @@ class TravelDetailViewModel @AssistedInject constructor(
                         regularOpeningHours = "24시간",
                         googleMapsUri = "",
                         placeType = PlaceType.ACCOMMODATION,
+                        userData = TravelPlace.UserData(estimatedDuration = 120.minutes),
+                        startTime = 0.hours,
                     ),
                     TravelPlace(
                         id = 4,
                         day = 1,
                         sequence = 4,
-                        estimatedDuration = 90.minutes,
                         googlePlaceId = "ChIJexample7",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.6944,
@@ -86,6 +106,8 @@ class TravelDetailViewModel @AssistedInject constructor(
                         regularOpeningHours = "17:00~24:00",
                         googleMapsUri = "",
                         placeType = PlaceType.RESTAURANT,
+                        userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                        startTime = 0.hours,
                     ),
                 ),
                 transportSegments = listOf(
@@ -101,7 +123,6 @@ class TravelDetailViewModel @AssistedInject constructor(
                         id = 8,
                         day = 2,
                         sequence = 1,
-                        estimatedDuration = 90.minutes,
                         googlePlaceId = "ChIJexample4",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.7148,
@@ -110,12 +131,13 @@ class TravelDetailViewModel @AssistedInject constructor(
                         regularOpeningHours = "06:00~17:00",
                         googleMapsUri = "",
                         placeType = PlaceType.ATTRACTION,
+                        userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                        startTime = 0.hours,
                     ),
                     TravelPlace(
                         id = 9,
                         day = 2,
                         sequence = 2,
-                        estimatedDuration = 45.minutes,
                         googlePlaceId = "ChIJexample5",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.7120,
@@ -124,6 +146,8 @@ class TravelDetailViewModel @AssistedInject constructor(
                         regularOpeningHours = "08:00~20:00",
                         googleMapsUri = "",
                         placeType = PlaceType.CAFE,
+                        userData = TravelPlace.UserData(estimatedDuration = 45.minutes),
+                        startTime = 0.hours,
                     ),
                 ),
                 transportSegments = listOf(
@@ -160,7 +184,7 @@ class TravelDetailViewModel @AssistedInject constructor(
     override suspend fun handleIntent(intent: TravelDetailIntent) {
         when (intent) {
             is TravelDetailIntent.SelectDay -> selectDay(intent.day)
-            is TravelDetailIntent.ClickTimelineAutoSetting -> clickTimelineAutoSetting()
+            is TravelDetailIntent.ClickStartTimeSetting -> clickStartTimeSetting()
             is TravelDetailIntent.ClickEditTravel -> clickEditTravel()
             is TravelDetailIntent.ClickAddScheduleButton -> clickAddScheduleButton()
             is TravelDetailIntent.CheckPlaceItem -> checkPlaceItem(intent.placeId)
@@ -176,6 +200,19 @@ class TravelDetailViewModel @AssistedInject constructor(
             is TravelDetailIntent.ConfirmTimelineSetting -> confirmTimelineSetting(intent.startTime)
             is TravelDetailIntent.ReorderPlaces -> reorderPlaces(intent.fromIndex, intent.toIndex)
             is TravelDetailIntent.ConfirmEditMode -> confirmEditMode()
+            is TravelDetailIntent.ClickPlaceItem -> clickPlaceItem(intent.place)
+            is TravelDetailIntent.DismissPlaceBottomSheet -> dismissPlaceBottomSheet()
+            is TravelDetailIntent.NavigateToPlaceDetail -> navigateToPlaceDetail(intent.placeId)
+            is TravelDetailIntent.ClickAddTime -> clickAddTime()
+            is TravelDetailIntent.ClickAddCost -> clickAddCost()
+            is TravelDetailIntent.ClickAddMemo -> clickAddMemo()
+            is TravelDetailIntent.ClickFindRoute -> clickFindRoute(intent.googleMapsUri)
+            is TravelDetailIntent.DismissTimeBottomSheet -> dismissTimeBottomSheet()
+            is TravelDetailIntent.ConfirmDuration -> confirmDuration(intent.duration)
+            is TravelDetailIntent.DismissCostModal -> dismissCostModal()
+            is TravelDetailIntent.ConfirmCost -> confirmCost(intent.cost)
+            is TravelDetailIntent.DismissMemoModal -> dismissMemoModal()
+            is TravelDetailIntent.ConfirmMemo -> confirmMemo(intent.memo)
         }
     }
 
@@ -183,7 +220,7 @@ class TravelDetailViewModel @AssistedInject constructor(
         reduce { copy(selectedDay = day) }
     }
 
-    private fun clickTimelineAutoSetting() {
+    private fun clickStartTimeSetting() {
         reduce { copy(showTimelineBottomSheet = true) }
     }
 
@@ -192,6 +229,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             copy(
                 isEditMode = true,
                 selectedPlaceIds = emptySet(),
+                tempItineraries = itineraries,
             )
         }
     }
@@ -214,8 +252,7 @@ class TravelDetailViewModel @AssistedInject constructor(
 
     private fun checkSelectAll() {
         reduce {
-            val currentItineraries = if (isEditMode) tempItineraries else itineraries
-            val currentDayPlaceIds = currentItineraries.getOrNull(selectedDay - 1)
+            val currentDayPlaceIds = tempItineraries.getOrNull(selectedDay - 1)
                 ?.places?.map { it.id }?.toSet() ?: emptySet()
 
             copy(
@@ -299,16 +336,43 @@ class TravelDetailViewModel @AssistedInject constructor(
     }
 
     private fun confirmTimelineSetting(startTime: Duration) {
-        changeStartTime(startTime)
-        reduce { copy(showTimelineBottomSheet = false) }
+        reduce {
+            val dayIndex = selectedDay - 1
+            val updatedItineraries = itineraries.mapIndexed { index, itinerary ->
+                if (index == dayIndex) {
+                    itinerary.copy(
+                        places = calculatePlaceStartTimes(itinerary.places, itinerary.transportSegments, startTime),
+                    )
+                } else {
+                    itinerary
+                }
+            }
+            val totalDuration = updatedItineraries.getOrNull(dayIndex)?.totalDuration ?: 0.hours
+
+            copy(
+                startTime = startTime,
+                endTime = startTime + totalDuration,
+                itineraries = updatedItineraries,
+                tempItineraries = updatedItineraries,
+                showTimelineBottomSheet = false,
+            )
+        }
     }
 
-    private fun changeStartTime(duration: Duration) {
-        reduce {
-            copy(
-                startTime = duration,
-                endTime = duration + 15.hours, // FIXME
-            )
+    private fun calculatePlaceStartTimes(
+        places: List<TravelPlace>,
+        transportSegments: List<TransportSegment>,
+        startTime: Duration,
+    ): List<TravelPlace> {
+        if (places.isEmpty()) return places
+        var currentTime = startTime
+        return places.mapIndexed { index, place ->
+            val updatedPlace = place.copy(startTime = currentTime)
+            currentTime += place.duration
+            if (index < transportSegments.size) {
+                currentTime += transportSegments[index].duration
+            }
+            updatedPlace
         }
     }
 
@@ -347,8 +411,153 @@ class TravelDetailViewModel @AssistedInject constructor(
         }
     }
 
+    private fun clickPlaceItem(place: TravelPlace) {
+        reduce {
+            copy(
+                showPlaceBottomSheet = true,
+                selectedPlace = place,
+            )
+        }
+    }
+
+    private fun dismissPlaceBottomSheet() {
+        reduce {
+            copy(
+                showPlaceBottomSheet = false,
+                selectedPlace = null,
+            )
+        }
+    }
+
+    private fun navigateToPlaceDetail(placeId: String) {
+        postSideEffect(TravelDetailSideEffect.NavigateToPlaceDetail(placeId))
+        reduce {
+            copy(
+                showPlaceBottomSheet = false,
+                selectedPlace = null,
+            )
+        }
+    }
+
+    private fun clickAddTime() {
+        reduce {
+            copy(showTimeBottomSheet = true)
+        }
+    }
+
+    private fun dismissTimeBottomSheet() {
+        reduce {
+            copy(showTimeBottomSheet = false)
+        }
+    }
+
+    private fun confirmDuration(duration: Duration) {
+        reduce {
+            var updatedPlace: TravelPlace? = null
+            val updatedItineraries = itineraries.map { itinerary ->
+                if (itinerary.places.none { it.id == selectedPlace?.id }) return@map itinerary
+
+                val durationUpdatedPlaces = itinerary.places.map { place ->
+                    if (place.id == selectedPlace?.id) {
+                        place.copy(userData = place.userData.copy(estimatedDuration = duration))
+                    } else {
+                        place
+                    }
+                }
+                val firstPlaceStartTime = durationUpdatedPlaces.firstOrNull()?.startTime ?: DEFAULT_START_TIME.hours
+                val recalculatedPlaces =
+                    calculatePlaceStartTimes(durationUpdatedPlaces, itinerary.transportSegments, firstPlaceStartTime)
+                updatedPlace = recalculatedPlaces.find { it.id == selectedPlace?.id }
+                itinerary.copy(places = recalculatedPlaces)
+            }
+            val totalDuration = updatedItineraries.getOrNull(selectedDay - 1)?.totalDuration ?: 0.hours
+            copy(
+                itineraries = updatedItineraries,
+                selectedPlace = updatedPlace,
+                endTime = (startTime ?: DEFAULT_START_TIME.hours) + totalDuration,
+                showTimeBottomSheet = false,
+            )
+        }
+    }
+
+    private fun clickAddCost() {
+        reduce {
+            copy(showCostModal = true)
+        }
+    }
+
+    private fun dismissCostModal() {
+        reduce { copy(showCostModal = false) }
+    }
+
+    private fun confirmCost(cost: Int) {
+        reduce {
+            var updatedPlace: TravelPlace? = null
+            val updatedItineraries = itineraries.map { itinerary ->
+                itinerary.copy(
+                    places = itinerary.places.map { place ->
+                        if (place.id == selectedPlace?.id) {
+                            val updated = place.copy(userData = place.userData.copy(cost = cost))
+                            updatedPlace = updated
+                            updated
+                        } else {
+                            place
+                        }
+                    },
+                )
+            }
+            copy(
+                itineraries = updatedItineraries,
+                selectedPlace = updatedPlace,
+                showCostModal = false,
+            )
+        }
+    }
+
+    private fun clickAddMemo() {
+        reduce {
+            copy(showMemoModal = true)
+        }
+    }
+
+    private fun dismissMemoModal() {
+        reduce { copy(showMemoModal = false) }
+    }
+
+    private fun confirmMemo(memo: String) {
+        reduce {
+            var updatedPlace: TravelPlace? = null
+            val updatedItineraries = itineraries.map { itinerary ->
+                itinerary.copy(
+                    places = itinerary.places.map { place ->
+                        if (place.id == selectedPlace?.id) {
+                            val updated = place.copy(userData = place.userData.copy(memo = memo.trim()))
+                            updatedPlace = updated
+                            updated
+                        } else {
+                            place
+                        }
+                    },
+                )
+            }
+            copy(
+                itineraries = updatedItineraries,
+                selectedPlace = updatedPlace,
+                showMemoModal = false,
+            )
+        }
+    }
+
+    private fun clickFindRoute(url: String) {
+        postSideEffect(TravelDetailSideEffect.NavigateToBrowser(url))
+    }
+
     @AssistedFactory
     interface Factory {
         fun create(travelId: Int): TravelDetailViewModel
+    }
+
+    companion object {
+        private const val DEFAULT_START_TIME = 8
     }
 }

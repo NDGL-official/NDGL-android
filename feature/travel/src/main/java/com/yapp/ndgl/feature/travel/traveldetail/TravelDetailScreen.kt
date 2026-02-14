@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,8 +34,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -44,15 +49,19 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButton
 import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButtonAttr
 import com.yapp.ndgl.core.ui.designsystem.NDGLChipTab
 import com.yapp.ndgl.core.ui.designsystem.NDGLChipTabAttr
+import com.yapp.ndgl.core.ui.designsystem.NDGLInputModal
 import com.yapp.ndgl.core.ui.designsystem.NDGLModal
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationIcon
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.dropShadow
+import com.yapp.ndgl.core.ui.util.launchBrowser
 import com.yapp.ndgl.feature.travel.traveldetail.component.ContentCard
+import com.yapp.ndgl.feature.travel.traveldetail.component.DurationPickerContent
 import com.yapp.ndgl.feature.travel.traveldetail.component.EditControlBar
 import com.yapp.ndgl.feature.travel.traveldetail.component.EditablePlaceItem
+import com.yapp.ndgl.feature.travel.traveldetail.component.PlaceBottomSheet
 import com.yapp.ndgl.feature.travel.traveldetail.component.PlaceItem
 import com.yapp.ndgl.feature.travel.traveldetail.component.TimelineContent
 import com.yapp.ndgl.feature.travel.traveldetail.component.TransportSegment
@@ -60,18 +69,28 @@ import com.yapp.ndgl.feature.travel.traveldetail.component.TravelDetailToolBar
 import com.yapp.ndgl.feature.travel.traveldetail.component.TravelMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 @Composable
 internal fun TravelDetailRoute(
     viewModel: TravelDetailViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
+    navigateToPlaceDetail: (String) -> Unit,
 ) {
     val state by viewModel.collectAsState()
+    val context = LocalContext.current
 
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             is TravelDetailSideEffect.NavigateBack -> navigateBack()
+            is TravelDetailSideEffect.NavigateToPlaceDetail -> {
+                navigateToPlaceDetail(sideEffect.placeId)
+            }
+
+            is TravelDetailSideEffect.NavigateToBrowser -> {
+                context.launchBrowser(sideEffect.url)
+            }
         }
     }
 
@@ -79,7 +98,7 @@ internal fun TravelDetailRoute(
         state = state,
         clickBack = { viewModel.onIntent(TravelDetailIntent.ClickBack) },
         selectDay = { viewModel.onIntent(TravelDetailIntent.SelectDay(it)) },
-        clickTimelineAutoSetting = { viewModel.onIntent(TravelDetailIntent.ClickTimelineAutoSetting) },
+        clickStartTimeSetting = { viewModel.onIntent(TravelDetailIntent.ClickStartTimeSetting) },
         clickEditTravel = { viewModel.onIntent(TravelDetailIntent.ClickEditTravel) },
         clickAddScheduleButton = { viewModel.onIntent(TravelDetailIntent.ClickAddScheduleButton) },
         checkPlaceItem = { placeId ->
@@ -96,6 +115,21 @@ internal fun TravelDetailRoute(
         confirmTimelineSetting = { startTime -> viewModel.onIntent(TravelDetailIntent.ConfirmTimelineSetting(startTime)) },
         reorderPlaces = { fromIndex, toIndex -> viewModel.onIntent(TravelDetailIntent.ReorderPlaces(fromIndex, toIndex)) },
         confirmEditMode = { viewModel.onIntent(TravelDetailIntent.ConfirmEditMode) },
+        clickPlaceItem = { viewModel.onIntent(TravelDetailIntent.ClickPlaceItem(it)) },
+        dismissPlaceBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissPlaceBottomSheet) },
+        navigateToPlaceDetail = { viewModel.onIntent(TravelDetailIntent.NavigateToPlaceDetail(it)) },
+        clickAddTime = { viewModel.onIntent(TravelDetailIntent.ClickAddTime(it)) },
+        clickAddMemo = { viewModel.onIntent(TravelDetailIntent.ClickAddMemo(it)) },
+        clickAddCost = { viewModel.onIntent(TravelDetailIntent.ClickAddCost(it)) },
+        clickFindRoute = { viewModel.onIntent(TravelDetailIntent.ClickFindRoute(it)) },
+        dismissTimeBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissTimeBottomSheet) },
+        confirmDuration = {
+            viewModel.onIntent(TravelDetailIntent.ConfirmDuration(it))
+        },
+        dismissCostModal = { viewModel.onIntent(TravelDetailIntent.DismissCostModal) },
+        confirmCost = { viewModel.onIntent(TravelDetailIntent.ConfirmCost(it)) },
+        dismissMemoModal = { viewModel.onIntent(TravelDetailIntent.DismissMemoModal) },
+        confirmMemo = { viewModel.onIntent(TravelDetailIntent.ConfirmMemo(it)) },
     )
 }
 
@@ -104,7 +138,7 @@ private fun TravelDetailScreen(
     state: TravelDetailState,
     clickBack: () -> Unit,
     selectDay: (Int) -> Unit,
-    clickTimelineAutoSetting: () -> Unit,
+    clickStartTimeSetting: () -> Unit,
     clickEditTravel: () -> Unit,
     clickAddScheduleButton: () -> Unit,
     checkPlaceItem: (placeId: Int) -> Unit,
@@ -119,6 +153,19 @@ private fun TravelDetailScreen(
     confirmTimelineSetting: (Duration) -> Unit,
     reorderPlaces: (Int, Int) -> Unit,
     confirmEditMode: () -> Unit,
+    clickPlaceItem: (TravelPlace) -> Unit,
+    clickAddTime: (Int) -> Unit,
+    clickAddMemo: (Int) -> Unit,
+    clickAddCost: (Int) -> Unit,
+    clickFindRoute: (String) -> Unit,
+    dismissPlaceBottomSheet: () -> Unit,
+    navigateToPlaceDetail: (String) -> Unit,
+    dismissTimeBottomSheet: () -> Unit,
+    confirmDuration: (Duration) -> Unit,
+    dismissCostModal: () -> Unit,
+    confirmCost: (Int) -> Unit,
+    dismissMemoModal: () -> Unit,
+    confirmMemo: (String) -> Unit,
 ) {
     BackHandler(enabled = state.isEditMode) {
         clickBack()
@@ -231,7 +278,8 @@ private fun TravelDetailScreen(
                                 )
                             } else {
                                 TravelDetailToolBar(
-                                    clickTimelineAutoSetting = clickTimelineAutoSetting,
+                                    startTime = state.startTime,
+                                    clickStartTimeSetting = clickStartTimeSetting,
                                     clickEditTravel = clickEditTravel,
                                 )
                             }
@@ -278,7 +326,7 @@ private fun TravelDetailScreen(
                                 Box(modifier = Modifier.padding(horizontal = 24.dp)) {
                                     PlaceItem(
                                         place = place,
-                                        onClick = {},
+                                        onClick = { clickPlaceItem(place) },
                                         onLongClick = longClickPlaceItem,
                                     )
                                 }
@@ -386,12 +434,94 @@ private fun TravelDetailScreen(
                 showDragHandle = false,
             ) {
                 TimelineContent(
-                    startTime = state.startTime,
-                    endTime = state.endTime,
+                    startTime = state.startTime ?: 8.hours,
+                    totalDuration = state.itineraries.getOrNull(state.selectedDay - 1)?.totalDuration ?: 0.hours,
                     onDismissRequest = dismissTimelineBottomSheet,
                     onConfirm = confirmTimelineSetting,
                 )
             }
+        }
+
+        if (state.showPlaceBottomSheet && state.selectedPlace != null) {
+            PlaceBottomSheet(
+                place = state.selectedPlace,
+                onDismissRequest = dismissPlaceBottomSheet,
+                navigateToPlaceDetail = { navigateToPlaceDetail(state.selectedPlace.googlePlaceId) },
+                onAddTimeClick = clickAddTime,
+                onAddCostClick = clickAddCost,
+                onAddMemoClick = clickAddMemo,
+                onFindRouteClick = clickFindRoute,
+            )
+        }
+
+        if (state.showTimeBottomSheet && state.selectedPlace != null) {
+            NDGLBottomSheet(
+                onDismissRequest = dismissTimeBottomSheet,
+                showDragHandle = false,
+            ) {
+                val currentDuration = state.selectedPlace.duration
+                DurationPickerContent(
+                    currentDuration = currentDuration,
+                    onDismissRequest = dismissTimeBottomSheet,
+                    onConfirm = { duration ->
+                        confirmDuration(duration)
+                    },
+                )
+            }
+        }
+
+        if (state.showCostModal && state.selectedPlace != null) {
+            var cost by remember { mutableStateOf(state.selectedPlace.userData.cost?.toString() ?: "") }
+
+            NDGLInputModal(
+                onDismissRequest = dismissCostModal,
+                title = stringResource(R.string.cost_modal_title),
+                value = cost,
+                onValueChange = { newValue ->
+                    if (newValue.isEmpty() || newValue.all { it.isDigit() }) {
+                        cost = newValue
+                    }
+                },
+                placeholder = stringResource(R.string.cost_modal_placeholder),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done,
+                ),
+                positiveButtonText = stringResource(R.string.cost_modal_confirm),
+                onPositiveButtonClick = {
+                    cost.toIntOrNull()?.let { costValue ->
+                        confirmCost(costValue)
+                    }
+                },
+                negativeButtonText = stringResource(R.string.cost_modal_cancel),
+                textAlign = TextAlign.Center,
+                placeholderStyle = NDGLTheme.typography.subtitleLgSemiBold,
+                textStyle = NDGLTheme.typography.subtitleLgSemiBold,
+            )
+        }
+
+        if (state.showMemoModal && state.selectedPlace != null) {
+            var memo by remember { mutableStateOf(state.selectedPlace.userData.memo ?: "") }
+
+            NDGLInputModal(
+                onDismissRequest = dismissMemoModal,
+                title = stringResource(R.string.memo_modal_title),
+                value = memo,
+                onValueChange = { memo = it },
+                placeholder = stringResource(R.string.memo_modal_placeholder),
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Text,
+                    imeAction = ImeAction.Default,
+                ),
+                positiveButtonText = stringResource(R.string.memo_modal_confirm),
+                onPositiveButtonClick = {
+                    confirmMemo(memo)
+                },
+                negativeButtonText = stringResource(R.string.cost_modal_cancel),
+                minHeight = 180.dp,
+                placeholderStyle = NDGLTheme.typography.bodyLgMedium,
+                textStyle = NDGLTheme.typography.bodyLgRegular,
+            )
         }
     }
 }
@@ -427,7 +557,6 @@ private fun TravelDetailScreenPreview() {
                                 id = 1,
                                 day = 1,
                                 sequence = 1,
-                                estimatedDuration = 90.minutes,
                                 googlePlaceId = "",
                                 thumbnail = "",
                                 latitude = 35.6585805,
@@ -436,12 +565,13 @@ private fun TravelDetailScreenPreview() {
                                 regularOpeningHours = "09:00~23:00",
                                 googleMapsUri = "",
                                 placeType = PlaceType.ATTRACTION,
+                                userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                                startTime = 0.hours,
                             ),
                             TravelPlace(
                                 id = 2,
                                 day = 1,
                                 sequence = 2,
-                                estimatedDuration = 60.minutes,
                                 googlePlaceId = "",
                                 thumbnail = "",
                                 latitude = 35.6654,
@@ -450,6 +580,8 @@ private fun TravelDetailScreenPreview() {
                                 regularOpeningHours = "11:00~22:00",
                                 googleMapsUri = "",
                                 placeType = PlaceType.RESTAURANT,
+                                userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                                startTime = 0.hours,
                             ),
                         ),
                         transportSegments = listOf(
@@ -466,7 +598,7 @@ private fun TravelDetailScreenPreview() {
             ),
             clickBack = {},
             selectDay = {},
-            clickTimelineAutoSetting = {},
+            clickStartTimeSetting = {},
             clickEditTravel = {},
             clickAddScheduleButton = {},
             checkPlaceItem = {},
@@ -481,6 +613,19 @@ private fun TravelDetailScreenPreview() {
             confirmTimelineSetting = {},
             reorderPlaces = { _, _ -> },
             confirmEditMode = {},
+            clickPlaceItem = {},
+            clickAddTime = {},
+            clickAddMemo = {},
+            clickAddCost = {},
+            clickFindRoute = {},
+            dismissPlaceBottomSheet = {},
+            navigateToPlaceDetail = {},
+            dismissTimeBottomSheet = {},
+            confirmDuration = { _ -> },
+            dismissCostModal = {},
+            confirmCost = { _ -> },
+            dismissMemoModal = {},
+            confirmMemo = { _ -> },
         )
     }
 }
@@ -516,7 +661,6 @@ private fun TravelDetailScreenEditModePreview() {
                                 id = 1,
                                 day = 1,
                                 sequence = 1,
-                                estimatedDuration = 90.minutes,
                                 googlePlaceId = "",
                                 thumbnail = "",
                                 latitude = 35.6585805,
@@ -525,12 +669,13 @@ private fun TravelDetailScreenEditModePreview() {
                                 regularOpeningHours = "09:00~23:00",
                                 googleMapsUri = "",
                                 placeType = PlaceType.ATTRACTION,
+                                userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                                startTime = 0.hours,
                             ),
                             TravelPlace(
                                 id = 2,
                                 day = 1,
                                 sequence = 2,
-                                estimatedDuration = 60.minutes,
                                 googlePlaceId = "",
                                 thumbnail = "",
                                 latitude = 35.6654,
@@ -539,6 +684,7 @@ private fun TravelDetailScreenEditModePreview() {
                                 regularOpeningHours = "11:00~22:00",
                                 googleMapsUri = "",
                                 placeType = PlaceType.RESTAURANT,
+                                userData = TravelPlace.UserData(estimatedDuration = 60.minutes), startTime = 0.hours,
                             ),
                         ),
                         transportSegments = listOf(
@@ -555,7 +701,7 @@ private fun TravelDetailScreenEditModePreview() {
             ),
             clickBack = {},
             selectDay = {},
-            clickTimelineAutoSetting = {},
+            clickStartTimeSetting = {},
             clickEditTravel = {},
             clickAddScheduleButton = {},
             checkPlaceItem = {},
@@ -570,6 +716,19 @@ private fun TravelDetailScreenEditModePreview() {
             confirmTimelineSetting = {},
             reorderPlaces = { _, _ -> },
             confirmEditMode = {},
+            clickPlaceItem = {},
+            clickAddTime = {},
+            clickAddMemo = {},
+            clickAddCost = {},
+            clickFindRoute = {},
+            dismissPlaceBottomSheet = {},
+            navigateToPlaceDetail = {},
+            dismissTimeBottomSheet = {},
+            confirmDuration = { _ -> },
+            dismissCostModal = {},
+            confirmCost = { _ -> },
+            dismissMemoModal = {},
+            confirmMemo = { _ -> },
         )
     }
 }

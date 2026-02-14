@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -43,6 +44,9 @@ import com.yapp.ndgl.core.util.formatString
 import com.yapp.ndgl.feature.travel.traveldetail.PlaceType
 import com.yapp.ndgl.feature.travel.traveldetail.TravelPlace
 import com.yapp.ndgl.feature.travel.traveldetail.getColor
+import java.util.Locale
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 @Composable
@@ -65,9 +69,9 @@ internal fun PlaceItem(
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        PlaceNumber(number = place.sequence, placeType = place.placeType)
+        PlaceNumber(number = place.sequence, startTime = place.startTime, placeType = place.placeType)
         Spacer(Modifier.width(8.dp))
-        PlaceCard(place = place, isEditMode = false, interactionSource = interactionSource)
+        PlaceCard(place = place, interactionSource = interactionSource)
     }
 }
 
@@ -103,7 +107,6 @@ internal fun EditablePlaceItem(
                         onCheck()
                     },
                 place = place,
-                isEditMode = true,
             )
             Icon(
                 modifier = modifier,
@@ -118,19 +121,35 @@ internal fun EditablePlaceItem(
 @Composable
 private fun PlaceNumber(
     number: Int,
+    startTime: Duration,
     placeType: PlaceType,
 ) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = Modifier
-            .size(24.dp)
-            .clip(CircleShape)
-            .background(placeType.getColor()),
+    Column(
+        modifier = Modifier.wrapContentWidth(),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(24.dp)
+                .clip(CircleShape)
+                .background(placeType.getColor()),
+        ) {
+            Text(
+                text = number.toString(),
+                color = NDGLTheme.colors.white,
+                style = NDGLTheme.typography.bodySmSemiBold,
+            )
+        }
+
+        val totalMinutes = startTime.inWholeMinutes
+        val hours = totalMinutes / 60
+        val minutes = totalMinutes % 60
         Text(
-            text = number.toString(),
-            color = NDGLTheme.colors.white,
+            text = String.format(Locale.getDefault(), "%02d:%02d", hours, minutes),
             style = NDGLTheme.typography.bodySmSemiBold,
+            color = NDGLTheme.colors.black500,
         )
     }
 }
@@ -139,7 +158,6 @@ private fun PlaceNumber(
 private fun PlaceCard(
     modifier: Modifier = Modifier,
     place: TravelPlace,
-    isEditMode: Boolean,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
     Card(
@@ -170,7 +188,7 @@ private fun PlaceCard(
                         text = "${stringResource(place.placeType.labelRes)} • ${
                             stringResource(
                                 R.string.estimated_duration_format,
-                                place.estimatedDuration.formatString(),
+                                place.duration.formatString(),
                             )
                         }",
                         color = NDGLTheme.colors.black400,
@@ -207,7 +225,6 @@ private fun PlaceItemPreview() {
                 id = 1,
                 day = 1,
                 sequence = 1,
-                estimatedDuration = 60.minutes,
                 googlePlaceId = "",
                 thumbnail = "",
                 latitude = 35.6585805,
@@ -216,6 +233,8 @@ private fun PlaceItemPreview() {
                 regularOpeningHours = "09:00~23:00",
                 googleMapsUri = "",
                 placeType = PlaceType.ATTRACTION,
+                userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                startTime = 10.hours,
             ),
             onClick = {},
             onLongClick = {},
@@ -232,7 +251,6 @@ private fun EditablePlaceItemUncheckedPreview() {
                 id = 1,
                 day = 1,
                 sequence = 1,
-                estimatedDuration = 60.minutes,
                 googlePlaceId = "",
                 thumbnail = "",
                 latitude = 35.6585805,
@@ -241,6 +259,8 @@ private fun EditablePlaceItemUncheckedPreview() {
                 regularOpeningHours = "09:00~23:00",
                 googleMapsUri = "",
                 placeType = PlaceType.ATTRACTION,
+                userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                startTime = 12.hours,
             ),
             checked = false,
             onCheck = {},
@@ -257,7 +277,6 @@ private fun EditablePlaceItemCheckedPreview() {
                 id = 1,
                 day = 1,
                 sequence = 1,
-                estimatedDuration = 60.minutes,
                 googlePlaceId = "",
                 thumbnail = "",
                 latitude = 35.6585805,
@@ -266,6 +285,8 @@ private fun EditablePlaceItemCheckedPreview() {
                 regularOpeningHours = "09:00~23:00",
                 googleMapsUri = "",
                 placeType = PlaceType.ATTRACTION,
+                userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                startTime = 12.hours,
             ),
             checked = true,
             onCheck = {},

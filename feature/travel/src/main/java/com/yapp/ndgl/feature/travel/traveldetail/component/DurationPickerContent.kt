@@ -24,7 +24,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -46,22 +45,22 @@ import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButton
 import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButtonAttr
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
-import com.yapp.ndgl.core.util.toTimeString
 import kotlin.math.abs
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 
 @Composable
-internal fun TimelineContent(
-    startTime: Duration,
-    totalDuration: Duration,
+internal fun DurationPickerContent(
+    currentDuration: Duration,
     onDismissRequest: () -> Unit,
     onConfirm: (Duration) -> Unit,
 ) {
-    var isSettingStartTime by remember { mutableStateOf(false) }
-    var selectedStartTime by remember { mutableStateOf(startTime) }
-    val previewEndTime by remember(selectedStartTime, totalDuration) { derivedStateOf { selectedStartTime + totalDuration } }
+    val hourItems = remember { (0..23).toList() }
+    val minuteItems = remember { (0..55 step 5).toList() }
+
+    var selectedHour by remember { mutableIntStateOf(currentDuration.inWholeHours.toInt()) }
+    var selectedMinute by remember { mutableIntStateOf((currentDuration.inWholeMinutes % 60).toInt()) }
 
     Column(
         modifier = Modifier
@@ -72,11 +71,6 @@ internal fun TimelineContent(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Text(
-                text = stringResource(R.string.schedule_setting_title),
-                color = NDGLTheme.colors.black900,
-                style = NDGLTheme.typography.titleMdSemiBold,
-            )
             Spacer(Modifier.weight(1f))
             Box(
                 modifier = Modifier
@@ -93,141 +87,52 @@ internal fun TimelineContent(
                 )
             }
         }
-        Spacer(Modifier.height(32.dp))
-
-        if (isSettingStartTime) {
-            val hourItems = remember { (0..23).toList() }
-            val minuteItems = remember { (0..55 step 5).toList() }
-
-            var selectedHour by remember { mutableIntStateOf(selectedStartTime.inWholeHours.toInt()) }
-            var selectedMinute by remember { mutableIntStateOf((selectedStartTime.inWholeMinutes % 60).toInt()) }
-
+        Spacer(Modifier.height(16.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+        ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .wrapContentHeight(),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
-                        .align(Alignment.Center)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(NDGLTheme.colors.black50),
-                )
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(48.dp, Alignment.CenterHorizontally),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    WheelPicker(
-                        items = hourItems,
-                        onItemSelected = { selectedHour = it },
-                        initialIndex = selectedHour,
-                    )
-                    WheelPicker(
-                        items = minuteItems,
-                        onItemSelected = { selectedMinute = it },
-                        initialIndex = minuteItems.indexOf((selectedMinute / 5) * 5).coerceAtLeast(0),
-                        padEnabled = true,
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(32.dp))
-            NDGLCTAButton(
-                modifier = Modifier.fillMaxWidth(),
-                type = NDGLCTAButtonAttr.Type.PRIMARY,
-                size = NDGLCTAButtonAttr.Size.LARGE,
-                status = NDGLCTAButtonAttr.Status.ACTIVE,
-                label = stringResource(R.string.schedule_save_time),
-                onClick = {
-                    val totalMinutes = (selectedHour * 60) + selectedMinute
-                    selectedStartTime = totalMinutes.minutes
-                    isSettingStartTime = false
-                },
+                    .height(40.dp)
+                    .align(Alignment.Center)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(NDGLTheme.colors.black50),
             )
-        } else {
-            val isEndTimeExceeds24Hours = previewEndTime.inWholeHours >= 24
-            val isEndTimeExceeds48Hours = previewEndTime.inWholeHours >= 48
-            val isTimeSet = selectedStartTime.inWholeHours > 0 && previewEndTime.inWholeHours > 0
-
-            Text(
-                text = stringResource(R.string.schedule_start_time),
-                color = NDGLTheme.colors.black700,
-                style = NDGLTheme.typography.bodyMdMedium,
-            )
-            Spacer(Modifier.height(4.dp))
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(NDGLTheme.colors.black50)
-                    .clickable { isSettingStartTime = true }
-                    .padding(horizontal = 24.dp, vertical = 17.5.dp),
+                    .padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(48.dp, Alignment.CenterHorizontally),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = selectedStartTime.toTimeString(),
-                    color = NDGLTheme.colors.black400,
-                    style = NDGLTheme.typography.bodyMdMedium,
+                WheelPicker(
+                    items = hourItems,
+                    onItemSelected = { selectedHour = it },
+                    initialIndex = selectedHour,
                 )
-                Spacer(Modifier.weight(1f))
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_24_chevron_right),
-                    contentDescription = null,
-                    tint = NDGLTheme.colors.black400,
-                )
-            }
-            Spacer(Modifier.height(20.dp))
-            Text(
-                text = stringResource(R.string.schedule_end_time),
-                color = NDGLTheme.colors.black700,
-                style = NDGLTheme.typography.bodyMdMedium,
-            )
-            Spacer(Modifier.height(4.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(NDGLTheme.colors.black50)
-                    .padding(horizontal = 24.dp, vertical = 17.5.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = previewEndTime.toTimeString(),
-                    color = NDGLTheme.colors.black400,
-                    style = NDGLTheme.typography.bodyMdMedium,
+                WheelPicker(
+                    items = minuteItems,
+                    onItemSelected = { selectedMinute = it },
+                    initialIndex = minuteItems.indexOf((selectedMinute / 5) * 5).coerceAtLeast(0),
+                    padEnabled = true,
                 )
             }
-
-            if (isEndTimeExceeds24Hours) {
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = stringResource(R.string.schedule_time_exceeds_warning),
-                    color = NDGLTheme.colors.red500,
-                    style = NDGLTheme.typography.bodySmMedium,
-                )
-            }
-            Spacer(Modifier.height(32.dp))
-            NDGLCTAButton(
-                modifier = Modifier.fillMaxWidth(),
-                type = NDGLCTAButtonAttr.Type.PRIMARY,
-                size = NDGLCTAButtonAttr.Size.LARGE,
-                status = if (isTimeSet && !isEndTimeExceeds48Hours) {
-                    NDGLCTAButtonAttr.Status.ACTIVE
-                } else {
-                    NDGLCTAButtonAttr.Status.DISABLED
-                },
-                label = stringResource(R.string.schedule_set_time),
-                onClick = {
-                    onConfirm(selectedStartTime)
-                },
-            )
         }
+        Spacer(Modifier.height(32.dp))
+        NDGLCTAButton(
+            modifier = Modifier.fillMaxWidth(),
+            type = NDGLCTAButtonAttr.Type.PRIMARY,
+            size = NDGLCTAButtonAttr.Size.LARGE,
+            status = NDGLCTAButtonAttr.Status.ACTIVE,
+            label = stringResource(R.string.duration_picker_save),
+            onClick = {
+                val totalDuration = selectedHour.hours + selectedMinute.minutes
+                onConfirm(totalDuration)
+            },
+        )
     }
 }
 
@@ -318,11 +223,10 @@ private fun <T> WheelPicker(
 
 @Preview(showBackground = true)
 @Composable
-private fun TimelineContentPreview() {
+private fun DurationPickerContentPreview() {
     NDGLTheme {
-        TimelineContent(
-            startTime = 9.hours,
-            totalDuration = 16.hours,
+        DurationPickerContent(
+            currentDuration = 2.hours + 30.minutes,
             onDismissRequest = {},
             onConfirm = {},
         )
