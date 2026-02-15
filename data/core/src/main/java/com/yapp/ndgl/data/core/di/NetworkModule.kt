@@ -1,6 +1,8 @@
 package com.yapp.ndgl.data.core.di
 
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.yapp.ndgl.data.core.BuildConfig
+import com.yapp.ndgl.data.core.adapter.NDGLCallAdapterFactory
 import com.yapp.ndgl.data.core.authenticator.NDGLAuthenticator
 import com.yapp.ndgl.data.core.interceptor.NDGLInterceptor
 import dagger.Module
@@ -9,8 +11,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
 import timber.log.Timber
 import javax.inject.Qualifier
 import javax.inject.Singleton
@@ -56,15 +60,31 @@ object NetworkModule {
     @Singleton
     @Provides
     fun provideDefaultOkHttpClient(
-        httpLoggingInterceptor: HttpLoggingInterceptor,
         interceptor: NDGLInterceptor,
         authenticator: NDGLAuthenticator,
+        httpLoggingInterceptor: HttpLoggingInterceptor,
     ): OkHttpClient {
         val builder = OkHttpClient.Builder()
-            .addInterceptor(httpLoggingInterceptor)
             .addInterceptor(interceptor)
             .authenticator(authenticator)
+            .addInterceptor(httpLoggingInterceptor)
         return builder.build()
+    }
+
+    @Singleton
+    @Provides
+    fun provideRetrofit(
+        json: Json,
+        baseUrl: String,
+        okHttpClient: OkHttpClient,
+        callAdapterFactory: NDGLCallAdapterFactory,
+    ): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .client(okHttpClient)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .addCallAdapterFactory(callAdapterFactory)
+            .build()
     }
 
     @AuthClient
