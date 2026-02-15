@@ -3,6 +3,7 @@ package com.yapp.ndgl.data.travel.di
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.yapp.ndgl.data.core.adapter.NDGLCallAdapterFactory
 import com.yapp.ndgl.data.travel.api.TravelProgramApi
+import com.yapp.ndgl.data.travel.api.TravelTemplateApi
 import com.yapp.ndgl.data.travel.api.UserTravelApi
 import dagger.Module
 import dagger.Provides
@@ -31,6 +32,21 @@ object TravelNetworkModule {
         .addCallAdapterFactory(callAdapterFactory)
         .build()
         .create(TravelProgramApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideTravelTemplateApi(
+        json: Json,
+        baseUrl: String,
+        okHttpClient: OkHttpClient,
+        callAdapterFactory: NDGLCallAdapterFactory,
+    ): TravelTemplateApi = Retrofit.Builder()
+        .baseUrl(baseUrl)
+        .client(okHttpClient)
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+        .addCallAdapterFactory(callAdapterFactory)
+        .build()
+        .create(TravelTemplateApi::class.java)
 
     @Provides
     @Singleton

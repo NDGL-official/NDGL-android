@@ -2,12 +2,17 @@ package com.yapp.ndgl.feature.home.main
 
 import androidx.lifecycle.viewModelScope
 import com.yapp.ndgl.core.base.BaseViewModel
-import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.util.suspendRunCatching
 import com.yapp.ndgl.data.auth.repository.AuthRepository
+import com.yapp.ndgl.data.travel.model.TravelProgram
+import com.yapp.ndgl.data.travel.model.TravelTemplateSummary
 import com.yapp.ndgl.data.travel.repository.HomeRepository
+import com.yapp.ndgl.data.travel.repository.TravelProgramRepository
+import com.yapp.ndgl.data.travel.repository.TravelTemplateRepository
 import com.yapp.ndgl.data.travel.repository.UserTravelRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.time.LocalDate
@@ -18,6 +23,8 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val homeRepository: HomeRepository,
+    private val travelProgramRepository: TravelProgramRepository,
+    private val travelTemplateRepository: TravelTemplateRepository,
     private val userTravelRepository: UserTravelRepository,
 ) : BaseViewModel<HomeState, HomeIntent, HomeSideEffect>(
     initialState = HomeState(),
@@ -31,15 +38,14 @@ class HomeViewModel @Inject constructor(
             authRepository.initSession()
         }.onSuccess {
             loadHomeContents()
-        }.onFailure { exception ->
-            Timber.e("fail to init session: $exception")
-            loadHomeContents()
+        }.onFailure {
+            // FIXME: 에러 뷰
         }
     }
 
     private fun loadHomeContents() {
         loadMyTravel()
-        loadPopularTravel()
+        loadPopularTemplates()
         loadRecommendedTravel()
     }
 
@@ -64,8 +70,10 @@ class HomeViewModel @Inject constructor(
                                 endDate = travel.endDate,
                             )
                         }
+
                         today <= travel.endDate -> {
-                            val dayCount = ChronoUnit.DAYS.between(travel.startDate, today).toInt() + 1
+                            val dayCount =
+                                ChronoUnit.DAYS.between(travel.startDate, today).toInt() + 1
                             val upcomingPlace = travel.upcomingUserTravelPlace
                             HomeState.MyTravel.InProgress(
                                 title = travel.title,
@@ -82,6 +90,7 @@ class HomeViewModel @Inject constructor(
                                 },
                             )
                         }
+
                         else -> HomeState.MyTravel.None
                     }
                     reduce { copy(myTravel = myTravel) }
@@ -91,50 +100,71 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadPopularTravel() {
+    private fun loadPopularTemplates() {
         viewModelScope.launch {
-            suspendRunCatching { homeRepository.getPopularTravels() }
-                .onSuccess { travels ->
-                    val travelsByYoutuber = travels.groupBy { travel ->
-                        travel.youtube.youtuber
-                    }
-                    val tabs = travelsByYoutuber.keys
-                        .map { youtuber ->
-                            HomeState.PopularTravelTab(
-                                tag = youtuber,
-                                name = youtuber,
-                                icon = R.drawable.ic_20_video,
-                            )
-                        }.toMutableList()
-                        .apply {
-                            add(
-                                index = 0,
-                                element = HomeState.PopularTravelTab(
-                                    tag = "all",
-                                    name = "전체",
-                                    icon = null,
-                                ),
-                            )
-                        }.toList()
-                    val travelsByTab = travelsByYoutuber.toMutableMap().apply {
-                        put("all", travels)
-                    }
-                    reduce {
-                        copy(
-                            popularTravelTabs = tabs,
-                            popularTravelsByTab = travelsByTab,
-                        )
-                    }
+            suspendRunCatching { travelProgramRepository.getAllPrograms() }.onSuccess { programs ->
+                loadPopularTemplatesByPrograms(programs = programs)
+            }.onFailure {
+                // FIXME: 에러 뷰
+                Timber.d("fail to load popular $it")
+            }
+        }
+    }
+
+    private fun loadPopularTemplatesByPrograms(programs: List<TravelProgram>) {
+        viewModelScope.launch {
+            val allTemplateDeferred = async {
+                suspendRunCatching { travelTemplateRepository.getAllPopularTravelTemplates() }.getOrNull()
+            }
+            val popularTemplateDeferred = programs.map { program ->
+                async {
+                    program to suspendRunCatching {
+                        travelTemplateRepository.getPopularTravelTemplates(program.id)
+                    }.getOrNull()
                 }
+            }
+
+            val tabs = buildList {
+                add(HomeState.TravelProgramTab.All)
+                programs.forEach { program ->
+                    add(
+                        HomeState.TravelProgramTab.Custom(
+                            programId = program.id,
+                            name = program.name,
+                            type = program.type,
+                        ),
+                    )
+                }
+            }
+            val allTravels = allTemplateDeferred.await()
+                ?.content
+                ?.map { it.toTravelContent() }
+                ?.take(MAX_POPULAR_TRAVEL_COUNT)
+                ?: emptyList()
+
+            val travelsByProgram = mutableMapOf<Long, List<HomeState.TravelContent>>()
+            popularTemplateDeferred.awaitAll().forEach { (program, result) ->
+                travelsByProgram[program.id] = result?.content
+                    ?.map { it.toTravelContent() }
+                    ?.take(MAX_POPULAR_TRAVEL_COUNT)
+                    ?: emptyList()
+            }
+
+            reduce {
+                copy(
+                    travelProgramTabs = tabs,
+                    allPopularTravels = allTravels,
+                    popularTravelsByProgram = travelsByProgram,
+                )
+            }
         }
     }
 
     private fun loadRecommendedTravel() {
         viewModelScope.launch {
-            suspendRunCatching { homeRepository.getRecommendedTravels() }
-                .onSuccess { travels ->
-                    reduce { copy(recommendedContents = travels) }
-                }
+            suspendRunCatching { homeRepository.getRecommendedTravels() }.onSuccess { travels ->
+                reduce { copy(recommendedContents = travels) }
+            }
         }
     }
 
@@ -144,5 +174,20 @@ class HomeViewModel @Inject constructor(
                 reduce { copy(popularTravelSelectedTabIndex = intent.index) }
             }
         }
+    }
+
+    private fun TravelTemplateSummary.toTravelContent() = HomeState.TravelContent(
+        travelId = id,
+        title = title,
+        country = country,
+        city = city,
+        nights = nights,
+        days = days,
+        programName = programName,
+        thumbnail = thumbnail ?: "",
+    )
+
+    companion object {
+        private const val MAX_POPULAR_TRAVEL_COUNT = 9
     }
 }
