@@ -56,7 +56,7 @@ import com.yapp.ndgl.feature.travel.placedetail.component.PlacePhotoTab
 @Composable
 internal fun PlaceDetailRoute(
     viewModel: PlaceDetailViewModel = hiltViewModel(),
-    innerPadding: PaddingValues,
+    innerPadding: PaddingValues = PaddingValues(),
     navigateBack: () -> Unit,
 ) {
     val state by viewModel.collectAsState()

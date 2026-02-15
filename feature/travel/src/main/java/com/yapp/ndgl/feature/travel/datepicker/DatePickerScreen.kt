@@ -31,7 +31,7 @@ import kotlinx.datetime.LocalDate
 internal fun DatePickerRoute(
     viewModel: DatePickerViewModel = hiltViewModel(),
     navigateBack: () -> Unit = {},
-    innerPadding: PaddingValues,
+    innerPadding: PaddingValues = PaddingValues(),
 ) {
     val state by viewModel.collectAsState()
 
