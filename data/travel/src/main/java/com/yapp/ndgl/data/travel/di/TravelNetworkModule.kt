@@ -2,6 +2,7 @@ package com.yapp.ndgl.data.travel.di
 
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.yapp.ndgl.data.core.adapter.NDGLCallAdapterFactory
+import com.yapp.ndgl.data.travel.api.TravelProgramApi
 import com.yapp.ndgl.data.travel.api.UserTravelApi
 import dagger.Module
 import dagger.Provides
@@ -16,6 +17,21 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object TravelNetworkModule {
+    @Provides
+    @Singleton
+    fun provideTravelProgramApi(
+        json: Json,
+        baseUrl: String,
+        okHttpClient: OkHttpClient,
+        callAdapterFactory: NDGLCallAdapterFactory,
+    ): TravelProgramApi = Retrofit.Builder()
+        .baseUrl(baseUrl)
+        .client(okHttpClient)
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+        .addCallAdapterFactory(callAdapterFactory)
+        .build()
+        .create(TravelProgramApi::class.java)
+
     @Provides
     @Singleton
     fun provideUserTravelApi(
