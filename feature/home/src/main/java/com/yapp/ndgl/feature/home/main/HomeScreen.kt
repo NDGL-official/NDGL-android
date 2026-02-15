@@ -25,11 +25,9 @@ import java.time.LocalDate
 @Composable
 internal fun HomeRoute(
     viewModel: HomeViewModel = hiltViewModel(),
-    innerPadding: PaddingValues,
 ) {
     val state by viewModel.collectAsState()
     HomeScreen(
-        modifier = Modifier.padding(innerPadding),
         state = state,
         onTabSelected = { index ->
             viewModel.onIntent(HomeIntent.SelectPopularTravelTab(index))
@@ -39,7 +37,6 @@ internal fun HomeRoute(
 
 @Composable
 private fun HomeScreen(
-    modifier: Modifier,
     state: HomeState = HomeState(),
     onTabSelected: (Int) -> Unit = {},
 ) {
@@ -64,7 +61,9 @@ private fun HomeScreen(
         },
     ) { innerPadding ->
         LazyColumn(
-            modifier = modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
             contentPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding() + 20.dp,
                 bottom = 80.dp,
@@ -145,7 +144,6 @@ private fun HomeScreenPreview() {
 
     NDGLTheme {
         HomeScreen(
-            modifier = Modifier,
             state = HomeState(
                 userName = "유저123",
                 myTravel = HomeState.MyTravel.InProgress(

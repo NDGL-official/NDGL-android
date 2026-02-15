@@ -3,7 +3,6 @@ package com.yapp.ndgl.ui
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,21 +29,17 @@ fun NDGLApp() {
         remember(navigationState.currentKey) { navigationState.currentKey in navigationState.topLevelKeys }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-        ) { innerPadding ->
-            val entryProvider = entryProvider {
-                homeEntry(navigator, innerPadding)
-                travelEntry(navigator, innerPadding)
-                travelHelperEntry(navigator, innerPadding)
-            }
-
-            NavDisplay(
-                modifier = Modifier.fillMaxSize(),
-                onBack = navigator::goBack,
-                entries = navigationState.toEntries(entryProvider),
-            )
+        val entryProvider = entryProvider {
+            homeEntry(navigator)
+            travelEntry(navigator)
+            travelHelperEntry(navigator)
         }
+
+        NavDisplay(
+            modifier = Modifier.fillMaxSize(),
+            onBack = navigator::goBack,
+            entries = navigationState.toEntries(entryProvider),
+        )
 
         AnimatedVisibility(
             modifier = Modifier.align(Alignment.BottomCenter),
