@@ -6,6 +6,7 @@ import androidx.compose.runtime.Stable
 import com.yapp.ndgl.core.base.UiIntent
 import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
+import com.yapp.ndgl.data.travel.model.PlaceCategory
 import com.yapp.ndgl.data.travel.model.TravelSummary
 import java.time.LocalDate
 
@@ -38,13 +39,13 @@ data class HomeState(
             val dayCount: Int,
             val startDate: LocalDate,
             val endDate: LocalDate,
-            val currentPlace: TravelPlace,
+            val currentPlace: TravelPlace? = null,
         ) : MyTravel
     }
 
     data class TravelPlace(
-        val category: String,
-        val estimatedTime: String,
+        val category: PlaceCategory,
+        val estimatedDuration: Int,
         val name: String,
         val thumbnailUrl: String,
     )

@@ -6,15 +6,19 @@ import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.util.suspendRunCatching
 import com.yapp.ndgl.data.auth.repository.AuthRepository
 import com.yapp.ndgl.data.travel.repository.HomeRepository
+import com.yapp.ndgl.data.travel.repository.UserTravelRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val homeRepository: HomeRepository,
+    private val userTravelRepository: UserTravelRepository,
 ) : BaseViewModel<HomeState, HomeIntent, HomeSideEffect>(
     initialState = HomeState(),
 ) {
@@ -41,24 +45,48 @@ class HomeViewModel @Inject constructor(
 
     private fun loadMyTravel() {
         viewModelScope.launch {
-            suspendRunCatching { homeRepository.getMyTravel() }
+            suspendRunCatching { userTravelRepository.getUpcomingTravel() }
                 .onSuccess { travel ->
-                    reduce {
-                        copy(
-                            myTravel = HomeState.MyTravel.InProgress(
+                    if (travel == null) {
+                        reduce { copy(myTravel = HomeState.MyTravel.None) }
+                        return@onSuccess
+                    }
+
+                    val today = LocalDate.now()
+                    val myTravel = when {
+                        today < travel.startDate -> {
+                            val dDay = ChronoUnit.DAYS.between(today, travel.startDate).toInt()
+                            HomeState.MyTravel.Upcoming(
                                 title = travel.title,
-                                dayCount = travel.dayCount,
+                                imageUrl = travel.upcomingUserTravelPlace?.place?.thumbnail ?: "",
+                                dDay = dDay,
                                 startDate = travel.startDate,
                                 endDate = travel.endDate,
-                                currentPlace = HomeState.TravelPlace(
-                                    category = travel.currentPlace.category,
-                                    estimatedTime = travel.currentPlace.estimatedTime,
-                                    name = travel.currentPlace.name,
-                                    thumbnailUrl = travel.currentPlace.thumbnailUrl,
-                                ),
-                            ),
-                        )
+                            )
+                        }
+                        today <= travel.endDate -> {
+                            val dayCount = ChronoUnit.DAYS.between(travel.startDate, today).toInt() + 1
+                            val upcomingPlace = travel.upcomingUserTravelPlace
+                            HomeState.MyTravel.InProgress(
+                                title = travel.title,
+                                dayCount = dayCount,
+                                startDate = travel.startDate,
+                                endDate = travel.endDate,
+                                currentPlace = upcomingPlace?.place?.let { place ->
+                                    HomeState.TravelPlace(
+                                        category = place.category,
+                                        estimatedDuration = upcomingPlace.estimatedDuration,
+                                        name = place.name,
+                                        thumbnailUrl = place.thumbnail ?: "",
+                                    )
+                                },
+                            )
+                        }
+                        else -> HomeState.MyTravel.None
                     }
+                    reduce { copy(myTravel = myTravel) }
+                }.onFailure {
+                    Timber.e("Failed to load upcoming travel: $it")
                 }
         }
     }

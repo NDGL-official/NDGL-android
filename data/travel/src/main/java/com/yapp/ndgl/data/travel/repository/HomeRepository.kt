@@ -1,28 +1,11 @@
 package com.yapp.ndgl.data.travel.repository
 
-import com.yapp.ndgl.data.travel.model.InProgressTravel
 import com.yapp.ndgl.data.travel.model.TravelSummary
-import java.time.LocalDate
 import javax.inject.Inject
 import kotlin.random.Random
 
 // FIXME: Sample data 제거 및 API 호출
 class HomeRepository @Inject constructor() {
-    suspend fun getMyTravel(): InProgressTravel {
-        return InProgressTravel(
-            title = "인도 여행",
-            dayCount = 1,
-            startDate = LocalDate.of(2024, 12, 23),
-            endDate = LocalDate.of(2024, 12, 26),
-            currentPlace = InProgressTravel.TravelPlace(
-                category = "교통수단",
-                estimatedTime = "1시간 체류 예상",
-                name = "인도 국제 공항",
-                thumbnailUrl = randomImageUrl(),
-            ),
-        )
-    }
-
     suspend fun getPopularTravels(): List<TravelSummary> {
         return listOf(
             TravelSummary(

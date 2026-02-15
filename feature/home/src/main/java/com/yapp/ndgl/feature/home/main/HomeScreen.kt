@@ -19,6 +19,7 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationIcon
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
+import com.yapp.ndgl.data.travel.model.PlaceCategory
 import com.yapp.ndgl.data.travel.model.TravelSummary
 import java.time.LocalDate
 
@@ -70,7 +71,7 @@ private fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(40.dp),
         ) {
             item {
-                MyTravelCardSection(
+                UpcomingTravelCardSection(
                     modifier = Modifier.fillMaxWidth(),
                     myTravel = state.myTravel,
                 )
@@ -151,8 +152,8 @@ private fun HomeScreenPreview() {
                     startDate = LocalDate.of(2024, 12, 23),
                     endDate = LocalDate.of(2024, 12, 26),
                     currentPlace = HomeState.TravelPlace(
-                        category = "교통수단",
-                        estimatedTime = "1시간 체류 예상",
+                        category = PlaceCategory.TRANSPORT,
+                        estimatedDuration = 60,
                         name = "인도 국제 공항",
                         thumbnailUrl = "",
                     ),
