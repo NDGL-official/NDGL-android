@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -46,7 +46,8 @@ private fun HomeScreen(
                 textAlignType = NDGLNavigationBarAttr.TextAlignType.START,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(color = NDGLTheme.colors.white),
+                    .background(color = NDGLTheme.colors.white)
+                    .statusBarsPadding(),
                 trailingContents = {
                     NDGLNavigationIcon(
                         icon = R.drawable.ic_28_search,
@@ -61,12 +62,10 @@ private fun HomeScreen(
         },
     ) { innerPadding ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(
                 top = innerPadding.calculateTopPadding() + 20.dp,
-                bottom = 80.dp,
+                bottom = innerPadding.calculateBottomPadding() + 100.dp,
             ),
             verticalArrangement = Arrangement.spacedBy(40.dp),
         ) {
