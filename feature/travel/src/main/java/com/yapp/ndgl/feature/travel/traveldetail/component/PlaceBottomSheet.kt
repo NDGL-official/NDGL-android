@@ -38,7 +38,7 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.noRippleClickable
 import com.yapp.ndgl.core.util.formatDecimal
 import com.yapp.ndgl.core.util.formatString
-import com.yapp.ndgl.feature.travel.traveldetail.PlaceType
+import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.traveldetail.TravelPlace
 import kotlin.Int
 import kotlin.String
@@ -156,7 +156,7 @@ internal fun PlaceBottomSheet(
                                 color = NDGLTheme.colors.black400,
                                 style = NDGLTheme.typography.bodyMdMedium,
                             )
-                            place.userData?.memo?.let { memo ->
+                            place.userData.memo?.let { memo ->
                                 Spacer(Modifier.width(16.dp))
                                 Text(
                                     text = memo,
@@ -188,7 +188,7 @@ internal fun PlaceBottomSheet(
                                 color = NDGLTheme.colors.black400,
                                 style = NDGLTheme.typography.bodyMdMedium,
                             )
-                            place.userData?.cost?.let { cost ->
+                            place.userData.cost?.let { cost ->
                                 Spacer(Modifier.width(16.dp))
                                 Text(
                                     text = "${cost.formatDecimal()}원",

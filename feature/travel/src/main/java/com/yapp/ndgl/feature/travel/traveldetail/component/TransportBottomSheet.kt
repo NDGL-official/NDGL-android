@@ -44,8 +44,8 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.noRippleClickable
 import com.yapp.ndgl.core.util.formatDistance
 import com.yapp.ndgl.core.util.formatString
-import com.yapp.ndgl.feature.travel.traveldetail.TransportSegment
-import com.yapp.ndgl.feature.travel.traveldetail.TransportType
+import com.yapp.ndgl.feature.travel.model.TransportSegment
+import com.yapp.ndgl.feature.travel.model.TransportType
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
 

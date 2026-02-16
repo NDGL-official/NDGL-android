@@ -17,7 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
-import com.yapp.ndgl.feature.travel.placedetail.PlacePhoto
+import com.yapp.ndgl.feature.travel.model.PlacePhoto
 
 @Composable
 internal fun PlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: List<PlacePhoto>) {

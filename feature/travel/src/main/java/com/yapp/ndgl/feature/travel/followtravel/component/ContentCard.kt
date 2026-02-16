@@ -102,8 +102,8 @@ fun ContentCard(contentInfo: ContentInfo) {
                         Text(
                             text = stringResource(
                                 R.string.content_card_info_format,
-                                contentInfo.videoInfo.name,
-                                contentInfo.country,
+                                contentInfo.videoInfo.creatorName,
+                                contentInfo.city,
                                 contentInfo.nights,
                                 contentInfo.days,
                             ),
@@ -212,15 +212,13 @@ fun PreviewContent() {
     NDGLTheme {
         ContentCard(
             contentInfo = ContentInfo(
-                travelId = "TRAVEL_001",
-                country = "태국",
                 city = "방콕",
                 budgetPerPerson = Budget(1200000),
                 nights = 3,
                 days = 4,
                 videoInfo = VideoInfo(
                     title = "방콕 풀코스, 동남아 안 가본 곽튜브와 함께 【방콕】",
-                    name = "빠니보틀",
+                    creatorName = "빠니보틀",
                     profileImage = "",
                     thumbnail = "",
                     link = "",

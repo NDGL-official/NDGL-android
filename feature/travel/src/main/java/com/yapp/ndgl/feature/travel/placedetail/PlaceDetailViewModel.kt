@@ -1,6 +1,11 @@
 package com.yapp.ndgl.feature.travel.placedetail
 
 import com.yapp.ndgl.core.base.BaseViewModel
+import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
+import com.yapp.ndgl.feature.travel.model.PlacePhoto
+import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.Price
+import com.yapp.ndgl.feature.travel.model.PriceRange
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -25,6 +30,10 @@ class PlaceDetailViewModel @AssistedInject constructor(
                     id = placeId,
                     name = "젤라테리아 파씨 (Gelateria Fassi)",
                     placeType = PlaceType.RESTAURANT,
+                    priceRange = PriceRange(
+                        startPrice = Price(currencyCode = "EUR", units = "5", symbol = "€"),
+                        endPrice = Price(currencyCode = "EUR", units = "15", symbol = "€"),
+                    ),
                     address = "Via Principe Eugenio, 65, 00185 Roma RM, Italy",
                     phoneNumber = "+39 06 446 4740",
                     openingHours = "매일 12:00 ~ 24:00",
@@ -35,10 +44,13 @@ class PlaceDetailViewModel @AssistedInject constructor(
                     userRatingCount = 12450,
                     estimatedDuration = 1.hours,
                     thumbnail = "https://images.unsplash.com/photo-1567206563064-6f60f40a2b57",
-                    tips = listOf(
-                        "리조(쌀) 맛은 무조건 드셔보세요. 파씨의 시그니처입니다.",
-                        "생크림(Panna)을 무료로 올려주니 꼭 추가해서 드세요!",
-                        "매장 내부에 앉아서 먹을 수 있는 공간이 꽤 넓습니다.",
+                    tipContent = TipContent(
+                        creatorName = "",
+                        tips = listOf(
+                            "리조(쌀) 맛은 무조건 드셔보세요. 파씨의 시그니처입니다.",
+                            "생크림(Panna)을 무료로 올려주니 꼭 추가해서 드세요!",
+                            "매장 내부에 앉아서 먹을 수 있는 공간이 꽤 넓습니다.",
+                        ),
                     ),
                     alternativePlaces = listOf(
                         AlternativePlace(
@@ -62,7 +74,6 @@ class PlaceDetailViewModel @AssistedInject constructor(
                     ),
                     latitude = 41.9028,
                     longitude = 12.4964,
-                    creatorName = "빠니보틀",
                 ),
                 photos = listOf(
                     PlacePhoto(url = "https://picsum.photos/id/10/400/600", width = 400, height = 600),
@@ -86,7 +97,6 @@ class PlaceDetailViewModel @AssistedInject constructor(
             is PlaceDetailIntent.DismissChangeModal -> dismissChangeModal()
             is PlaceDetailIntent.ClickAddress -> clickAddress()
             is PlaceDetailIntent.ClickMenu -> clickMenu()
-            is PlaceDetailIntent.ClickAddScheduleButton -> clickAddScheduleButton()
         }
     }
 
@@ -112,15 +122,11 @@ class PlaceDetailViewModel @AssistedInject constructor(
     }
 
     private fun clickAddress() {
-        postSideEffect(PlaceDetailSideEffect.NavigateToBrowser(state.value.placeInfo.googleMapsUri))
+        state.value.placeInfo.googleMapsUri?.let { postSideEffect(PlaceDetailSideEffect.NavigateToBrowser(it)) }
     }
 
     private fun clickMenu() {
-        postSideEffect(PlaceDetailSideEffect.NavigateToBrowser(state.value.placeInfo.websiteUrl))
-    }
-
-    private fun clickAddScheduleButton() {
-        // TODO
+        state.value.placeInfo.websiteUrl?.let { postSideEffect(PlaceDetailSideEffect.NavigateToBrowser(it)) }
     }
 
     @AssistedFactory

@@ -41,9 +41,9 @@ import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.designsystem.NDGLCheckbox
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.formatString
-import com.yapp.ndgl.feature.travel.traveldetail.PlaceType
+import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.getColor
 import com.yapp.ndgl.feature.travel.traveldetail.TravelPlace
-import com.yapp.ndgl.feature.travel.traveldetail.getColor
 import java.util.Locale
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours

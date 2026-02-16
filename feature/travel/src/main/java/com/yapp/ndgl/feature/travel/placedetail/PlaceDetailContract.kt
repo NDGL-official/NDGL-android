@@ -1,12 +1,13 @@
 package com.yapp.ndgl.feature.travel.placedetail
 
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
 import com.yapp.ndgl.core.base.UiIntent
 import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
-import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.util.formatDecimal
+import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
+import com.yapp.ndgl.feature.travel.model.PlacePhoto
+import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.PriceRange
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
@@ -19,42 +20,32 @@ data class PlaceDetailState(
 ) : UiState
 
 data class PlaceInfo(
-    // TODO("priceLevel 추후 변경")
     val id: String = "",
     val name: String = "",
     val placeType: PlaceType = PlaceType.ATTRACTION,
-    val address: String = "",
-    val phoneNumber: String = "",
-    val openingHours: String = "",
-    val googleMapsUri: String = "",
-    val websiteUrl: String = "",
-    val userRatingCount: Int = 0,
-    val rating: Double = 0.0,
-    val estimatedDuration: Duration = 0.hours,
+    val priceRange: PriceRange? = null,
+    val rating: Double? = null,
+    val userRatingCount: Int? = null,
+    val address: String? = null,
+    val phoneNumber: String? = null,
+    val openingHours: String? = null,
+    val googleMapsUri: String? = null,
+    val websiteUrl: String? = null,
+    val estimatedDuration: Duration = 1.hours,
     val thumbnail: String = "",
-    val tips: List<String> = emptyList(),
+    val tipContent: TipContent? = null,
     val alternativePlaces: List<AlternativePlace> = emptyList(),
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
-    val creatorName: String = "",
 ) {
     val formattedRatingCount: String
-        get() = userRatingCount.formatDecimal()
+        get() = userRatingCount?.formatDecimal() ?: ""
 }
 
-enum class PlaceDetailTab(@get:StringRes val titleRes: Int) {
-    INFO(R.string.place_detail_tab_info),
-    PHOTO(R.string.place_detail_tab_photo),
-}
-
-data class PlacePhoto(
-    val url: String,
-    val width: Int,
-    val height: Int,
-) {
-    val aspectRatio: Float
-        get() = width.toFloat() / height.toFloat()
-}
+data class TipContent(
+    val creatorName: String,
+    val tips: List<String>,
+)
 
 data class AlternativePlace(
     val id: Int,
@@ -63,14 +54,6 @@ data class AlternativePlace(
     val placeType: PlaceType,
 )
 
-enum class PlaceType(@get:StringRes val labelRes: Int, @get:DrawableRes val iconRes: Int) {
-    ACCOMMODATION(R.string.place_type_accommodation, R.drawable.ic_14_home),
-    RESTAURANT(R.string.place_type_restaurant, R.drawable.ic_14_restaurant),
-    ATTRACTION(R.string.place_type_attraction, R.drawable.ic_14_flag),
-    CAFE(R.string.place_type_cafe, R.drawable.ic_14_coffee),
-    TRANSPORT(R.string.place_type_transport, R.drawable.ic_14_car),
-}
-
 sealed interface PlaceDetailIntent : UiIntent {
     data class SelectTab(val tab: PlaceDetailTab) : PlaceDetailIntent
     data class ClickChangePlace(val alternativePlace: AlternativePlace) : PlaceDetailIntent
@@ -78,7 +61,6 @@ sealed interface PlaceDetailIntent : UiIntent {
     data object DismissChangeModal : PlaceDetailIntent
     data object ClickAddress : PlaceDetailIntent
     data object ClickMenu : PlaceDetailIntent
-    data object ClickAddScheduleButton : PlaceDetailIntent
 }
 
 sealed interface PlaceDetailSideEffect : UiSideEffect {

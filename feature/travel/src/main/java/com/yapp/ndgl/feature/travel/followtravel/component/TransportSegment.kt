@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.dp
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.formatString
-import com.yapp.ndgl.feature.travel.followtravel.TransportSegment
-import com.yapp.ndgl.feature.travel.followtravel.TransportType
+import com.yapp.ndgl.feature.travel.model.TransportSegment
+import com.yapp.ndgl.feature.travel.model.TransportType
 import kotlin.time.Duration.Companion.minutes
 
 @Composable

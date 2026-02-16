@@ -1,6 +1,9 @@
 package com.yapp.ndgl.feature.travel.traveldetail
 
 import com.yapp.ndgl.core.base.BaseViewModel
+import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.TransportSegment
+import com.yapp.ndgl.feature.travel.model.TransportType
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject

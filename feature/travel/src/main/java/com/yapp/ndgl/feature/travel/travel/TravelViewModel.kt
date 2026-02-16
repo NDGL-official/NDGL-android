@@ -19,11 +19,13 @@ class TravelViewModel @Inject constructor() : BaseViewModel<TravelState, TravelI
         }
     }
 
+    // FIXME: Home 화면에서 처리
     private fun clickTravel(travelId: Int) {
         reduce { copy(displayText = "클릭된 id: $travelId") }
-        postSideEffect(TravelSideEffect.NavigateToFollowTravel(travelId))
+        postSideEffect(TravelSideEffect.NavigateToFollowTravel(2, 1))
     }
 
+    // FIXME: Home 화면에서 처리
     private fun clickTravelDetail(travelId: Int) {
         reduce { copy(displayText = "Travel Detail 클릭된 id: $travelId") }
         postSideEffect(TravelSideEffect.NavigateToTravelDetail(travelId))

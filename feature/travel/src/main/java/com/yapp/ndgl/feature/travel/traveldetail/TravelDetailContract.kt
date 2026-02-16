@@ -1,14 +1,10 @@
 package com.yapp.ndgl.feature.travel.traveldetail
 
-import androidx.annotation.DrawableRes
-import androidx.annotation.StringRes
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import com.yapp.ndgl.core.base.UiIntent
 import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
-import com.yapp.ndgl.core.ui.R
-import com.yapp.ndgl.core.ui.theme.NDGLTheme
+import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.TransportSegment
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
@@ -97,38 +93,6 @@ data class TravelPlace(
         val cost: Int? = null,
         val estimatedDuration: Duration = 0.hours,
     )
-}
-
-enum class PlaceType(@get:StringRes val labelRes: Int, @get:DrawableRes val iconRes: Int) {
-    ACCOMMODATION(R.string.place_type_accommodation, R.drawable.ic_14_home),
-    RESTAURANT(R.string.place_type_restaurant, R.drawable.ic_14_restaurant),
-    ATTRACTION(R.string.place_type_attraction, R.drawable.ic_14_flag),
-    CAFE(R.string.place_type_cafe, R.drawable.ic_14_coffee),
-    TRANSPORT(R.string.place_type_transport, R.drawable.ic_14_car),
-}
-
-@Composable
-fun PlaceType.getColor(): Color {
-    return when (this) {
-        PlaceType.ACCOMMODATION -> NDGLTheme.colors.etcPurple
-        PlaceType.RESTAURANT -> NDGLTheme.colors.etcOrange
-        PlaceType.ATTRACTION -> NDGLTheme.colors.etcGreen
-        PlaceType.CAFE -> NDGLTheme.colors.etcOrange
-        PlaceType.TRANSPORT -> NDGLTheme.colors.etcGray
-    }
-}
-
-data class TransportSegment(
-    val type: TransportType,
-    val duration: Duration,
-    val distance: Int,
-)
-
-enum class TransportType(@get:StringRes val labelRes: Int, @get:DrawableRes val iconRes: Int) {
-    WALK(R.string.transport_type_walk, R.drawable.ic_20_walk),
-    CAR(R.string.transport_type_car, R.drawable.ic_20_car),
-    BUS(R.string.transport_type_bus, R.drawable.ic_20_bus),
-    TRAIN(R.string.transport_type_train, R.drawable.ic_20_train),
 }
 
 sealed interface TravelDetailIntent : UiIntent {

@@ -95,6 +95,7 @@
     <string name="place_detail_tab_info">정보</string>
     <string name="place_detail_tab_photo">사진</string>
     <string name="place_detail_add_schedule">일정 추가하기</string>
+    <string name="place_detail_review_format">리뷰 %s</string>
     <string name="place_detail_website">웹사이트 보기</string>
     <string name="place_detail_menu">메뉴</string>
     <string name="place_detail_plan_b_message">아래에서 플랜 B를 알아봐요!</string>

@@ -58,7 +58,7 @@ internal fun FollowTravelRoute(
         clickBackButton = navigateBack,
         selectDay = { viewModel.onIntent(FollowTravelIntent.SelectDay(it)) },
         clickFollowTravel = {
-            navigateToDatePicker(state.contentInfo.days)
+            navigateToDatePicker(state.days)
         },
     )
 }
@@ -70,7 +70,7 @@ private fun FollowTravelScreen(
     selectDay: (Int) -> Unit,
     clickFollowTravel: () -> Unit,
 ) {
-    val tabs = (1..state.contentInfo.days).map { day ->
+    val tabs = (1..state.days).map { day ->
         NDGLChipTabAttr.Tab(
             tag = "d$day",
             name = stringResource(R.string.day_format, day),
@@ -166,14 +166,11 @@ private fun FollowTravelScreen(
                 }
             }
 
-            val currentItinerary = state.itineraries.getOrNull(state.selectedDay - 1)
-            val currentPlaces = currentItinerary?.places.orEmpty()
-            val currentTransportSegments = currentItinerary?.transportSegments.orEmpty()
-
+            val currentPlaces = state.itineraries.getOrNull(state.selectedDay - 1)?.places.orEmpty()
             currentPlaces.forEachIndexed { index, place ->
                 item(key = "place_${place.id}") {
                     Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-                        PlaceItem(place = place, onClick = {}) // TODO("클릭 시 장소 바텀시트")
+                        PlaceItem(place = place, onClick = {}) // TODO("클릭 시 장소 상세보기 화면")
                     }
                 }
 
@@ -181,7 +178,7 @@ private fun FollowTravelScreen(
                     item(key = "transport_${place.id}_$index") {
                         Spacer(Modifier.height(17.dp))
                         Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-                            currentTransportSegments.getOrNull(index)?.let { segment ->
+                            place.transportToNext?.let { segment ->
                                 TransportSegment(segment = segment)
                             }
                         }
