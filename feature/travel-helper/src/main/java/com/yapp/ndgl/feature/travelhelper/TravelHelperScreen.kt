@@ -1,9 +1,7 @@
 package com.yapp.ndgl.feature.travelhelper
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -14,20 +12,16 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 @Composable
 internal fun TravelHelperRoute(
-    innerPadding: PaddingValues = PaddingValues(),
     viewModel: TravelHelperViewModel = hiltViewModel(),
 ) {
-    TravelHelperScreen(innerPadding = innerPadding)
+    TravelHelperScreen()
 }
 
 @Composable
-private fun TravelHelperScreen(
-    innerPadding: PaddingValues = PaddingValues(),
-) {
+private fun TravelHelperScreen() {
     LazyColumn(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding),
+            .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -40,5 +34,5 @@ private fun TravelHelperScreen(
 @Preview(showBackground = true)
 @Composable
 private fun TravelHelperScreenPreview() {
-    TravelHelperScreen(innerPadding = PaddingValues())
+    TravelHelperScreen()
 }

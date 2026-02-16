@@ -106,4 +106,9 @@
     <string name="place_detail_modal_change_description">%s -> %s</string>
     <string name="place_detail_modal_change_confirm">변경하기</string>
     <string name="place_detail_modal_change_cancel">아니요</string>
+
+    <!-- Transport Bottom Sheet -->
+    <string name="transport_bottom_sheet_title">이동수단 변경</string>
+    <string name="transport_bottom_sheet_button">확인</string>
+
 </resources>

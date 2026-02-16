@@ -1,6 +1,5 @@
 package com.yapp.ndgl.feature.travel.traveldetail.component
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,6 +17,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
+import com.yapp.ndgl.core.ui.util.noRippleClickable
+import com.yapp.ndgl.core.util.formatDistance
 import com.yapp.ndgl.core.util.formatString
 import com.yapp.ndgl.feature.travel.traveldetail.TransportSegment
 import com.yapp.ndgl.feature.travel.traveldetail.TransportType
@@ -26,12 +27,12 @@ import kotlin.time.Duration.Companion.minutes
 @Composable
 internal fun TransportSegment(
     segment: TransportSegment,
-    onClick: () -> Unit = {},
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable {
+            .noRippleClickable {
                 onClick()
             },
         verticalAlignment = Alignment.CenterVertically,
@@ -43,7 +44,7 @@ internal fun TransportSegment(
             text = stringResource(
                 R.string.transport_segment_format,
                 segment.duration.formatString(),
-                segment.formatDistance(),
+                segment.distance.formatDistance(),
             ),
             color = NDGLTheme.colors.black400,
             style = NDGLTheme.typography.bodyMdRegular,
@@ -62,6 +63,7 @@ internal fun TransportSegment(
 private fun TransportSegmentPreview() {
     NDGLTheme {
         TransportSegment(
+            onClick = {},
             segment = TransportSegment(
                 type = TransportType.WALK,
                 duration = 15.minutes,

@@ -9,7 +9,6 @@ import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
-import java.util.Locale.getDefault
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
@@ -23,11 +22,10 @@ data class TravelDetailState(
     val showDeleteModal: Boolean = false,
     val showCancelEditModal: Boolean = false,
     val showTimelineBottomSheet: Boolean = false,
-    val startTime: Duration? = null,
-    val endTime: Duration? = null,
     val selectedPlace: TravelPlace? = null,
     val showPlaceBottomSheet: Boolean = false,
     val showTimeBottomSheet: Boolean = false,
+    val showTransportBottomSheet: Boolean = false,
     val showCostModal: Boolean = false,
     val showMemoModal: Boolean = false,
 ) : UiState
@@ -65,13 +63,14 @@ data class Budget(
 }
 
 data class Itinerary(
-    val budget: Budget = Budget(0),
+    val startTime: Duration? = null,
+    val endTime: Duration? = null,
     val places: List<TravelPlace> = emptyList(),
-    val transportSegments: List<TransportSegment> = emptyList(),
 ) {
     val totalDuration: Duration
-        get() = places.fold(0.hours) { acc, place -> acc + place.duration } +
-            transportSegments.fold(0.hours) { acc, segment -> acc + segment.duration }
+        get() = places.fold(0.hours) { acc, place ->
+            acc + place.duration + (place.transportToNext?.duration ?: 0.hours)
+        }
 }
 
 data class TravelPlace(
@@ -88,6 +87,7 @@ data class TravelPlace(
     val placeType: PlaceType,
     val userData: UserData = UserData(),
     val startTime: Duration,
+    val transportToNext: TransportSegment? = null,
 ) {
     val duration: Duration
         get() = userData.estimatedDuration
@@ -122,22 +122,7 @@ data class TransportSegment(
     val type: TransportType,
     val duration: Duration,
     val distance: Int,
-) {
-    fun formatDistance(): String {
-        return when {
-            distance >= 1000 -> {
-                val km = distance / 1000.0
-                if (km % 1 == 0.0) {
-                    "${km.toInt()}km"
-                } else {
-                    String.format(getDefault(), "%.1fkm", km)
-                }
-            }
-
-            else -> "${distance}m"
-        }
-    }
-}
+)
 
 enum class TransportType(@get:StringRes val labelRes: Int, @get:DrawableRes val iconRes: Int) {
     WALK(R.string.transport_type_walk, R.drawable.ic_20_walk),
@@ -162,8 +147,11 @@ sealed interface TravelDetailIntent : UiIntent {
     data object LongClickPlaceItem : TravelDetailIntent
     data object DismissTimelineBottomSheet : TravelDetailIntent
     data class ConfirmTimelineSetting(val startTime: Duration) : TravelDetailIntent
-    data class ReorderPlaces(val fromIndex: Int, val toIndex: Int) : TravelDetailIntent
+    data class ReorderPlaces(val dayIndex: Int, val fromIndex: Int, val toIndex: Int) : TravelDetailIntent
     data object ConfirmEditMode : TravelDetailIntent
+    data class ClickTransportSegment(val place: TravelPlace) : TravelDetailIntent
+    data class ConfirmChangeTransportSegment(val segment: TransportSegment) : TravelDetailIntent
+    data object DismissTransportBottomSheet : TravelDetailIntent
     data class ClickPlaceItem(val place: TravelPlace) : TravelDetailIntent
     data class ClickAddTime(val placeId: Int) : TravelDetailIntent
     data class ClickAddCost(val placeId: Int) : TravelDetailIntent

@@ -56,7 +56,6 @@ import kotlin.time.Duration.Companion.minutes
 internal fun TimelineContent(
     startTime: Duration,
     totalDuration: Duration,
-    onDismissRequest: () -> Unit,
     onConfirm: (Duration) -> Unit,
 ) {
     var isSettingStartTime by remember { mutableStateOf(false) }
@@ -68,33 +67,6 @@ internal fun TimelineContent(
             .fillMaxWidth()
             .padding(24.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(R.string.schedule_setting_title),
-                color = NDGLTheme.colors.black900,
-                style = NDGLTheme.typography.titleMdSemiBold,
-            )
-            Spacer(Modifier.weight(1f))
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(NDGLTheme.colors.black50)
-                    .clickable { onDismissRequest() }
-                    .padding(8.dp),
-            ) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_24_close),
-                    contentDescription = null,
-                    tint = NDGLTheme.colors.black900,
-                )
-            }
-        }
-        Spacer(Modifier.height(32.dp))
-
         if (isSettingStartTime) {
             val hourItems = remember { (0..23).toList() }
             val minuteItems = remember { (0..55 step 5).toList() }
@@ -323,7 +295,6 @@ private fun TimelineContentPreview() {
         TimelineContent(
             startTime = 9.hours,
             totalDuration = 16.hours,
-            onDismissRequest = {},
             onConfirm = {},
         )
     }

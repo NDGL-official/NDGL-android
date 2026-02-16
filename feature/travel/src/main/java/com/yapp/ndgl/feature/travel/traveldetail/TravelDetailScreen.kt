@@ -1,8 +1,11 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.yapp.ndgl.feature.travel.traveldetail
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,9 +19,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,12 +33,14 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -42,6 +49,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.designsystem.NDGLBottomSheet
@@ -57,6 +65,8 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationIcon
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.dropShadow
 import com.yapp.ndgl.core.ui.util.launchBrowser
+import com.yapp.ndgl.core.ui.util.rememberReorderableState
+import com.yapp.ndgl.core.ui.util.reorderable
 import com.yapp.ndgl.feature.travel.traveldetail.component.ContentCard
 import com.yapp.ndgl.feature.travel.traveldetail.component.DurationPickerContent
 import com.yapp.ndgl.feature.travel.traveldetail.component.EditControlBar
@@ -64,6 +74,7 @@ import com.yapp.ndgl.feature.travel.traveldetail.component.EditablePlaceItem
 import com.yapp.ndgl.feature.travel.traveldetail.component.PlaceBottomSheet
 import com.yapp.ndgl.feature.travel.traveldetail.component.PlaceItem
 import com.yapp.ndgl.feature.travel.traveldetail.component.TimelineContent
+import com.yapp.ndgl.feature.travel.traveldetail.component.TransportBottomSheet
 import com.yapp.ndgl.feature.travel.traveldetail.component.TransportSegment
 import com.yapp.ndgl.feature.travel.traveldetail.component.TravelDetailToolBar
 import com.yapp.ndgl.feature.travel.traveldetail.component.TravelMap
@@ -113,7 +124,10 @@ internal fun TravelDetailRoute(
         longClickPlaceItem = { viewModel.onIntent(TravelDetailIntent.LongClickPlaceItem) },
         dismissTimelineBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissTimelineBottomSheet) },
         confirmTimelineSetting = { startTime -> viewModel.onIntent(TravelDetailIntent.ConfirmTimelineSetting(startTime)) },
-        reorderPlaces = { fromIndex, toIndex -> viewModel.onIntent(TravelDetailIntent.ReorderPlaces(fromIndex, toIndex)) },
+        reorderPlaces = { dayIndex, fromIndex, toIndex -> viewModel.onIntent(TravelDetailIntent.ReorderPlaces(dayIndex, fromIndex, toIndex)) },
+        clickTransportSegment = { place -> viewModel.onIntent(TravelDetailIntent.ClickTransportSegment(place)) },
+        confirmChangeTransport = { segment -> viewModel.onIntent(TravelDetailIntent.ConfirmChangeTransportSegment(segment)) },
+        dismissTransportBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissTransportBottomSheet) },
         confirmEditMode = { viewModel.onIntent(TravelDetailIntent.ConfirmEditMode) },
         clickPlaceItem = { viewModel.onIntent(TravelDetailIntent.ClickPlaceItem(it)) },
         dismissPlaceBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissPlaceBottomSheet) },
@@ -151,8 +165,11 @@ private fun TravelDetailScreen(
     longClickPlaceItem: () -> Unit,
     dismissTimelineBottomSheet: () -> Unit,
     confirmTimelineSetting: (Duration) -> Unit,
-    reorderPlaces: (Int, Int) -> Unit,
+    reorderPlaces: (Int, Int, Int) -> Unit,
     confirmEditMode: () -> Unit,
+    clickTransportSegment: (TravelPlace) -> Unit,
+    confirmChangeTransport: (TransportSegment) -> Unit,
+    dismissTransportBottomSheet: () -> Unit,
     clickPlaceItem: (TravelPlace) -> Unit,
     clickAddTime: (Int) -> Unit,
     clickAddMemo: (Int) -> Unit,
@@ -186,12 +203,24 @@ private fun TravelDetailScreen(
             result
         }
     }
-    var columnScrollingEnabled by remember { mutableStateOf(true) }
+    var isMapScrolled by remember { mutableStateOf(true) }
 
     val currentItineraries = if (state.isEditMode) state.tempItineraries else state.itineraries
     val currentItinerary = currentItineraries.getOrNull(state.selectedDay - 1)
     val currentPlaces = currentItinerary?.places.orEmpty()
-    val currentTransportSegments = currentItinerary?.transportSegments.orEmpty()
+
+    // 헤더(0) + stickyHeader(1) + 맵 아이템(2) = 3개가 장소 아이템 앞에 위치
+    val placesOffset = 3
+    val tempPlaces = remember(state.tempItineraries, state.selectedDay) {
+        state.tempItineraries.getOrNull(state.selectedDay - 1)?.places.orEmpty().toMutableStateList()
+    }
+    val reorderableState = rememberReorderableState(
+        list = tempPlaces,
+        lazyListState = listState,
+        offset = placesOffset,
+        isReorderable = { key -> key is String && key.startsWith("place_") },
+    )
+    var isDragMode by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -200,10 +229,21 @@ private fun TravelDetailScreen(
     ) {
         LazyColumn(
             state = listState,
-            userScrollEnabled = columnScrollingEnabled,
+            userScrollEnabled = isMapScrolled && !isDragMode,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = 60.dp),
+                .padding(bottom = 60.dp)
+                .then(
+                    if (state.isEditMode) {
+                        Modifier.reorderable(reorderableState) { from, to ->
+                            if (from != null && to != null && from != to) {
+                                reorderPlaces(state.selectedDay - 1, from - placesOffset, to - placesOffset)
+                            }
+                        }
+                    } else {
+                        Modifier
+                    },
+                ),
         ) {
             item {
                 Column(
@@ -265,7 +305,7 @@ private fun TravelDetailScreen(
                         if (itinerary.places.isNotEmpty()) {
                             TravelMap(
                                 places = itinerary.places,
-                                onScrollEnabledChange = { columnScrollingEnabled = it },
+                                onScrollEnabledChange = { isMapScrolled = it },
                             )
                             if (state.isEditMode) {
                                 val currentDayPlaceIds = itinerary.places.map { it.id }.toSet()
@@ -278,7 +318,7 @@ private fun TravelDetailScreen(
                                 )
                             } else {
                                 TravelDetailToolBar(
-                                    startTime = state.startTime,
+                                    startTime = itinerary.startTime,
                                     clickStartTimeSetting = clickStartTimeSetting,
                                     clickEditTravel = clickEditTravel,
                                 )
@@ -307,22 +347,46 @@ private fun TravelDetailScreen(
                 }
             }
 
-            item(key = "places_${state.selectedDay}") {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clipToBounds(),
-                    verticalArrangement = Arrangement.spacedBy(if (state.isEditMode) 16.dp else 10.dp),
-                ) {
-                    currentPlaces.forEachIndexed { index, place ->
-                        key("place_${state.selectedDay}_${place.id}") {
-                            if (state.isEditMode) {
-                                EditablePlaceItem(
-                                    place = place,
-                                    checked = state.selectedPlaceIds.contains(place.id),
-                                    onCheck = { checkPlaceItem(place.id) },
+            if (state.isEditMode) {
+                itemsIndexed(
+                    items = tempPlaces,
+                    key = { _, place -> "place_${state.selectedDay}_${place.id}" },
+                ) { index, place ->
+                    val isDragging = reorderableState.currentIndex == index + placesOffset
+                    Box(
+                        modifier = Modifier
+                            .animateItem()
+                            .fillMaxWidth()
+                            .zIndex(if (isDragging) 1f else 0f)
+                            .padding(bottom = 16.dp)
+                            .background(if (isDragging) NDGLTheme.colors.black50.copy(0.9f) else Color.Transparent)
+                            .pointerInput(Unit) {
+                                detectTapGestures(
+                                    onPress = {
+                                        isDragMode = true
+                                        tryAwaitRelease()
+                                        isDragMode = false
+                                    },
                                 )
-                            } else {
+                            },
+                    ) {
+                        EditablePlaceItem(
+                            place = place,
+                            checked = state.selectedPlaceIds.contains(place.id),
+                            onCheck = { checkPlaceItem(place.id) },
+                        )
+                    }
+                }
+            } else {
+                item(key = "places_${state.selectedDay}") {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clipToBounds(),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        currentPlaces.forEachIndexed { index, place ->
+                            key("place_${state.selectedDay}_${place.id}") {
                                 Box(modifier = Modifier.padding(horizontal = 24.dp)) {
                                     PlaceItem(
                                         place = place,
@@ -331,13 +395,13 @@ private fun TravelDetailScreen(
                                     )
                                 }
                             }
-                        }
 
-                        if (!state.isEditMode && index < currentPlaces.size - 1) {
-                            key("transport_${state.selectedDay}_${place.id}") {
-                                currentTransportSegments.getOrNull(index)?.let { segment ->
-                                    Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-                                        TransportSegment(segment = segment)
+                            if (index < currentPlaces.size - 1) {
+                                key("transport_${state.selectedDay}_${place.id}") {
+                                    place.transportToNext?.let { segment ->
+                                        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+                                            TransportSegment(segment = segment, onClick = { clickTransportSegment(place) })
+                                        }
                                     }
                                 }
                             }
@@ -432,14 +496,33 @@ private fun TravelDetailScreen(
             NDGLBottomSheet(
                 onDismissRequest = dismissTimelineBottomSheet,
                 showDragHandle = false,
+                title = stringResource(R.string.schedule_setting_title),
             ) {
                 TimelineContent(
-                    startTime = state.startTime ?: 8.hours,
+                    startTime = currentItinerary?.startTime ?: 8.hours,
                     totalDuration = state.itineraries.getOrNull(state.selectedDay - 1)?.totalDuration ?: 0.hours,
-                    onDismissRequest = dismissTimelineBottomSheet,
                     onConfirm = confirmTimelineSetting,
                 )
             }
+        }
+
+        if (state.showTransportBottomSheet && state.selectedPlace != null && state.selectedPlace.transportToNext != null) {
+            // TODO: 실제 교통수단 후보로 수정
+            val mockAvailableTransports = mutableListOf(
+                TransportSegment(TransportType.WALK, 15.minutes, 1200),
+                TransportSegment(TransportType.CAR, 10.minutes, 5400),
+                TransportSegment(TransportType.BUS, 25.minutes, 4800),
+                TransportSegment(TransportType.TRAIN, 40.minutes, 12000),
+            )
+            mockAvailableTransports.remove(state.selectedPlace.transportToNext)
+            mockAvailableTransports.add(state.selectedPlace.transportToNext)
+
+            TransportBottomSheet(
+                initialTransport = state.selectedPlace.transportToNext,
+                availableTransports = mockAvailableTransports,
+                onDismissRequest = dismissTransportBottomSheet,
+                onConfirm = confirmChangeTransport,
+            )
         }
 
         if (state.showPlaceBottomSheet && state.selectedPlace != null) {
@@ -551,7 +634,6 @@ private fun TravelDetailScreenPreview() {
                 selectedDay = 1,
                 itineraries = listOf(
                     Itinerary(
-                        budget = Budget(300000),
                         places = listOf(
                             TravelPlace(
                                 id = 1,
@@ -566,7 +648,8 @@ private fun TravelDetailScreenPreview() {
                                 googleMapsUri = "",
                                 placeType = PlaceType.ATTRACTION,
                                 userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
-                                startTime = 0.hours,
+                                transportToNext = TransportSegment(type = TransportType.CAR, duration = 25.minutes, distance = 3500),
+                                startTime = 8.hours,
                             ),
                             TravelPlace(
                                 id = 2,
@@ -582,13 +665,7 @@ private fun TravelDetailScreenPreview() {
                                 placeType = PlaceType.RESTAURANT,
                                 userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
                                 startTime = 0.hours,
-                            ),
-                        ),
-                        transportSegments = listOf(
-                            TransportSegment(
-                                type = TransportType.CAR,
-                                duration = 25.minutes,
-                                distance = 3500,
+                                transportToNext = null,
                             ),
                         ),
                     ),
@@ -611,7 +688,7 @@ private fun TravelDetailScreenPreview() {
             longClickPlaceItem = {},
             dismissTimelineBottomSheet = {},
             confirmTimelineSetting = {},
-            reorderPlaces = { _, _ -> },
+            reorderPlaces = { _, _, _ -> },
             confirmEditMode = {},
             clickPlaceItem = {},
             clickAddTime = {},
@@ -626,6 +703,9 @@ private fun TravelDetailScreenPreview() {
             confirmCost = { _ -> },
             dismissMemoModal = {},
             confirmMemo = { _ -> },
+            clickTransportSegment = {},
+            confirmChangeTransport = { _ -> },
+            dismissTransportBottomSheet = {},
         )
     }
 }
@@ -655,7 +735,6 @@ private fun TravelDetailScreenEditModePreview() {
                 selectedDay = 1,
                 itineraries = listOf(
                     Itinerary(
-                        budget = Budget(300000),
                         places = listOf(
                             TravelPlace(
                                 id = 1,
@@ -670,6 +749,7 @@ private fun TravelDetailScreenEditModePreview() {
                                 googleMapsUri = "",
                                 placeType = PlaceType.ATTRACTION,
                                 userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
+                                transportToNext = TransportSegment(type = TransportType.CAR, duration = 25.minutes, distance = 3500),
                                 startTime = 0.hours,
                             ),
                             TravelPlace(
@@ -684,14 +764,9 @@ private fun TravelDetailScreenEditModePreview() {
                                 regularOpeningHours = "11:00~22:00",
                                 googleMapsUri = "",
                                 placeType = PlaceType.RESTAURANT,
-                                userData = TravelPlace.UserData(estimatedDuration = 60.minutes), startTime = 0.hours,
-                            ),
-                        ),
-                        transportSegments = listOf(
-                            TransportSegment(
-                                type = TransportType.CAR,
-                                duration = 25.minutes,
-                                distance = 3500,
+                                userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
+                                transportToNext = null,
+                                startTime = 8.hours,
                             ),
                         ),
                     ),
@@ -714,7 +789,7 @@ private fun TravelDetailScreenEditModePreview() {
             longClickPlaceItem = {},
             dismissTimelineBottomSheet = {},
             confirmTimelineSetting = {},
-            reorderPlaces = { _, _ -> },
+            reorderPlaces = { _, _, _ -> },
             confirmEditMode = {},
             clickPlaceItem = {},
             clickAddTime = {},
@@ -729,6 +804,9 @@ private fun TravelDetailScreenEditModePreview() {
             confirmCost = { _ -> },
             dismissMemoModal = {},
             confirmMemo = { _ -> },
+            clickTransportSegment = {},
+            confirmChangeTransport = { _ -> },
+            dismissTransportBottomSheet = {},
         )
     }
 }
