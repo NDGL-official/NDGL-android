@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
@@ -49,6 +50,11 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.launchBrowser
+import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
+import com.yapp.ndgl.feature.travel.model.PlacePhoto
+import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.Price
+import com.yapp.ndgl.feature.travel.model.PriceRange
 import com.yapp.ndgl.feature.travel.placedetail.component.PlaceDetailTabRow
 import com.yapp.ndgl.feature.travel.placedetail.component.PlaceInfoTab
 import com.yapp.ndgl.feature.travel.placedetail.component.PlacePhotoTab
@@ -78,7 +84,6 @@ internal fun PlaceDetailRoute(
         dismissChangeModal = { viewModel.onIntent(PlaceDetailIntent.DismissChangeModal) },
         clickAddress = { viewModel.onIntent(PlaceDetailIntent.ClickAddress) },
         clickMenu = { viewModel.onIntent(PlaceDetailIntent.ClickMenu) },
-        clickAddScheduleButton = { viewModel.onIntent(PlaceDetailIntent.ClickAddScheduleButton) },
     )
 }
 
@@ -93,7 +98,6 @@ private fun PlaceDetailScreen(
     dismissChangeModal: () -> Unit,
     clickAddress: () -> Unit,
     clickMenu: () -> Unit,
-    clickAddScheduleButton: () -> Unit,
 ) {
     val placeInfo = state.placeInfo
     val listState = rememberLazyListState()
@@ -169,16 +173,31 @@ private fun PlaceDetailScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Text(placeInfo.name, color = NDGLTheme.colors.black800, style = NDGLTheme.typography.titleMdSemiBold)
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
                     Icon(imageVector = ImageVector.vectorResource(placeInfo.placeType.iconRes), contentDescription = null, tint = Color.Unspecified)
+                    val placeTypeLabel = stringResource(placeInfo.placeType.labelRes)
+                    val reviewLabel = if (placeInfo.rating != null) {
+                        stringResource(R.string.place_detail_review_format, placeInfo.rating)
+                    } else {
+                        null
+                    }
                     Text(
                         text = buildAnnotatedString {
                             withStyle(style = SpanStyle(color = NDGLTheme.colors.black500)) {
-                                // TODO: API 응답이 정해지면 하드코딩 제거
-                                append("식당 • $20~40 • 리뷰 ${placeInfo.rating}")
+                                append(placeTypeLabel)
+                                placeInfo.priceRange?.let { priceRange ->
+                                    append(" • " + priceRange.formattedPriceRange)
+                                }
+                                append(reviewLabel?.let { " • $it" })
                             }
-                            withStyle(style = SpanStyle(color = NDGLTheme.colors.black200)) {
-                                append("(${placeInfo.formattedRatingCount})")
+                            if (placeInfo.userRatingCount != null) {
+                                withStyle(style = SpanStyle(color = NDGLTheme.colors.black300)) {
+                                    append(" (${placeInfo.formattedRatingCount})")
+                                }
                             }
                         },
                         style = NDGLTheme.typography.bodyMdMedium,
@@ -287,10 +306,36 @@ private fun PlaceDetailScreenPreview() {
                     phoneNumber = "+39 06 446 4740",
                     openingHours = "매일 01:00~23:00",
                     websiteUrl = "https://example.com",
-                    creatorName = "빠니보틀",
                     rating = 4.7,
                     userRatingCount = 3971,
+                    priceRange = PriceRange(
+                        startPrice = Price(currencyCode = "EUR", units = "5", symbol = "€"),
+                        endPrice = Price(currencyCode = "EUR", units = "15", symbol = "€"),
+                    ),
+                    tipContent = TipContent(
+                        creatorName = "빠니보틀",
+                        tips = listOf(
+                            "젤라또는 오후 3시쯤 먹는 게 가장 맛있어요",
+                            "피스타치오와 헤이즐넛 맛을 꼭 드셔보세요",
+                            "웨이팅이 길 수 있으니 평일 방문을 추천해요",
+                        ),
+                    ),
+                    alternativePlaces = listOf(
+                        AlternativePlace(
+                            id = 2,
+                            name = "젤라또 디 산 크리스피노",
+                            thumbnail = "",
+                            placeType = PlaceType.CAFE,
+                        ),
+                        AlternativePlace(
+                            id = 3,
+                            name = "지올리티",
+                            thumbnail = "",
+                            placeType = PlaceType.CAFE,
+                        ),
+                    ),
                 ),
+
             ),
             clickBackButton = {},
             innerPadding = PaddingValues(),
@@ -300,7 +345,6 @@ private fun PlaceDetailScreenPreview() {
             dismissChangeModal = {},
             clickAddress = {},
             clickMenu = {},
-            clickAddScheduleButton = {},
         )
     }
 }

@@ -13,7 +13,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
-import com.yapp.ndgl.feature.travel.placedetail.PlaceDetailTab
+import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
 import androidx.compose.material3.SecondaryTabRow as SecondaryTabRow
 
 @Composable
@@ -27,7 +27,7 @@ internal fun PlaceDetailTabRow(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(44.dp),
+            .height(48.dp),
     ) {
         SecondaryTabRow(
             selectedTabIndex = selectedIndex,
@@ -35,6 +35,7 @@ internal fun PlaceDetailTabRow(
             containerColor = NDGLTheme.colors.white,
             contentColor = NDGLTheme.colors.black900,
             indicator = {},
+            divider = {},
         ) {
             tabs.forEachIndexed { index, tab ->
                 val isSelected = index == selectedIndex

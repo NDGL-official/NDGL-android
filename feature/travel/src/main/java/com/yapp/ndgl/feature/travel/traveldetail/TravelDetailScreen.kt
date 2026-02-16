@@ -67,6 +67,9 @@ import com.yapp.ndgl.core.ui.util.dropShadow
 import com.yapp.ndgl.core.ui.util.launchBrowser
 import com.yapp.ndgl.core.ui.util.rememberReorderableState
 import com.yapp.ndgl.core.ui.util.reorderable
+import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.TransportSegment
+import com.yapp.ndgl.feature.travel.model.TransportType
 import com.yapp.ndgl.feature.travel.traveldetail.component.ContentCard
 import com.yapp.ndgl.feature.travel.traveldetail.component.DurationPickerContent
 import com.yapp.ndgl.feature.travel.traveldetail.component.EditControlBar

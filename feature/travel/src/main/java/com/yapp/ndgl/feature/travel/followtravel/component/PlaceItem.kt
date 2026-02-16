@@ -37,9 +37,9 @@ import coil3.compose.AsyncImage
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.formatString
-import com.yapp.ndgl.feature.travel.followtravel.PlaceType
 import com.yapp.ndgl.feature.travel.followtravel.TravelPlace
-import com.yapp.ndgl.feature.travel.followtravel.getColor
+import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.getColor
 import kotlin.time.Duration.Companion.minutes
 
 @Composable

@@ -35,7 +35,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.dropShadow
 import com.yapp.ndgl.feature.travel.followtravel.TravelPlace
-import com.yapp.ndgl.feature.travel.followtravel.getColor
+import com.yapp.ndgl.feature.travel.model.getColor
 
 @Composable
 internal fun TravelMap(

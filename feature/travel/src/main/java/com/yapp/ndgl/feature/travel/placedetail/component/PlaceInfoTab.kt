@@ -39,11 +39,11 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
-import com.yapp.ndgl.core.ui.util.noRippleClickable
 import com.yapp.ndgl.core.util.formatString
+import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.placedetail.AlternativePlace
 import com.yapp.ndgl.feature.travel.placedetail.PlaceInfo
-import com.yapp.ndgl.feature.travel.placedetail.PlaceType
+import com.yapp.ndgl.feature.travel.placedetail.TipContent
 import kotlin.time.Duration.Companion.hours
 
 @Composable
@@ -63,85 +63,49 @@ internal fun PlaceInfoTab(
                 .padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .noRippleClickable {
-                        clickAddress()
-                    },
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_24_pin), contentDescription = null, tint = NDGLTheme.colors.green500)
-                Text(
-                    placeInfo.address,
-                    color = NDGLTheme.colors.black700,
-                    style = NDGLTheme.typography.bodyMdMedium,
-                    modifier = Modifier.weight(1f),
-                )
-                Icon(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .clickable {
-                            clickAddress()
-                        },
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_28_chevron_right),
-                    tint = NDGLTheme.colors.black600,
-                    contentDescription = null,
-                )
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .noRippleClickable {
-                        clickMenu()
-                    },
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                Icon(imageVector = ImageVector.vectorResource(R.drawable.ic_24_book), contentDescription = null, tint = NDGLTheme.colors.green500)
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(stringResource(R.string.place_detail_menu), color = NDGLTheme.colors.black700, style = NDGLTheme.typography.bodyMdMedium)
-                    Text(placeInfo.websiteUrl, color = NDGLTheme.colors.black500, style = NDGLTheme.typography.bodyMdMedium)
+            if (placeInfo.address != null) {
+                PlaceInfoRow(
+                    iconRes = R.drawable.ic_24_pin,
+                    onClick = clickAddress,
+                ) {
+                    Text(
+                        placeInfo.address,
+                        color = NDGLTheme.colors.black700,
+                        style = NDGLTheme.typography.bodyMdMedium,
+                        modifier = Modifier.weight(1f),
+                    )
                 }
-                Icon(
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
-                        .clickable {
-                            clickMenu()
-                        },
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_28_chevron_right),
-                    contentDescription = null,
-                    tint = NDGLTheme.colors.black600,
-                )
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_24_phone),
-                    contentDescription = null,
-                    tint = NDGLTheme.colors.green500,
-                )
-                Text(
-                    placeInfo.phoneNumber,
-                    color = NDGLTheme.colors.black700,
-                    style = NDGLTheme.typography.bodyMdMedium,
-                )
+            if (placeInfo.websiteUrl != null) {
+                PlaceInfoRow(
+                    iconRes = R.drawable.ic_24_book,
+                    onClick = clickMenu,
+                ) {
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(stringResource(R.string.place_detail_menu), color = NDGLTheme.colors.black700, style = NDGLTheme.typography.bodyMdMedium)
+                        Text(placeInfo.websiteUrl, color = NDGLTheme.colors.black500, style = NDGLTheme.typography.bodyMdMedium)
+                    }
+                }
             }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    imageVector = ImageVector.vectorResource(R.drawable.ic_24_clock),
-                    contentDescription = null,
-                    tint = NDGLTheme.colors.green500,
-                )
+            if (placeInfo.phoneNumber != null) {
+                PlaceInfoRow(iconRes = R.drawable.ic_24_phone) {
+                    Text(
+                        placeInfo.phoneNumber,
+                        color = NDGLTheme.colors.black700,
+                        style = NDGLTheme.typography.bodyMdMedium,
+                    )
+                }
+            }
+            if (placeInfo.openingHours != null) {
+                PlaceInfoRow(iconRes = R.drawable.ic_24_clock) {
+                    Text(
+                        stringResource(R.string.opening_hours_format, placeInfo.openingHours),
+                        color = NDGLTheme.colors.black700,
+                        style = NDGLTheme.typography.bodyMdMedium,
+                    )
+                }
+            }
+            PlaceInfoRow(iconRes = R.drawable.ic_24_clock) {
                 Text(
                     stringResource(R.string.estimated_duration_format, placeInfo.estimatedDuration.formatString()),
                     color = NDGLTheme.colors.black700,
@@ -157,12 +121,18 @@ internal fun PlaceInfoTab(
             color = NDGLTheme.colors.black200,
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
-        PlaceTipsPager(tips = placeInfo.tips, creatorName = placeInfo.creatorName)
-        Spacer(modifier = Modifier.height(32.dp))
-        Text(stringResource(R.string.place_detail_plan_b_message), color = NDGLTheme.colors.black700, style = NDGLTheme.typography.bodyLgSemiBold)
-        Spacer(modifier = Modifier.height(16.dp))
-        AlternativePlaceContent(alternativePlaces = placeInfo.alternativePlaces, onChangePlaceClick = onChangePlaceClick)
+        if (placeInfo.tipContent != null) {
+            val tipContent = placeInfo.tipContent
+
+            Spacer(modifier = Modifier.height(32.dp))
+            PlaceTipsPager(tips = tipContent.tips, creatorName = tipContent.creatorName)
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+        if (placeInfo.alternativePlaces.isNotEmpty()) {
+            Text(stringResource(R.string.place_detail_plan_b_message), color = NDGLTheme.colors.black700, style = NDGLTheme.typography.bodyLgSemiBold)
+            Spacer(modifier = Modifier.height(16.dp))
+            AlternativePlaceContent(alternativePlaces = placeInfo.alternativePlaces, onChangePlaceClick = onChangePlaceClick)
+        }
     }
 }
 
@@ -333,11 +303,13 @@ private fun PlaceInfoTabPreview() {
                 phoneNumber = "+39 06 446 4740",
                 websiteUrl = "https://example.com",
                 estimatedDuration = 2.hours,
-                creatorName = "빠니보틀",
-                tips = listOf(
-                    "젤라또는 오후 3시쯤 먹는 게 가장 맛있어요",
-                    "피스타치오와 헤이즐넛 맛을 꼭 드셔보세요",
-                    "웨이팅이 길 수 있으니 평일 방문을 추천해요",
+                tipContent = TipContent(
+                    creatorName = "빠니보틀",
+                    tips = listOf(
+                        "젤라또는 오후 3시쯤 먹는 게 가장 맛있어요",
+                        "피스타치오와 헤이즐넛 맛을 꼭 드셔보세요",
+                        "웨이팅이 길 수 있으니 평일 방문을 추천해요",
+                    ),
                 ),
                 alternativePlaces = listOf(
                     AlternativePlace(
