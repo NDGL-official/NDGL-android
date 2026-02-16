@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +15,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -62,7 +62,6 @@ import com.yapp.ndgl.feature.travel.placedetail.component.PlacePhotoTab
 @Composable
 internal fun PlaceDetailRoute(
     viewModel: PlaceDetailViewModel = hiltViewModel(),
-    innerPadding: PaddingValues = PaddingValues(),
     navigateBack: () -> Unit,
 ) {
     val state by viewModel.collectAsState()
@@ -77,7 +76,6 @@ internal fun PlaceDetailRoute(
     PlaceDetailScreen(
         state = state,
         clickBackButton = navigateBack,
-        innerPadding = innerPadding,
         selectTab = { viewModel.onIntent(PlaceDetailIntent.SelectTab(it)) },
         clickChangePlace = { viewModel.onIntent(PlaceDetailIntent.ClickChangePlace(it)) },
         confirmChangePlace = { viewModel.onIntent(PlaceDetailIntent.ConfirmChangePlace) },
@@ -91,7 +89,6 @@ internal fun PlaceDetailRoute(
 private fun PlaceDetailScreen(
     state: PlaceDetailState,
     clickBackButton: () -> Unit,
-    innerPadding: PaddingValues,
     selectTab: (PlaceDetailTab) -> Unit,
     clickChangePlace: (AlternativePlace) -> Unit,
     confirmChangePlace: () -> Unit,
@@ -137,139 +134,144 @@ private fun PlaceDetailScreen(
     val navBarProgress = (1f - collapseOffset / navBarSectionHeightPx).coerceIn(0f, 1f)
     val thumbnailProgress = (1f - (collapseOffset - navBarSectionHeightPx).coerceAtLeast(0f) / thumbnailHeightPx).coerceIn(0f, 1f)
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(NDGLTheme.colors.white)
-            .padding(innerPadding),
-    ) {
-        Column(
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .nestedScroll(nestedScrollConnection),
+                .background(NDGLTheme.colors.white)
+                .padding(innerPadding),
         ) {
-            if (navBarProgress > 0f) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height((navBarSectionHeight * navBarProgress).coerceAtLeast(0.dp))
-                        .clipToBounds(),
-                ) {
-                    NDGLNavigationBar(
-                        textAlignType = NDGLNavigationBarAttr.TextAlignType.CENTER,
-                        leadingIcon = R.drawable.ic_28_chevron_left,
-                        onLeadingIconClick = clickBackButton,
-                    )
-                    Spacer(Modifier.height(20.dp))
-                }
-            }
-
             Column(
-                Modifier
-                    .fillMaxWidth()
-                    .background(NDGLTheme.colors.white)
-                    .padding(horizontal = 24.dp)
-                    .padding(top = if (navBarProgress == 0f) 8.dp else 0.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .nestedScroll(nestedScrollConnection),
             ) {
-                Text(placeInfo.name, color = NDGLTheme.colors.black800, style = NDGLTheme.typography.titleMdSemiBold)
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(2.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Icon(imageVector = ImageVector.vectorResource(placeInfo.placeType.iconRes), contentDescription = null, tint = Color.Unspecified)
-                    val placeTypeLabel = stringResource(placeInfo.placeType.labelRes)
-                    val reviewLabel = if (placeInfo.rating != null) {
-                        stringResource(R.string.place_detail_review_format, placeInfo.rating)
-                    } else {
-                        null
+                if (navBarProgress > 0f) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height((navBarSectionHeight * navBarProgress).coerceAtLeast(0.dp))
+                            .clipToBounds(),
+                    ) {
+                        NDGLNavigationBar(
+                            textAlignType = NDGLNavigationBarAttr.TextAlignType.CENTER,
+                            leadingIcon = R.drawable.ic_28_chevron_left,
+                            onLeadingIconClick = clickBackButton,
+                        )
+                        Spacer(Modifier.height(20.dp))
                     }
-                    Text(
-                        text = buildAnnotatedString {
-                            withStyle(style = SpanStyle(color = NDGLTheme.colors.black500)) {
-                                append(placeTypeLabel)
-                                placeInfo.priceRange?.let { priceRange ->
-                                    append(" • " + priceRange.formattedPriceRange)
+                }
+
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .background(NDGLTheme.colors.white)
+                        .padding(horizontal = 24.dp)
+                        .padding(top = if (navBarProgress == 0f) 8.dp else 0.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(placeInfo.name, color = NDGLTheme.colors.black800, style = NDGLTheme.typography.titleMdSemiBold)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = ImageVector.vectorResource(placeInfo.placeType.iconRes),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                        )
+                        val placeTypeLabel = stringResource(placeInfo.placeType.labelRes)
+                        val reviewLabel = if (placeInfo.rating != null) {
+                            stringResource(R.string.place_detail_review_format, placeInfo.rating)
+                        } else {
+                            null
+                        }
+                        Text(
+                            text = buildAnnotatedString {
+                                withStyle(style = SpanStyle(color = NDGLTheme.colors.black500)) {
+                                    append(placeTypeLabel)
+                                    placeInfo.priceRange?.let { priceRange ->
+                                        append(" • " + priceRange.formattedPriceRange)
+                                    }
+                                    append(reviewLabel?.let { " • $it" })
                                 }
-                                append(reviewLabel?.let { " • $it" })
-                            }
-                            if (placeInfo.userRatingCount != null) {
-                                withStyle(style = SpanStyle(color = NDGLTheme.colors.black300)) {
-                                    append(" (${placeInfo.formattedRatingCount})")
+                                if (placeInfo.userRatingCount != null) {
+                                    withStyle(style = SpanStyle(color = NDGLTheme.colors.black300)) {
+                                        append(" (${placeInfo.formattedRatingCount})")
+                                    }
                                 }
-                            }
-                        },
-                        style = NDGLTheme.typography.bodyMdMedium,
+                            },
+                            style = NDGLTheme.typography.bodyMdMedium,
+                        )
+                    }
+                }
+                Spacer(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(20.dp)
+                        .background(NDGLTheme.colors.white),
+                )
+
+                if (thumbnailProgress > 0f) {
+                    AsyncImage(
+                        model = state.placeInfo.thumbnail,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(thumbnailHeight * thumbnailProgress)
+                            .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                            .background(Color.LightGray),
+                        contentScale = ContentScale.Crop,
                     )
                 }
-            }
-            Spacer(
-                Modifier
-                    .fillMaxWidth()
-                    .height(20.dp)
-                    .background(NDGLTheme.colors.white),
-            )
 
-            if (thumbnailProgress > 0f) {
-                AsyncImage(
-                    model = state.placeInfo.thumbnail,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(thumbnailHeight * thumbnailProgress)
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
-                        .background(Color.LightGray),
-                    contentScale = ContentScale.Crop,
-                )
-            }
-
-            Column(Modifier.background(NDGLTheme.colors.white)) {
-                PlaceDetailTabRow(
-                    selectedTab = state.selectedTab,
-                    onTabSelected = selectTab,
-                )
-                HorizontalDivider(thickness = 1.dp, color = NDGLTheme.colors.black200)
-            }
-
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f),
-                state = listState,
-            ) {
-                when (state.selectedTab) {
-                    PlaceDetailTab.INFO -> {
-                        item {
-                            Spacer(Modifier.height(24.dp))
-                            PlaceInfoTab(
-                                placeInfo = state.placeInfo,
-                                clickAddress = clickAddress,
-                                clickMenu = clickMenu,
-                                onChangePlaceClick = clickChangePlace,
-                            )
-                        }
-                    }
-
-                    PlaceDetailTab.PHOTO -> {
-                        val (leftPhotos, rightPhotos) = state.photos.foldIndexed(
-                            initial = mutableListOf<PlacePhoto>() to mutableListOf<PlacePhoto>(),
-                        ) { index, lists, photo ->
-                            if (index % 2 == 0) {
-                                lists.first.add(photo)
-                            } else {
-                                lists.second.add(photo)
-                            }
-                            lists
-                        }
-
-                        item {
-                            Spacer(Modifier.height(20.dp))
-                            PlacePhotoTab(leftPhotos = leftPhotos, rightPhotos = rightPhotos)
-                        }
-                    }
+                Column(Modifier.background(NDGLTheme.colors.white)) {
+                    PlaceDetailTabRow(
+                        selectedTab = state.selectedTab,
+                        onTabSelected = selectTab,
+                    )
+                    HorizontalDivider(thickness = 1.dp, color = NDGLTheme.colors.black200)
                 }
 
-                item { Spacer(Modifier.height(60.dp)) }
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    state = listState,
+                ) {
+                    when (state.selectedTab) {
+                        PlaceDetailTab.INFO -> {
+                            item {
+                                Spacer(Modifier.height(24.dp))
+                                PlaceInfoTab(
+                                    placeInfo = state.placeInfo,
+                                    clickAddress = clickAddress,
+                                    clickMenu = clickMenu,
+                                    onChangePlaceClick = clickChangePlace,
+                                )
+                            }
+                        }
+
+                        PlaceDetailTab.PHOTO -> {
+                            val (leftPhotos, rightPhotos) = state.photos.foldIndexed(
+                                initial = mutableListOf<PlacePhoto>() to mutableListOf<PlacePhoto>(),
+                            ) { index, lists, photo ->
+                                if (index % 2 == 0) {
+                                    lists.first.add(photo)
+                                } else {
+                                    lists.second.add(photo)
+                                }
+                                lists
+                            }
+
+                            item {
+                                Spacer(Modifier.height(20.dp))
+                                PlacePhotoTab(leftPhotos = leftPhotos, rightPhotos = rightPhotos)
+                            }
+                        }
+                    }
+
+                    item { Spacer(Modifier.height(60.dp)) }
+                }
             }
         }
     }
@@ -338,7 +340,6 @@ private fun PlaceDetailScreenPreview() {
 
             ),
             clickBackButton = {},
-            innerPadding = PaddingValues(),
             selectTab = {},
             clickChangePlace = {},
             confirmChangePlace = {},

@@ -3,12 +3,13 @@ package com.yapp.ndgl.feature.travel.datepicker
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,7 +32,6 @@ import kotlinx.datetime.LocalDate
 internal fun DatePickerRoute(
     viewModel: DatePickerViewModel = hiltViewModel(),
     navigateBack: () -> Unit = {},
-    innerPadding: PaddingValues = PaddingValues(),
 ) {
     val state by viewModel.collectAsState()
 
@@ -68,7 +68,6 @@ internal fun DatePickerRoute(
         clickBackButton = navigateBack,
         dismissDialog = ::dismissDialog,
         clickTravelButton = ::clickTravelButton,
-        innerPadding = innerPadding,
     )
 
     viewModel.collectSideEffect { sideEffect ->
@@ -90,78 +89,84 @@ private fun DatePickerScreen(
     clickBackButton: () -> Unit,
     dismissDialog: () -> Unit,
     clickTravelButton: () -> Unit,
-    innerPadding: PaddingValues,
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(NDGLTheme.colors.white)
-            .padding(innerPadding),
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 16.dp),
-        ) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
             NDGLNavigationBar(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding(),
                 headline = stringResource(R.string.date_picker_title),
                 textAlignType = NDGLNavigationBarAttr.TextAlignType.CENTER,
                 leadingIcon = R.drawable.ic_28_chevron_left,
                 onLeadingIconClick = clickBackButton,
             )
-            Spacer(Modifier.height(24.dp))
+        },
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(NDGLTheme.colors.white)
+                .padding(innerPadding),
+        ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 24.dp),
+                    .padding(top = 24.dp, bottom = 16.dp),
             ) {
-                CalendarView(
-                    year = state.currentYear,
-                    month = state.currentMonth,
-                    startDate = state.startDate,
-                    endDate = state.endDate,
-                    onDateSelected = selectDate,
-                    onPreviousMonth = selectPreviousMonth,
-                    onNextMonth = selectNextMonth,
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 24.dp),
+                ) {
+                    CalendarView(
+                        year = state.currentYear,
+                        month = state.currentMonth,
+                        startDate = state.startDate,
+                        endDate = state.endDate,
+                        onDateSelected = selectDate,
+                        onPreviousMonth = selectPreviousMonth,
+                        onNextMonth = selectNextMonth,
+                    )
 
-                if (state.isInsufficientDuration) {
-                    Spacer(Modifier.height(24.dp))
-                    Text(
-                        stringResource(
-                            R.string.date_picker_error_insufficient,
-                        ),
-                        color = NDGLTheme.colors.red500,
-                        style = NDGLTheme.typography.bodySmMedium,
+                    if (state.isInsufficientDuration) {
+                        Spacer(Modifier.height(24.dp))
+                        Text(
+                            stringResource(
+                                R.string.date_picker_error_insufficient,
+                            ),
+                            color = NDGLTheme.colors.red500,
+                            style = NDGLTheme.typography.bodySmMedium,
+                        )
+                    }
+                    Spacer(Modifier.weight(1f))
+                    NDGLCTAButton(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        type = NDGLCTAButtonAttr.Type.PRIMARY,
+                        size = NDGLCTAButtonAttr.Size.LARGE,
+                        status = if (state.isDateSelected) {
+                            NDGLCTAButtonAttr.Status.ACTIVE
+                        } else {
+                            NDGLCTAButtonAttr.Status.DISABLED
+                        },
+                        label = stringResource(R.string.date_picker_complete),
+                        onClick = clickCompleteButton,
                     )
                 }
-                Spacer(Modifier.weight(1f))
-                NDGLCTAButton(
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    type = NDGLCTAButtonAttr.Type.PRIMARY,
-                    size = NDGLCTAButtonAttr.Size.LARGE,
-                    status = if (state.isDateSelected) {
-                        NDGLCTAButtonAttr.Status.ACTIVE
-                    } else {
-                        NDGLCTAButtonAttr.Status.DISABLED
-                    },
-                    label = stringResource(R.string.date_picker_complete),
-                    onClick = clickCompleteButton,
+            }
+
+            if (state.showDialog) {
+                NDGLModal(
+                    onDismissRequest = dismissDialog,
+                    title = stringResource(R.string.date_picker_modal_title),
+                    body = stringResource(R.string.date_picker_modal_body),
+                    negativeButtonText = stringResource(R.string.date_picker_modal_negative),
+                    positiveButtonText = stringResource(R.string.date_picker_modal_positive),
+                    onPositiveButtonClick = clickTravelButton,
                 )
             }
-        }
-
-        if (state.showDialog) {
-            NDGLModal(
-                onDismissRequest = dismissDialog,
-                title = stringResource(R.string.date_picker_modal_title),
-                body = stringResource(R.string.date_picker_modal_body),
-                negativeButtonText = stringResource(R.string.date_picker_modal_negative),
-                positiveButtonText = stringResource(R.string.date_picker_modal_positive),
-                onPositiveButtonClick = clickTravelButton,
-            )
         }
     }
 }
@@ -181,7 +186,6 @@ private fun DatePickerScreenPreview() {
             clickBackButton = {},
             dismissDialog = {},
             clickTravelButton = {},
-            innerPadding = PaddingValues(),
         )
     }
 }
@@ -206,7 +210,6 @@ private fun DatePickerScreenWithDialogPreview() {
             clickBackButton = {},
             dismissDialog = {},
             clickTravelButton = {},
-            innerPadding = PaddingValues(),
         )
     }
 }
