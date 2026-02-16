@@ -5,6 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
+import com.yapp.ndgl.data.travel.model.PlaceCategory
 
 enum class PlaceType(@get:StringRes val labelRes: Int, @get:DrawableRes val iconRes: Int) {
     ACCOMMODATION(R.string.place_type_accommodation, R.drawable.ic_14_home),
@@ -23,4 +24,13 @@ fun PlaceType.getColor(): androidx.compose.ui.graphics.Color {
         PlaceType.CAFE -> NDGLTheme.colors.etcOrange
         PlaceType.TRANSPORT -> NDGLTheme.colors.etcGray
     }
+}
+
+internal fun PlaceCategory.toPlaceType(): PlaceType = when (this) {
+    PlaceCategory.AIRPORT -> PlaceType.TRANSPORT
+    PlaceCategory.TRANSPORT -> PlaceType.TRANSPORT
+    PlaceCategory.ATTRACTION -> PlaceType.ATTRACTION
+    PlaceCategory.RESTAURANT -> PlaceType.RESTAURANT
+    PlaceCategory.CAFE -> PlaceType.CAFE
+    PlaceCategory.ACCOMMODATION -> PlaceType.ACCOMMODATION
 }

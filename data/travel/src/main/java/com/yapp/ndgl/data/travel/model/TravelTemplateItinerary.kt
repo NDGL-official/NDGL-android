@@ -13,7 +13,7 @@ data class TravelTemplateItinerary(
         val sequence: Int,
         val distanceKm: Double? = null,
         val transportation: List<Transportation>? = null,
-        val travlerTips: List<String>? = null,
+        val travelerTips: List<String>? = null,
         val planB: List<PlanBPlace>? = null,
         val estimatedDuration: Int,
         val place: ItineraryPlace,

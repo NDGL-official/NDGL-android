@@ -38,6 +38,7 @@ import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.formatString
 import com.yapp.ndgl.feature.travel.followtravel.TravelPlace
+import com.yapp.ndgl.feature.travel.model.OpeningHours
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.getColor
 import kotlin.time.Duration.Companion.minutes
@@ -164,7 +165,7 @@ private fun PlaceItemPreview() {
                 latitude = 35.6585805,
                 longitude = 139.7454329,
                 name = "도쿄 타워",
-                regularOpeningHours = "09:00~23:00",
+                openingHours = OpeningHours(periods = listOf(OpeningHours.Period("09:00", "21:00"))),
                 googleMapsUri = "",
                 placeType = PlaceType.ATTRACTION,
             ),
