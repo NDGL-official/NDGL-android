@@ -32,8 +32,8 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.FlagEmojiUtil.toFlagEmoji
 import com.yapp.ndgl.data.travel.model.ProgramType
 import com.yapp.ndgl.feature.home.R
+import com.yapp.ndgl.feature.home.util.toIconRes
 import kotlinx.collections.immutable.toPersistentList
-import com.yapp.ndgl.core.ui.R as CoreR
 
 private const val COLUMN_ITEM_COUNT = 3
 
@@ -207,11 +207,6 @@ private fun PopularTravelItem(
     }
 }
 
-private fun ProgramType.toIconRes() = when (this) {
-    ProgramType.YOUTUBE -> CoreR.drawable.ic_20_video
-    ProgramType.TV -> CoreR.drawable.ic_20_video
-}
-
 @Preview(showBackground = true)
 @Composable
 private fun PopularTravelSectionPreview() {
@@ -224,6 +219,7 @@ private fun PopularTravelSectionPreview() {
             nights = 7,
             days = 9,
             programName = "곽튜브",
+            programType = ProgramType.YOUTUBE,
             thumbnail = "",
         ),
         HomeState.TravelContent(
@@ -234,6 +230,7 @@ private fun PopularTravelSectionPreview() {
             nights = 5,
             days = 6,
             programName = "빠니보틀",
+            programType = ProgramType.TV,
             thumbnail = "",
         ),
         HomeState.TravelContent(
@@ -244,6 +241,7 @@ private fun PopularTravelSectionPreview() {
             nights = 4,
             days = 6,
             programName = "곽튜브",
+            programType = ProgramType.YOUTUBE,
             thumbnail = "",
         ),
     )

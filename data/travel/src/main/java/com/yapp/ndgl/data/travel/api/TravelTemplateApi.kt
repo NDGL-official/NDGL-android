@@ -2,6 +2,7 @@ package com.yapp.ndgl.data.travel.api
 
 import com.yapp.ndgl.data.core.model.BaseResponse
 import com.yapp.ndgl.data.travel.model.PopularTravelTemplates
+import com.yapp.ndgl.data.travel.model.RecommendTravelTemplates
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -12,4 +13,7 @@ interface TravelTemplateApi {
         @Query("page") page: Int? = null,
         @Query("size") size: Int? = null,
     ): BaseResponse<PopularTravelTemplates>
+
+    @GET("/api/v1/travel-templates/recommend")
+    suspend fun getRecommendTravelTemplates(): BaseResponse<RecommendTravelTemplates>
 }

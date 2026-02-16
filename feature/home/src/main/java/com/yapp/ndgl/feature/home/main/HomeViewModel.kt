@@ -6,7 +6,6 @@ import com.yapp.ndgl.core.util.suspendRunCatching
 import com.yapp.ndgl.data.auth.repository.AuthRepository
 import com.yapp.ndgl.data.travel.model.TravelProgram
 import com.yapp.ndgl.data.travel.model.TravelTemplateSummary
-import com.yapp.ndgl.data.travel.repository.HomeRepository
 import com.yapp.ndgl.data.travel.repository.TravelProgramRepository
 import com.yapp.ndgl.data.travel.repository.TravelTemplateRepository
 import com.yapp.ndgl.data.travel.repository.UserTravelRepository
@@ -22,7 +21,6 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val homeRepository: HomeRepository,
     private val travelProgramRepository: TravelProgramRepository,
     private val travelTemplateRepository: TravelTemplateRepository,
     private val userTravelRepository: UserTravelRepository,
@@ -162,9 +160,11 @@ class HomeViewModel @Inject constructor(
 
     private fun loadRecommendedTravel() {
         viewModelScope.launch {
-            suspendRunCatching { homeRepository.getRecommendedTravels() }.onSuccess { travels ->
-                reduce { copy(recommendedContents = travels) }
-            }
+            suspendRunCatching { travelTemplateRepository.getRecommendTravelTemplates() }
+                .onSuccess { travels ->
+                    val recommendTravels = travels.content.map { it.toTravelContent() }
+                    reduce { copy(recommendedContents = recommendTravels) }
+                }
         }
     }
 
@@ -184,6 +184,7 @@ class HomeViewModel @Inject constructor(
         nights = nights,
         days = days,
         programName = programName,
+        programType = programType,
         thumbnail = thumbnail ?: "",
     )
 

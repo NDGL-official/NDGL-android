@@ -3,6 +3,7 @@ package com.yapp.ndgl.data.travel.repository
 import com.yapp.ndgl.data.core.model.getData
 import com.yapp.ndgl.data.travel.api.TravelTemplateApi
 import com.yapp.ndgl.data.travel.model.PopularTravelTemplates
+import com.yapp.ndgl.data.travel.model.RecommendTravelTemplates
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,5 +17,9 @@ class TravelTemplateRepository @Inject constructor(
 
     suspend fun getPopularTravelTemplates(travelProgramId: Long): PopularTravelTemplates {
         return travelTemplateApi.getPopularTravelTemplates(travelProgramId = travelProgramId).getData()
+    }
+
+    suspend fun getRecommendTravelTemplates(): RecommendTravelTemplates {
+        return travelTemplateApi.getRecommendTravelTemplates().getData()
     }
 }

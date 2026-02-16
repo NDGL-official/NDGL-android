@@ -112,6 +112,7 @@ private fun HomeScreenPreview() {
             nights = 7,
             days = 9,
             programName = "곽튜브",
+            programType = ProgramType.YOUTUBE,
             thumbnail = "https://picsum.photos/200/300",
         ),
         HomeState.TravelContent(
@@ -122,6 +123,7 @@ private fun HomeScreenPreview() {
             nights = 5,
             days = 6,
             programName = "빠니보틀",
+            programType = ProgramType.TV,
             thumbnail = "https://picsum.photos/200/300",
         ),
         HomeState.TravelContent(
@@ -132,6 +134,7 @@ private fun HomeScreenPreview() {
             nights = 4,
             days = 6,
             programName = "곽튜브",
+            programType = ProgramType.YOUTUBE,
             thumbnail = "https://picsum.photos/200/300",
         ),
     )

@@ -7,7 +7,6 @@ import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
 import com.yapp.ndgl.data.travel.model.PlaceCategory
 import com.yapp.ndgl.data.travel.model.ProgramType
-import com.yapp.ndgl.data.travel.model.TravelSummary
 import java.time.LocalDate
 
 @Stable
@@ -18,7 +17,7 @@ data class HomeState(
     val travelProgramTabs: List<TravelProgramTab> = emptyList(),
     val allPopularTravels: List<TravelContent> = emptyList(),
     val popularTravelsByProgram: Map<Long, List<TravelContent>> = emptyMap(),
-    val recommendedContents: List<TravelSummary> = emptyList(),
+    val recommendedContents: List<TravelContent> = emptyList(),
 ) : UiState {
     @Stable
     sealed interface MyTravel {
@@ -79,6 +78,7 @@ data class HomeState(
         val nights: Int,
         val days: Int,
         val programName: String,
+        val programType: ProgramType,
         val thumbnail: String,
     )
 }
