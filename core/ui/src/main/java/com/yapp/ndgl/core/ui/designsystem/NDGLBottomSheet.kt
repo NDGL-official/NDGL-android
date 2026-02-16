@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.yapp.ndgl.core.ui.designsystem
 
 import androidx.compose.foundation.clickable
@@ -14,9 +16,11 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -25,17 +29,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NDGLBottomSheet(
     modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
+    sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     showDragHandle: Boolean = true,
     title: String? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val coroutineScope = rememberCoroutineScope()
+    val hideSheet: () -> Unit = {
+        coroutineScope.launch {
+            sheetState.hide()
+            onDismissRequest()
+        }
+    }
 
     ModalBottomSheet(
         modifier = modifier,
@@ -55,7 +66,11 @@ fun NDGLBottomSheet(
                     .fillMaxWidth()
                     .padding(vertical = 18.dp, horizontal = 24.dp),
             ) {
-                Text(title, color = NDGLTheme.colors.black400, style = NDGLTheme.typography.bodyLgMedium)
+                Text(
+                    title,
+                    color = NDGLTheme.colors.black400,
+                    style = NDGLTheme.typography.bodyLgMedium,
+                )
                 Spacer(Modifier.weight(1f))
                 Icon(
                     imageVector = ImageVector.vectorResource(R.drawable.ic_24_close),
@@ -64,9 +79,7 @@ fun NDGLBottomSheet(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(shape = CircleShape)
-                        .clickable {
-                            onDismissRequest()
-                        },
+                        .clickable { hideSheet() },
                 )
             }
         }
@@ -99,6 +112,7 @@ private fun NDGLBottomSheetWithHandlePreview() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true)
 @Composable
 private fun NDGLBottomSheetWithoutHandlePreview() {

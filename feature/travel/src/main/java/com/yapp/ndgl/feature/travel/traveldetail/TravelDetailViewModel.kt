@@ -411,7 +411,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                     dayItinerary
                 }
             }
-            copy(itineraries = updatedItineraries)
+            copy(itineraries = updatedItineraries, selectedPlace = null, showTransportBottomSheet = false)
         }
     }
 

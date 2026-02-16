@@ -14,12 +14,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,8 +46,10 @@ import com.yapp.ndgl.core.util.formatDistance
 import com.yapp.ndgl.core.util.formatString
 import com.yapp.ndgl.feature.travel.traveldetail.TransportSegment
 import com.yapp.ndgl.feature.travel.traveldetail.TransportType
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun TransportBottomSheet(
     initialTransport: TransportSegment,
@@ -53,6 +58,8 @@ internal fun TransportBottomSheet(
     onConfirm: (TransportSegment) -> Unit,
 ) {
     var selectedTransport by remember { mutableStateOf(initialTransport) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val coroutineScope = rememberCoroutineScope()
     val itemHeight = 56.dp
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
@@ -68,6 +75,7 @@ internal fun TransportBottomSheet(
 
     NDGLBottomSheet(
         onDismissRequest = onDismissRequest,
+        sheetState = sheetState,
         showDragHandle = false,
         title = stringResource(R.string.transport_bottom_sheet_title),
     ) {
@@ -138,8 +146,10 @@ internal fun TransportBottomSheet(
                 status = NDGLCTAButtonAttr.Status.ACTIVE,
                 label = stringResource(R.string.transport_bottom_sheet_button),
                 onClick = {
-                    onConfirm(selectedTransport)
-                    onDismissRequest()
+                    coroutineScope.launch {
+                        onConfirm(selectedTransport)
+                        sheetState.hide()
+                    }
                 },
             )
         }
