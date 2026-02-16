@@ -29,15 +29,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
+import com.yapp.ndgl.core.util.formatString
+import com.yapp.ndgl.data.travel.model.PlaceCategory
 import com.yapp.ndgl.feature.home.R
 import com.yapp.ndgl.feature.home.main.HomeState.MyTravel
 import com.yapp.ndgl.feature.home.main.HomeState.TravelPlace
+import com.yapp.ndgl.feature.home.util.toDisplayRes
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import kotlin.time.Duration.Companion.minutes
 import com.yapp.ndgl.core.ui.R as CoreR
 
 @Composable
-internal fun MyTravelCardSection(
+internal fun UpcomingTravelCardSection(
     myTravel: MyTravel,
     modifier: Modifier = Modifier,
 ) {
@@ -226,10 +230,12 @@ private fun InProgressTravelCard(
                 )
             }
 
-            PlaceInfoCard(
-                place = travel.currentPlace,
-                onPlaceClick = onPlaceClick,
-            )
+            if (travel.currentPlace != null) {
+                PlaceInfoCard(
+                    place = travel.currentPlace,
+                    onPlaceClick = onPlaceClick,
+                )
+            }
         }
     }
 }
@@ -265,7 +271,7 @@ private fun PlaceInfoCard(
                     tint = NDGLTheme.colors.black400,
                 )
                 Text(
-                    text = place.category,
+                    text = stringResource(place.category.toDisplayRes()),
                     color = NDGLTheme.colors.black400,
                     style = NDGLTheme.typography.bodySmMedium,
                 )
@@ -275,7 +281,10 @@ private fun PlaceInfoCard(
                     style = NDGLTheme.typography.bodyMdMedium,
                 )
                 Text(
-                    text = place.estimatedTime,
+                    text = stringResource(
+                        CoreR.string.estimated_duration_format,
+                        place.estimatedDuration.minutes.formatString(),
+                    ),
                     color = NDGLTheme.colors.black400,
                     style = NDGLTheme.typography.bodySmMedium,
                 )
@@ -319,7 +328,7 @@ private fun CardContainer(
 @Composable
 private fun EmptyTravelCardPreview() {
     NDGLTheme {
-        MyTravelCardSection(
+        UpcomingTravelCardSection(
             modifier = Modifier,
             myTravel = MyTravel.None,
         )
@@ -330,7 +339,7 @@ private fun EmptyTravelCardPreview() {
 @Composable
 private fun UpcomingTravelCardPreview() {
     NDGLTheme {
-        MyTravelCardSection(
+        UpcomingTravelCardSection(
             modifier = Modifier,
             myTravel = MyTravel.Upcoming(
                 title = "도쿄 여행",
@@ -347,7 +356,7 @@ private fun UpcomingTravelCardPreview() {
 @Composable
 private fun InProgressTravelCardPreview() {
     NDGLTheme {
-        MyTravelCardSection(
+        UpcomingTravelCardSection(
             modifier = Modifier,
             myTravel = MyTravel.InProgress(
                 title = "인도 여행",
@@ -355,8 +364,8 @@ private fun InProgressTravelCardPreview() {
                 startDate = LocalDate.of(2025, 2, 1),
                 endDate = LocalDate.of(2025, 2, 10),
                 currentPlace = TravelPlace(
-                    category = "교통수단",
-                    estimatedTime = "1시간 체류 예상",
+                    category = PlaceCategory.TRANSPORT,
+                    estimatedDuration = 60,
                     name = "인도 국제 공항",
                     thumbnailUrl = "",
                 ),

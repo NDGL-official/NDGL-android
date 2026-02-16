@@ -1,7 +1,6 @@
 package com.yapp.ndgl.feature.home.main
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -26,19 +25,21 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.FlagEmojiUtil.toFlagEmoji
-import com.yapp.ndgl.data.travel.model.TravelSummary
+import com.yapp.ndgl.data.travel.model.ProgramType
 import com.yapp.ndgl.feature.home.R
-import com.yapp.ndgl.core.ui.R as CoreR
+import com.yapp.ndgl.feature.home.main.HomeState.TravelContent
+import com.yapp.ndgl.feature.home.util.toIconRes
 
 @Composable
 internal fun RecommendedContentSection(
     userName: String,
-    contents: List<TravelSummary>,
+    contents: List<TravelContent>,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -70,7 +71,7 @@ internal fun RecommendedContentSection(
 
 @Composable
 private fun RecommendedContentCard(
-    travel: TravelSummary,
+    travel: TravelContent,
 ) {
     Column(
         modifier = Modifier
@@ -78,8 +79,8 @@ private fun RecommendedContentCard(
             .clip(RoundedCornerShape(8.dp)),
     ) {
         AsyncImage(
-            model = travel.youtube.thumbnail,
-            contentDescription = travel.youtube.title,
+            model = travel.thumbnail,
+            contentDescription = travel.title,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(140.dp),
@@ -99,22 +100,24 @@ private fun RecommendedContentCard(
             )
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(
-                    text = travel.youtube.title,
-                    style = NDGLTheme.typography.bodyLgSemiBold,
+                    text = travel.title,
                     color = NDGLTheme.colors.black700,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    style = NDGLTheme.typography.bodyLgSemiBold,
                 )
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
-                        imageVector = ImageVector.vectorResource(CoreR.drawable.ic_20_video),
+                        imageVector = ImageVector.vectorResource(travel.programType.toIconRes()),
                         contentDescription = null,
                         modifier = Modifier.size(20.dp),
                         tint = NDGLTheme.colors.black400,
                     )
                     Text(
-                        text = travel.youtube.youtuber,
+                        text = travel.programName,
                         style = NDGLTheme.typography.bodyMdMedium,
                         color = NDGLTheme.colors.black400,
                     )
@@ -124,7 +127,11 @@ private fun RecommendedContentCard(
                         color = NDGLTheme.colors.black400,
                     )
                     Text(
-                        text = stringResource(R.string.home_popular_travel_nights_days, travel.nights, travel.days),
+                        text = stringResource(
+                            R.string.home_popular_travel_nights_days,
+                            travel.nights,
+                            travel.days,
+                        ),
                         style = NDGLTheme.typography.bodyMdMedium,
                         color = NDGLTheme.colors.black400,
                     )
@@ -140,15 +147,7 @@ private fun CountryChip(
     city: String,
 ) {
     Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(4.dp))
-            .background(color = NDGLTheme.colors.green50)
-            .border(
-                width = 1.dp,
-                color = NDGLTheme.colors.green500,
-                shape = RoundedCornerShape(4.dp),
-            )
-            .padding(horizontal = 10.dp, vertical = 4.dp),
+        modifier = Modifier.padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -158,8 +157,8 @@ private fun CountryChip(
         )
         Text(
             text = city,
-            style = NDGLTheme.typography.bodySmSemiBold,
-            color = NDGLTheme.colors.green500,
+            style = NDGLTheme.typography.bodyMdMedium,
+            color = NDGLTheme.colors.black400,
         )
     }
 }
@@ -171,29 +170,27 @@ private fun RecommendedContentSectionPreview() {
         RecommendedContentSection(
             userName = "유저123",
             contents = listOf(
-                TravelSummary(
-                    travelId = "1",
+                TravelContent(
+                    travelId = 1,
+                    title = "곽준빈의 신혼여행",
                     country = "FR",
                     city = "파리",
                     nights = 7,
                     days = 9,
-                    youtube = TravelSummary.YoutubeInfo(
-                        title = "곽준빈의 신혼여행",
-                        youtuber = "곽튜브",
-                        thumbnail = "",
-                    ),
+                    programName = "곽튜브",
+                    programType = ProgramType.YOUTUBE,
+                    thumbnail = "",
                 ),
-                TravelSummary(
-                    travelId = "2",
+                TravelContent(
+                    travelId = 2,
+                    title = "스위스 여행",
                     country = "CH",
                     city = "스위스",
                     nights = 5,
                     days = 6,
-                    youtube = TravelSummary.YoutubeInfo(
-                        title = "스위스 여행",
-                        youtuber = "빠니보틀",
-                        thumbnail = "",
-                    ),
+                    programName = "빠니보틀",
+                    programType = ProgramType.YOUTUBE,
+                    thumbnail = "",
                 ),
             ),
         )
