@@ -16,7 +16,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
 @Composable
 internal fun TravelRoute(
-    navigateToFollowTravel: (Int) -> Unit,
+    navigateToFollowTravel: (Long, Int) -> Unit,
     navigateToTravelDetail: (Int) -> Unit,
     innerPadding: PaddingValues = PaddingValues(),
     viewModel: TravelViewModel = hiltViewModel(),
@@ -32,7 +32,7 @@ internal fun TravelRoute(
 
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
-            is TravelSideEffect.NavigateToFollowTravel -> navigateToFollowTravel(sideEffect.travelId)
+            is TravelSideEffect.NavigateToFollowTravel -> navigateToFollowTravel(sideEffect.travelId, sideEffect.days)
             is TravelSideEffect.NavigateToTravelDetail -> navigateToTravelDetail(sideEffect.travelId)
         }
     }

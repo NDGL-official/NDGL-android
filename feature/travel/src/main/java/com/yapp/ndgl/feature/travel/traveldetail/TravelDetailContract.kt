@@ -3,6 +3,8 @@ package com.yapp.ndgl.feature.travel.traveldetail
 import com.yapp.ndgl.core.base.UiIntent
 import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
+import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.TransportSegment
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 

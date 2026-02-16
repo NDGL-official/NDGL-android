@@ -18,8 +18,8 @@ import com.yapp.ndgl.navigation.Route
 fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
     entry<Route.Travel> {
         TravelRoute(
-            navigateToFollowTravel = { travelId ->
-                navigator.navigate(Route.FollowTravel(travelId))
+            navigateToFollowTravel = { travelId, days ->
+                navigator.navigate(Route.FollowTravel(travelId, days))
             },
             navigateToTravelDetail = { travelId ->
                 navigator.navigate(Route.TravelDetail(travelId))
@@ -29,7 +29,7 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
     entry<Route.FollowTravel> { route ->
         val viewModel =
             hiltViewModel<FollowTravelViewModel, FollowTravelViewModel.Factory> { factory ->
-                factory.create(travelId = route.travelId)
+                factory.create(travelId = route.travelId, days = route.days)
             }
         FollowTravelRoute(
             viewModel = viewModel,

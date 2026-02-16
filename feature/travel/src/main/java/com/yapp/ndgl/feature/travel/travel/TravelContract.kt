@@ -14,6 +14,6 @@ sealed interface TravelIntent : UiIntent {
 }
 
 sealed interface TravelSideEffect : UiSideEffect {
-    data class NavigateToFollowTravel(val travelId: Int) : TravelSideEffect
+    data class NavigateToFollowTravel(val travelId: Long, val days: Int) : TravelSideEffect
     data class NavigateToTravelDetail(val travelId: Int) : TravelSideEffect
 }
