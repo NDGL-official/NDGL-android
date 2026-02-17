@@ -42,6 +42,9 @@ internal fun MyTravelRoute(
         onNewTravelFindClick = {
             viewModel.onIntent(MyTravelIntent.ClickFindNewTravel)
         },
+        onTravelTemplateClick = { travelId ->
+            viewModel.onIntent((MyTravelIntent.ClickTravel(travelId = travelId)))
+        },
     )
 
     viewModel.collectSideEffect { sideEffect ->
@@ -72,6 +75,7 @@ private fun MyTravelScreen(
     onTravelClick: (Long) -> Unit,
     onPlaceClick: (String) -> Unit,
     onNewTravelFindClick: () -> Unit,
+    onTravelTemplateClick: (Long) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -123,6 +127,14 @@ private fun MyTravelScreen(
                     onNewTravelFindClick = onNewTravelFindClick,
                 )
             }
+            if (state.recommendedTravels.isNotEmpty()) {
+                item {
+                    RecommendedTravelSection(
+                        recommendedTravels = state.recommendedTravels,
+                        onTravelTemplateClick = onTravelTemplateClick,
+                    )
+                }
+            }
         }
     }
 }
@@ -136,6 +148,7 @@ private fun MyTravelScreenPreview() {
             onTravelClick = {},
             onPlaceClick = {},
             onNewTravelFindClick = {},
+            onTravelTemplateClick = {},
         )
     }
 }

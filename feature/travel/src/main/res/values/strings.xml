@@ -14,4 +14,7 @@
     <string name="my_travel_upcoming_list_travel_duration">%s~%s</string>
     <string name="my_travel_upcoming_list_d_day_minus">D-%d</string>
     <string name="my_travel_upcoming_list_d_day_plus">D+%d</string>
+
+    <!-- Recommended Travel Section -->
+    <string name="my_travel_recommended_travel_nights_days">%1$d박 %2$d일</string>
 </resources>

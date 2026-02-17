@@ -6,6 +6,7 @@ import com.yapp.ndgl.core.base.UiIntent
 import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
 import com.yapp.ndgl.data.travel.model.PlaceCategory
+import com.yapp.ndgl.data.travel.model.ProgramType
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDate
@@ -14,6 +15,7 @@ import java.time.LocalDate
 data class MyTravelState(
     val upcomingTravel: UpcomingTravel? = null,
     val upcomingTravels: ImmutableList<UpcomingTravelItem> = persistentListOf(),
+    val recommendedTravels: ImmutableList<RecommendedTravel> = persistentListOf(),
 ) : UiState {
     @Stable
     sealed class UpcomingTravel {
@@ -60,6 +62,19 @@ data class MyTravelState(
         val endDate: LocalDate,
         val imageUrl: String,
         val dDay: Int,
+    )
+
+    @Immutable
+    data class RecommendedTravel(
+        val travelId: Long,
+        val title: String,
+        val country: String,
+        val city: String,
+        val nights: Int,
+        val days: Int,
+        val programName: String,
+        val programType: ProgramType,
+        val thumbnailUrl: String,
     )
 }
 
