@@ -48,7 +48,7 @@ import kotlin.time.Duration.Companion.hours
 internal fun PlaceBottomSheet(
     place: TravelPlace,
     onDismissRequest: () -> Unit,
-    navigateToPlaceDetail: () -> Unit,
+    navigateToTravelPlaceDetail: () -> Unit,
     onAddTimeClick: (Int) -> Unit,
     onAddCostClick: (Int) -> Unit,
     onAddMemoClick: (Int) -> Unit,
@@ -90,7 +90,7 @@ internal fun PlaceBottomSheet(
                                 .clip(RoundedCornerShape(8.dp))
                                 .background(color = NDGLTheme.colors.black50)
                                 .clickable {
-                                    navigateToPlaceDetail()
+                                    navigateToTravelPlaceDetail()
                                 },
                             contentAlignment = Alignment.Center,
                         ) {
@@ -268,7 +268,7 @@ private fun PlaceBottomSheetPreview() {
             PlaceBottomSheet(
                 place = mockPlace,
                 onDismissRequest = {},
-                navigateToPlaceDetail = {},
+                navigateToTravelPlaceDetail = {},
                 onFindRouteClick = {},
                 onAddTimeClick = {},
                 onAddCostClick = {},

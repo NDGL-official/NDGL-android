@@ -4,10 +4,12 @@ import com.yapp.ndgl.core.base.UiIntent
 import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
 import com.yapp.ndgl.core.util.formatDecimal
+import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.PriceRange
+import com.yapp.ndgl.feature.travel.model.TipContent
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
@@ -41,18 +43,6 @@ data class PlaceInfo(
     val formattedRatingCount: String
         get() = userRatingCount?.formatDecimal() ?: ""
 }
-
-data class TipContent(
-    val creatorName: String,
-    val tips: List<String>,
-)
-
-data class AlternativePlace(
-    val id: Int,
-    val name: String,
-    val thumbnail: String,
-    val placeType: PlaceType,
-)
 
 sealed interface PlaceDetailIntent : UiIntent {
     data class SelectTab(val tab: PlaceDetailTab) : PlaceDetailIntent

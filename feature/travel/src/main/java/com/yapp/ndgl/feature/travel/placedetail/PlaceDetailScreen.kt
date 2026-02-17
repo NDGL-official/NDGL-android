@@ -50,11 +50,13 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.launchBrowser
+import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.Price
 import com.yapp.ndgl.feature.travel.model.PriceRange
+import com.yapp.ndgl.feature.travel.model.TipContent
 import com.yapp.ndgl.feature.travel.placedetail.component.PlaceDetailTabRow
 import com.yapp.ndgl.feature.travel.placedetail.component.PlaceInfoTab
 import com.yapp.ndgl.feature.travel.placedetail.component.PlacePhotoTab
@@ -324,13 +326,13 @@ private fun PlaceDetailScreenPreview() {
                     ),
                     alternativePlaces = listOf(
                         AlternativePlace(
-                            id = 2,
+                            id = "",
                             name = "젤라또 디 산 크리스피노",
                             thumbnail = "",
                             placeType = PlaceType.CAFE,
                         ),
                         AlternativePlace(
-                            id = 3,
+                            id = "",
                             name = "지올리티",
                             thumbnail = "",
                             placeType = PlaceType.CAFE,

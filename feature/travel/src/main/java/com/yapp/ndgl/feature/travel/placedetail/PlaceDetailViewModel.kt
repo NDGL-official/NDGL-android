@@ -1,91 +1,108 @@
 package com.yapp.ndgl.feature.travel.placedetail
 
+import androidx.lifecycle.viewModelScope
 import com.yapp.ndgl.core.base.BaseViewModel
+import com.yapp.ndgl.core.util.suspendRunCatching
+import com.yapp.ndgl.data.travel.repository.PlaceRepository
+import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
-import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.Price
 import com.yapp.ndgl.feature.travel.model.PriceRange
+import com.yapp.ndgl.feature.travel.model.TipContent
+import com.yapp.ndgl.feature.travel.model.toPlaceType
+import com.yapp.ndgl.navigation.model.RouteAlternativePlace
+import com.yapp.ndgl.navigation.model.RouteTipContent
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.hours
 
 @HiltViewModel(assistedFactory = PlaceDetailViewModel.Factory::class)
 class PlaceDetailViewModel @AssistedInject constructor(
     @Assisted private val placeId: String,
+    @Assisted private val tipContent: RouteTipContent?,
+    @Assisted private val alternativePlaces: List<RouteAlternativePlace>,
+    private val placeRepository: PlaceRepository,
 ) : BaseViewModel<PlaceDetailState, PlaceDetailIntent, PlaceDetailSideEffect>(
     initialState = PlaceDetailState(),
 ) {
     init {
-        loadPlaceData()
+        loadPlaceDetail()
     }
 
-    private fun loadPlaceData() {
-        // TODO: Load from repository (현재는 테스트를 위한 더미 데이터)
-        reduce {
-            copy(
-                placeInfo = PlaceInfo(
-                    id = placeId,
-                    name = "젤라테리아 파씨 (Gelateria Fassi)",
-                    placeType = PlaceType.RESTAURANT,
-                    priceRange = PriceRange(
-                        startPrice = Price(currencyCode = "EUR", units = "5", symbol = "€"),
-                        endPrice = Price(currencyCode = "EUR", units = "15", symbol = "€"),
+    private fun loadPlaceDetail() = viewModelScope.launch {
+        suspendRunCatching {
+            placeRepository.getPlace(placeId)
+        }.onSuccess { response ->
+            loadPlacePhotos()
+
+            val place = response.place
+            reduce {
+                copy(
+                    placeInfo = PlaceInfo(
+                        id = place.id,
+                        name = place.name,
+                        placeType = place.category.toPlaceType(),
+                        priceRange = place.priceRange?.let {
+                            PriceRange(
+                                startPrice = Price(
+                                    currencyCode = it.startPrice.currencyCode,
+                                    units = it.startPrice.units,
+                                    symbol = it.startPrice.symbol,
+                                ),
+                                endPrice = Price(currencyCode = it.endPrice.currencyCode, units = it.endPrice.units, symbol = it.endPrice.symbol),
+                            )
+                        },
+                        rating = place.rating,
+                        userRatingCount = place.userRatingCount,
+                        address = place.formattedAddress,
+                        phoneNumber = place.nationalPhoneNumber,
+                        openingHours = place.regularOpeningHours?.joinToString("\n"),
+                        googleMapsUri = place.googleMapsUri,
+                        websiteUrl = place.websiteUri,
+                        estimatedDuration = 1.hours,
+                        thumbnail = place.thumbnail.orEmpty(),
+                        tipContent = tipContent?.let { TipContent(creatorName = it.creatorName, tips = it.tips) },
+                        alternativePlaces = alternativePlaces.map { routePlace ->
+                            AlternativePlace(
+                                id = routePlace.id,
+                                name = routePlace.name,
+                                thumbnail = routePlace.thumbnail,
+                                placeType = routePlace.placeType.toPlaceType(),
+                            )
+                        },
+                        latitude = place.location.latitude,
+                        longitude = place.location.longitude,
                     ),
-                    address = "Via Principe Eugenio, 65, 00185 Roma RM, Italy",
-                    phoneNumber = "+39 06 446 4740",
-                    openingHours = "매일 12:00 ~ 24:00",
-                    googleMapsUri = "https://maps.google.com/?cid=14776686710302251978&g_mp=CiVnb29nbGUubWFwcy" +
-                        "5wbGFjZXMudjEuUGxhY2VzLkdldFBsYWNlEAIYBCAA",
-                    websiteUrl = "https://www.gyukatsu-motomura.com/shop/shinjukuhonten",
-                    rating = 4.7,
-                    userRatingCount = 12450,
-                    estimatedDuration = 1.hours,
-                    thumbnail = "https://images.unsplash.com/photo-1567206563064-6f60f40a2b57",
-                    tipContent = TipContent(
-                        creatorName = "",
-                        tips = listOf(
-                            "리조(쌀) 맛은 무조건 드셔보세요. 파씨의 시그니처입니다.",
-                            "생크림(Panna)을 무료로 올려주니 꼭 추가해서 드세요!",
-                            "매장 내부에 앉아서 먹을 수 있는 공간이 꽤 넓습니다.",
-                        ),
-                    ),
-                    alternativePlaces = listOf(
-                        AlternativePlace(
-                            id = 1,
-                            name = "폼피 티라미수 (Pompi Tiramisu)",
-                            thumbnail = "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9",
-                            placeType = PlaceType.CAFE,
-                        ),
-                        AlternativePlace(
-                            id = 2,
-                            name = "지올리띠 (Giolitti)",
-                            thumbnail = "https://images.unsplash.com/photo-1505394033343-43adc2f44bb2",
-                            placeType = PlaceType.CAFE,
-                        ),
-                        AlternativePlace(
-                            id = 3,
-                            name = "라 로칸다 디 바코 (La Locanda di Bacco)",
-                            thumbnail = "https://images.unsplash.com/photo-1555396273-367ea4eb4db5",
-                            placeType = PlaceType.RESTAURANT,
-                        ),
-                    ),
-                    latitude = 41.9028,
-                    longitude = 12.4964,
-                ),
-                photos = listOf(
-                    PlacePhoto(url = "https://picsum.photos/id/10/400/600", width = 400, height = 600),
-                    PlacePhoto(url = "https://picsum.photos/id/20/600/400", width = 600, height = 400),
-                    PlacePhoto(url = "https://picsum.photos/id/30/400/400", width = 400, height = 400),
-                    PlacePhoto(url = "https://picsum.photos/id/40/400/500", width = 400, height = 500),
-                    PlacePhoto(url = "https://picsum.photos/id/50/500/400", width = 500, height = 400),
-                    PlacePhoto(url = "https://picsum.photos/id/60/400/300", width = 400, height = 300),
-                    PlacePhoto(url = "https://picsum.photos/id/70/300/400", width = 300, height = 400),
-                    PlacePhoto(url = "https://picsum.photos/id/80/400/450", width = 400, height = 450),
-                ),
-            )
+                )
+            }
+        }.onFailure {
+            // TODO: 에러 처리
+        }
+    }
+
+    private fun loadPlacePhotos() = viewModelScope.launch {
+        repeat(3) { index ->
+            delay(1000)
+            val result = suspendRunCatching { placeRepository.getPlacePhotos(placeId) }
+            val photos = result.getOrNull()?.photos
+
+            if (!photos.isNullOrEmpty()) {
+                reduce {
+                    copy(
+                        photos = photos.map { PlacePhoto(url = it.photoUri, width = it.widthPx, height = it.heightPx) },
+                    )
+                }
+                return@launch
+            }
+
+            result.onFailure {
+                // FIXME: 에러 뷰
+            }
         }
     }
 
@@ -131,6 +148,10 @@ class PlaceDetailViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(placeId: String): PlaceDetailViewModel
+        fun create(
+            placeId: String,
+            tipContent: RouteTipContent?,
+            alternativePlaces: List<RouteAlternativePlace>,
+        ): PlaceDetailViewModel
     }
 }
