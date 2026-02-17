@@ -34,3 +34,5 @@ internal fun PlaceCategory.toPlaceType(): PlaceType = when (this) {
     PlaceCategory.CAFE -> PlaceType.CAFE
     PlaceCategory.ACCOMMODATION -> PlaceType.ACCOMMODATION
 }
+
+fun String.toPlaceType(): PlaceType = PlaceType.entries.find { it.name == this } ?: PlaceType.ATTRACTION
