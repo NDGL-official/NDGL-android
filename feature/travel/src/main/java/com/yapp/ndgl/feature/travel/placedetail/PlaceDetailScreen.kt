@@ -196,7 +196,7 @@ private fun PlaceDetailScreen(
                                     placeInfo.priceRange?.let { priceRange ->
                                         append(" • " + priceRange.formattedPriceRange)
                                     }
-                                    append(reviewLabel?.let { " • $it" })
+                                    if (reviewLabel != null) append(" • $reviewLabel")
                                 }
                                 if (placeInfo.userRatingCount != null) {
                                     withStyle(style = SpanStyle(color = NDGLTheme.colors.black300)) {
