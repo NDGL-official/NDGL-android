@@ -66,7 +66,7 @@ internal fun UpcomingTravelListSection(
 @Composable
 private fun Header() {
     Text(
-        text = "다가오는 여행",
+        text = stringResource(R.string.my_travel_upcoming_list_header),
         modifier = Modifier.padding(horizontal = 24.dp),
         color = NDGLTheme.colors.black700,
         style = NDGLTheme.typography.subtitleLgSemiBold,
@@ -169,13 +169,13 @@ private fun EmptyTravel(
             modifier = Modifier.size(100.dp),
         )
         Text(
-            text = "아직 예정된 여행이 없어요.",
+            text = stringResource(R.string.my_travel_upcoming_list_empty_title),
             modifier = Modifier.padding(top = 16.dp),
             color = NDGLTheme.colors.black500,
             style = NDGLTheme.typography.subtitleMdSemiBold,
         )
         Text(
-            text = "따라가기 영상을 담아두면 여행 준비가 쉬워져요.",
+            text = stringResource(R.string.my_travel_upcoming_list_empty_description),
             modifier = Modifier.padding(top = 4.dp),
             color = NDGLTheme.colors.black400,
             style = NDGLTheme.typography.bodyLgRegular,
@@ -203,7 +203,7 @@ private fun FindNewTravelCtaButton(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            text = "새로운 여행지 찾아보기",
+            text = stringResource(R.string.my_travel_upcoming_list_find_new_travel),
             color = NDGLTheme.colors.black800,
             style = NDGLTheme.typography.bodyMdSemiBold,
         )

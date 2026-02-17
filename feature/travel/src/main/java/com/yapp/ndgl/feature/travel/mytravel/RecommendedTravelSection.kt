@@ -50,7 +50,7 @@ internal fun RecommendedTravelSection(
         verticalArrangement = Arrangement.spacedBy(24.dp),
     ) {
         Text(
-            text = "추천하는 따라가기 여행",
+            text = stringResource(R.string.my_travel_recommended_travel_header),
             style = NDGLTheme.typography.subtitleLgSemiBold,
             color = NDGLTheme.colors.black900,
             modifier = Modifier.padding(horizontal = 24.dp),
