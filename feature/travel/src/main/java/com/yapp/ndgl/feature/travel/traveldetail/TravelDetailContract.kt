@@ -3,7 +3,9 @@ package com.yapp.ndgl.feature.travel.traveldetail
 import com.yapp.ndgl.core.base.UiIntent
 import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
+import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.TipContent
 import com.yapp.ndgl.feature.travel.model.TransportSegment
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
@@ -38,7 +40,7 @@ data class ContentInfo(
 
 data class VideoInfo(
     val title: String = "",
-    val name: String = "",
+    val creatorName: String = "",
     val profileImage: String = "",
     val thumbnail: String = "",
     val link: String = "",
@@ -84,6 +86,8 @@ data class TravelPlace(
     val userData: UserData = UserData(),
     val startTime: Duration,
     val transportToNext: TransportSegment? = null,
+    val travelerTips: List<String> = emptyList(),
+    val alternativePlaces: List<AlternativePlace> = emptyList(),
 ) {
     val duration: Duration
         get() = userData.estimatedDuration
@@ -122,7 +126,7 @@ sealed interface TravelDetailIntent : UiIntent {
     data class ClickAddMemo(val placeId: Int) : TravelDetailIntent
     data class ClickFindRoute(val googleMapsUri: String) : TravelDetailIntent
     data object DismissPlaceBottomSheet : TravelDetailIntent
-    data class NavigateToPlaceDetail(val placeId: String) : TravelDetailIntent
+    data class NavigateToTravelPlaceDetail(val placeId: String) : TravelDetailIntent
     data object DismissTimeBottomSheet : TravelDetailIntent
     data class ConfirmDuration(val duration: Duration) : TravelDetailIntent
     data object DismissCostModal : TravelDetailIntent
@@ -133,6 +137,11 @@ sealed interface TravelDetailIntent : UiIntent {
 
 sealed interface TravelDetailSideEffect : UiSideEffect {
     data object NavigateBack : TravelDetailSideEffect
-    data class NavigateToPlaceDetail(val placeId: String) : TravelDetailSideEffect
+    data class NavigateToTravelPlaceDetail(
+        val placeId: String,
+        val tipContent: TipContent?,
+        val alternativePlaces: List<AlternativePlace>?,
+    ) : TravelDetailSideEffect
+
     data class NavigateToBrowser(val url: String) : TravelDetailSideEffect
 }

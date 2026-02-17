@@ -1,9 +1,8 @@
-package com.yapp.ndgl.feature.travel.placedetail.component
+package com.yapp.ndgl.feature.travel.followtravel.placedetail.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,18 +39,18 @@ import coil3.compose.AsyncImage
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.formatString
+import com.yapp.ndgl.feature.travel.followtravel.placedetail.FollowPlaceInfo
 import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.TipContent
-import com.yapp.ndgl.feature.travel.placedetail.PlaceInfo
+import kotlin.collections.forEach
 import kotlin.time.Duration.Companion.hours
 
 @Composable
-internal fun PlaceInfoTab(
-    placeInfo: PlaceInfo,
+internal fun FollowPlaceInfoTab(
+    placeInfo: FollowPlaceInfo,
     clickAddress: () -> Unit,
     clickMenu: () -> Unit,
-    onChangePlaceClick: (AlternativePlace) -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -64,7 +63,7 @@ internal fun PlaceInfoTab(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             if (placeInfo.address != null) {
-                PlaceInfoRow(
+                FollowPlaceInfoRow(
                     iconRes = R.drawable.ic_24_pin,
                     onClick = clickAddress,
                 ) {
@@ -77,7 +76,7 @@ internal fun PlaceInfoTab(
                 }
             }
             if (placeInfo.websiteUrl != null) {
-                PlaceInfoRow(
+                FollowPlaceInfoRow(
                     iconRes = R.drawable.ic_24_book,
                     onClick = clickMenu,
                 ) {
@@ -88,7 +87,7 @@ internal fun PlaceInfoTab(
                 }
             }
             if (placeInfo.phoneNumber != null) {
-                PlaceInfoRow(iconRes = R.drawable.ic_24_phone) {
+                FollowPlaceInfoRow(iconRes = R.drawable.ic_24_phone) {
                     Text(
                         placeInfo.phoneNumber,
                         color = NDGLTheme.colors.black700,
@@ -96,7 +95,7 @@ internal fun PlaceInfoTab(
                     )
                 }
             }
-            PlaceInfoRow(iconRes = R.drawable.ic_24_clock) {
+            FollowPlaceInfoRow(iconRes = R.drawable.ic_24_clock) {
                 Text(
                     stringResource(R.string.estimated_duration_format, placeInfo.estimatedDuration.formatString()),
                     color = NDGLTheme.colors.black700,
@@ -114,21 +113,21 @@ internal fun PlaceInfoTab(
 
         if (placeInfo.tipContent != null) {
             val tipContent = placeInfo.tipContent
-
             Spacer(modifier = Modifier.height(32.dp))
-            PlaceTipsPager(tips = tipContent.tips, creatorName = tipContent.creatorName)
+            FollowPlaceTipsPager(tips = tipContent.tips, creatorName = tipContent.creatorName)
         }
+
         if (placeInfo.alternativePlaces.isNotEmpty()) {
             Spacer(modifier = Modifier.height(32.dp))
             Text(stringResource(R.string.place_detail_plan_b_message), color = NDGLTheme.colors.black700, style = NDGLTheme.typography.bodyLgSemiBold)
             Spacer(modifier = Modifier.height(16.dp))
-            AlternativePlaceContent(alternativePlaces = placeInfo.alternativePlaces, onChangePlaceClick = onChangePlaceClick)
+            FollowAlternativePlaceContent(alternativePlaces = placeInfo.alternativePlaces)
         }
     }
 }
 
 @Composable
-private fun PlaceTipsPager(
+private fun FollowPlaceTipsPager(
     tips: List<String>,
     creatorName: String,
 ) {
@@ -215,9 +214,8 @@ private fun PlaceTipsPager(
 }
 
 @Composable
-private fun AlternativePlaceContent(
+private fun FollowAlternativePlaceContent(
     alternativePlaces: List<AlternativePlace>,
-    onChangePlaceClick: (AlternativePlace) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -259,24 +257,6 @@ private fun AlternativePlaceContent(
                     }
                     Text(alternativePlace.name, color = NDGLTheme.colors.black700, style = NDGLTheme.typography.bodyMdSemiBold)
                 }
-
-                Row(
-                    modifier = Modifier
-                        .height(30.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(NDGLTheme.colors.black500)
-                        .clickable {
-                            onChangePlaceClick(alternativePlace)
-                        }
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(
-                        stringResource(R.string.place_detail_change_place),
-                        style = NDGLTheme.typography.bodySmSemiBold,
-                        color = NDGLTheme.colors.white,
-                    )
-                }
             }
         }
     }
@@ -284,10 +264,10 @@ private fun AlternativePlaceContent(
 
 @Preview(showBackground = true)
 @Composable
-private fun PlaceInfoTabPreview() {
+private fun FollowPlaceInfoTabPreview() {
     NDGLTheme {
-        PlaceInfoTab(
-            placeInfo = PlaceInfo(
+        FollowPlaceInfoTab(
+            placeInfo = FollowPlaceInfo(
                 id = "",
                 name = "젤라테리아 파씨",
                 address = "로마 비아 프린시페",
@@ -319,7 +299,6 @@ private fun PlaceInfoTabPreview() {
             ),
             clickAddress = {},
             clickMenu = {},
-            onChangePlaceClick = {},
         )
     }
 }

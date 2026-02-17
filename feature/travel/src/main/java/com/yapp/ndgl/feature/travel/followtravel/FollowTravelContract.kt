@@ -3,8 +3,10 @@ package com.yapp.ndgl.feature.travel.followtravel
 import com.yapp.ndgl.core.base.UiIntent
 import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
+import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.OpeningHours
 import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.TipContent
 import com.yapp.ndgl.feature.travel.model.TransportSegment
 import kotlin.time.Duration
 
@@ -66,11 +68,21 @@ data class TravelPlace(
     val googleMapsUri: String?,
     val placeType: PlaceType,
     val transportToNext: TransportSegment? = null,
+    val travelerTips: List<String> = emptyList(),
+    val alternativePlaces: List<AlternativePlace> = emptyList(),
 )
 
 sealed interface FollowTravelIntent : UiIntent {
     data class SelectDay(val day: Int) : FollowTravelIntent
     data object ClickFollowTravel : FollowTravelIntent
+    data class ClickPlaceItem(val place: TravelPlace) : FollowTravelIntent
 }
 
-sealed interface FollowTravelSideEffect : UiSideEffect
+sealed interface FollowTravelSideEffect : UiSideEffect {
+    data class NavigateToFollowPlaceDetail(
+        val placeId: String,
+        val tipContent: TipContent?,
+        val alternativePlaces: List<AlternativePlace>?,
+    ) :
+        FollowTravelSideEffect
+}

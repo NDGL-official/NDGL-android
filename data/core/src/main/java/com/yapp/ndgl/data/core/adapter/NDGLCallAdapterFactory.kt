@@ -70,6 +70,7 @@ private class NDGLCall<T : Any>(
                             fieldErrors = errorResponse?.errors,
                         )
 
+                        Timber.e("API Error [${exception.code}] ${call.request().url}\n↳ ${exception.errorMessage}")
                         callback.onFailure(this@NDGLCall, exception)
                     }
                 }

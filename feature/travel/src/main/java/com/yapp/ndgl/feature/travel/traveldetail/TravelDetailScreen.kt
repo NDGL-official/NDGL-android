@@ -67,7 +67,9 @@ import com.yapp.ndgl.core.ui.util.dropShadow
 import com.yapp.ndgl.core.ui.util.launchBrowser
 import com.yapp.ndgl.core.ui.util.rememberReorderableState
 import com.yapp.ndgl.core.ui.util.reorderable
+import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.TipContent
 import com.yapp.ndgl.feature.travel.model.TransportSegment
 import com.yapp.ndgl.feature.travel.model.TransportType
 import com.yapp.ndgl.feature.travel.traveldetail.component.ContentCard
@@ -90,7 +92,7 @@ import kotlin.time.Duration.Companion.minutes
 internal fun TravelDetailRoute(
     viewModel: TravelDetailViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
-    navigateToPlaceDetail: (String) -> Unit,
+    navigateToTravelPlaceDetail: (String, TipContent?, List<AlternativePlace>?) -> Unit,
 ) {
     val state by viewModel.collectAsState()
     val context = LocalContext.current
@@ -98,8 +100,8 @@ internal fun TravelDetailRoute(
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             is TravelDetailSideEffect.NavigateBack -> navigateBack()
-            is TravelDetailSideEffect.NavigateToPlaceDetail -> {
-                navigateToPlaceDetail(sideEffect.placeId)
+            is TravelDetailSideEffect.NavigateToTravelPlaceDetail -> {
+                navigateToTravelPlaceDetail(sideEffect.placeId, sideEffect.tipContent, sideEffect.alternativePlaces)
             }
 
             is TravelDetailSideEffect.NavigateToBrowser -> {
@@ -134,7 +136,7 @@ internal fun TravelDetailRoute(
         confirmEditMode = { viewModel.onIntent(TravelDetailIntent.ConfirmEditMode) },
         clickPlaceItem = { viewModel.onIntent(TravelDetailIntent.ClickPlaceItem(it)) },
         dismissPlaceBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissPlaceBottomSheet) },
-        navigateToPlaceDetail = { viewModel.onIntent(TravelDetailIntent.NavigateToPlaceDetail(it)) },
+        navigateToTravelPlaceDetail = { viewModel.onIntent(TravelDetailIntent.NavigateToTravelPlaceDetail(it)) },
         clickAddTime = { viewModel.onIntent(TravelDetailIntent.ClickAddTime(it)) },
         clickAddMemo = { viewModel.onIntent(TravelDetailIntent.ClickAddMemo(it)) },
         clickAddCost = { viewModel.onIntent(TravelDetailIntent.ClickAddCost(it)) },
@@ -179,7 +181,7 @@ private fun TravelDetailScreen(
     clickAddCost: (Int) -> Unit,
     clickFindRoute: (String) -> Unit,
     dismissPlaceBottomSheet: () -> Unit,
-    navigateToPlaceDetail: (String) -> Unit,
+    navigateToTravelPlaceDetail: (String) -> Unit,
     dismissTimeBottomSheet: () -> Unit,
     confirmDuration: (Duration) -> Unit,
     dismissCostModal: () -> Unit,
@@ -532,7 +534,7 @@ private fun TravelDetailScreen(
             PlaceBottomSheet(
                 place = state.selectedPlace,
                 onDismissRequest = dismissPlaceBottomSheet,
-                navigateToPlaceDetail = { navigateToPlaceDetail(state.selectedPlace.googlePlaceId) },
+                navigateToTravelPlaceDetail = { navigateToTravelPlaceDetail(state.selectedPlace.googlePlaceId) },
                 onAddTimeClick = clickAddTime,
                 onAddCostClick = clickAddCost,
                 onAddMemoClick = clickAddMemo,
@@ -627,7 +629,7 @@ private fun TravelDetailScreenPreview() {
                     days = 4,
                     videoInfo = VideoInfo(
                         title = "방콕 풀코스, 동남아 안 가본 곽튜브와 함께 【방콕】",
-                        name = "빠니보틀",
+                        creatorName = "빠니보틀",
                         profileImage = "",
                         thumbnail = "",
                         link = "",
@@ -699,7 +701,7 @@ private fun TravelDetailScreenPreview() {
             clickAddCost = {},
             clickFindRoute = {},
             dismissPlaceBottomSheet = {},
-            navigateToPlaceDetail = {},
+            navigateToTravelPlaceDetail = {},
             dismissTimeBottomSheet = {},
             confirmDuration = { _ -> },
             dismissCostModal = {},
@@ -728,7 +730,7 @@ private fun TravelDetailScreenEditModePreview() {
                     days = 4,
                     videoInfo = VideoInfo(
                         title = "방콕 풀코스, 동남아 안 가본 곽튜브와 함께 【방콕】",
-                        name = "빠니보틀",
+                        creatorName = "빠니보틀",
                         profileImage = "",
                         thumbnail = "",
                         link = "",
@@ -800,7 +802,7 @@ private fun TravelDetailScreenEditModePreview() {
             clickAddCost = {},
             clickFindRoute = {},
             dismissPlaceBottomSheet = {},
-            navigateToPlaceDetail = {},
+            navigateToTravelPlaceDetail = {},
             dismissTimeBottomSheet = {},
             confirmDuration = { _ -> },
             dismissCostModal = {},

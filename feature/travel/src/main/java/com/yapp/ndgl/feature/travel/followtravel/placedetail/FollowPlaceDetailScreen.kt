@@ -1,4 +1,4 @@
-package com.yapp.ndgl.feature.travel.placedetail
+package com.yapp.ndgl.feature.travel.followtravel.placedetail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -40,30 +40,23 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
 import com.yapp.ndgl.core.ui.R
-import com.yapp.ndgl.core.ui.designsystem.NDGLModal
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.launchBrowser
-import com.yapp.ndgl.feature.travel.model.AlternativePlace
+import com.yapp.ndgl.feature.travel.followtravel.placedetail.component.FollowPlaceDetailTabRow
+import com.yapp.ndgl.feature.travel.followtravel.placedetail.component.FollowPlaceInfoTab
+import com.yapp.ndgl.feature.travel.followtravel.placedetail.component.FollowPlacePhotoTab
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
-import com.yapp.ndgl.feature.travel.model.PlaceType
-import com.yapp.ndgl.feature.travel.model.Price
-import com.yapp.ndgl.feature.travel.model.PriceRange
-import com.yapp.ndgl.feature.travel.model.TipContent
-import com.yapp.ndgl.feature.travel.placedetail.component.PlaceDetailTabRow
-import com.yapp.ndgl.feature.travel.placedetail.component.PlaceInfoTab
-import com.yapp.ndgl.feature.travel.placedetail.component.PlacePhotoTab
 
 @Composable
-internal fun PlaceDetailRoute(
-    viewModel: PlaceDetailViewModel = hiltViewModel(),
+internal fun FollowPlaceDetailRoute(
+    viewModel: FollowPlaceDetailViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
 ) {
     val state by viewModel.collectAsState()
@@ -71,30 +64,24 @@ internal fun PlaceDetailRoute(
 
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
-            is PlaceDetailSideEffect.NavigateToBrowser -> context.launchBrowser(sideEffect.url)
+            is FollowPlaceDetailSideEffect.NavigateToBrowser -> context.launchBrowser(sideEffect.url)
         }
     }
 
-    PlaceDetailScreen(
+    FollowPlaceDetailScreen(
         state = state,
         clickBackButton = navigateBack,
-        selectTab = { viewModel.onIntent(PlaceDetailIntent.SelectTab(it)) },
-        clickChangePlace = { viewModel.onIntent(PlaceDetailIntent.ClickChangePlace(it)) },
-        confirmChangePlace = { viewModel.onIntent(PlaceDetailIntent.ConfirmChangePlace) },
-        dismissChangeModal = { viewModel.onIntent(PlaceDetailIntent.DismissChangeModal) },
-        clickAddress = { viewModel.onIntent(PlaceDetailIntent.ClickAddress) },
-        clickMenu = { viewModel.onIntent(PlaceDetailIntent.ClickMenu) },
+        selectTab = { viewModel.onIntent(FollowPlaceDetailIntent.SelectTab(it)) },
+        clickAddress = { viewModel.onIntent(FollowPlaceDetailIntent.ClickAddress) },
+        clickMenu = { viewModel.onIntent(FollowPlaceDetailIntent.ClickMenu) },
     )
 }
 
 @Composable
-private fun PlaceDetailScreen(
-    state: PlaceDetailState,
+private fun FollowPlaceDetailScreen(
+    state: FollowPlaceDetailState,
     clickBackButton: () -> Unit,
     selectTab: (PlaceDetailTab) -> Unit,
-    clickChangePlace: (AlternativePlace) -> Unit,
-    confirmChangePlace: () -> Unit,
-    dismissChangeModal: () -> Unit,
     clickAddress: () -> Unit,
     clickMenu: () -> Unit,
 ) {
@@ -229,7 +216,7 @@ private fun PlaceDetailScreen(
                 }
 
                 Column(Modifier.background(NDGLTheme.colors.white)) {
-                    PlaceDetailTabRow(
+                    FollowPlaceDetailTabRow(
                         selectedTab = state.selectedTab,
                         onTabSelected = selectTab,
                     )
@@ -244,11 +231,10 @@ private fun PlaceDetailScreen(
                         PlaceDetailTab.INFO -> {
                             item {
                                 Spacer(Modifier.height(24.dp))
-                                PlaceInfoTab(
+                                FollowPlaceInfoTab(
                                     placeInfo = state.placeInfo,
                                     clickAddress = clickAddress,
                                     clickMenu = clickMenu,
-                                    onChangePlaceClick = clickChangePlace,
                                 )
                             }
                         }
@@ -267,7 +253,7 @@ private fun PlaceDetailScreen(
 
                             item {
                                 Spacer(Modifier.height(20.dp))
-                                PlacePhotoTab(leftPhotos = leftPhotos, rightPhotos = rightPhotos)
+                                FollowPlacePhotoTab(leftPhotos = leftPhotos, rightPhotos = rightPhotos)
                             }
                         }
                     }
@@ -276,78 +262,5 @@ private fun PlaceDetailScreen(
                 }
             }
         }
-    }
-
-    if (state.showChangeModal && state.selectedAlternativePlace != null) {
-        NDGLModal(
-            onDismissRequest = dismissChangeModal,
-            title = stringResource(R.string.place_detail_modal_change_title),
-            body = stringResource(R.string.place_detail_modal_change_body, state.selectedAlternativePlace.name),
-            description = stringResource(
-                R.string.place_detail_modal_change_description,
-                state.placeInfo.name,
-                state.selectedAlternativePlace.name,
-            ),
-            positiveButtonText = stringResource(R.string.place_detail_modal_change_confirm),
-            onPositiveButtonClick = confirmChangePlace,
-            negativeButtonText = stringResource(R.string.place_detail_modal_change_cancel),
-            onNegativeButtonClick = dismissChangeModal,
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun PlaceDetailScreenPreview() {
-    NDGLTheme {
-        PlaceDetailScreen(
-            state = PlaceDetailState(
-                placeInfo = PlaceInfo(
-                    id = "",
-                    name = "젤라테리아 파씨",
-                    placeType = PlaceType.RESTAURANT,
-                    address = "로마 비아 프린시페",
-                    phoneNumber = "+39 06 446 4740",
-                    openingHours = "매일 01:00~23:00",
-                    websiteUrl = "https://example.com",
-                    rating = 4.7,
-                    userRatingCount = 3971,
-                    priceRange = PriceRange(
-                        startPrice = Price(currencyCode = "EUR", units = "5", symbol = "€"),
-                        endPrice = Price(currencyCode = "EUR", units = "15", symbol = "€"),
-                    ),
-                    tipContent = TipContent(
-                        creatorName = "빠니보틀",
-                        tips = listOf(
-                            "젤라또는 오후 3시쯤 먹는 게 가장 맛있어요",
-                            "피스타치오와 헤이즐넛 맛을 꼭 드셔보세요",
-                            "웨이팅이 길 수 있으니 평일 방문을 추천해요",
-                        ),
-                    ),
-                    alternativePlaces = listOf(
-                        AlternativePlace(
-                            id = "",
-                            name = "젤라또 디 산 크리스피노",
-                            thumbnail = "",
-                            placeType = PlaceType.CAFE,
-                        ),
-                        AlternativePlace(
-                            id = "",
-                            name = "지올리티",
-                            thumbnail = "",
-                            placeType = PlaceType.CAFE,
-                        ),
-                    ),
-                ),
-
-            ),
-            clickBackButton = {},
-            selectTab = {},
-            clickChangePlace = {},
-            confirmChangePlace = {},
-            dismissChangeModal = {},
-            clickAddress = {},
-            clickMenu = {},
-        )
     }
 }

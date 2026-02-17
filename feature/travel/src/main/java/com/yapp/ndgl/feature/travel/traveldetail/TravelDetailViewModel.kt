@@ -2,6 +2,7 @@ package com.yapp.ndgl.feature.travel.traveldetail
 
 import com.yapp.ndgl.core.base.BaseViewModel
 import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.TipContent
 import com.yapp.ndgl.feature.travel.model.TransportSegment
 import com.yapp.ndgl.feature.travel.model.TransportType
 import dagger.assisted.Assisted
@@ -52,7 +53,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         id = 1,
                         day = 1,
                         sequence = 1,
-                        googlePlaceId = "ChIJCewJkL2LGGAR3Qmk0vCTGkg",
+                        googlePlaceId = "ChIJKWGrTn8hQTUR7zeTLtzYJL4",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.6585805,
                         longitude = 139.7454329,
@@ -68,7 +69,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         id = 2,
                         day = 1,
                         sequence = 2,
-                        googlePlaceId = "ChIJexample2",
+                        googlePlaceId = "ChIJSc8jdZORQTURu6BMwxrKbGg",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.6654,
                         longitude = 139.7707,
@@ -84,7 +85,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         id = 3,
                         day = 1,
                         sequence = 3,
-                        googlePlaceId = "ChIJexample3",
+                        googlePlaceId = "ChIJSc8jdZORQTURu6BMwxrKbGg",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.6812,
                         longitude = 139.7671,
@@ -100,7 +101,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         id = 4,
                         day = 1,
                         sequence = 4,
-                        googlePlaceId = "ChIJexample7",
+                        googlePlaceId = "ChIJSc8jdZORQTURu6BMwxrKbGg",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.6944,
                         longitude = 139.7006,
@@ -120,7 +121,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         id = 8,
                         day = 2,
                         sequence = 1,
-                        googlePlaceId = "ChIJexample4",
+                        googlePlaceId = "ChIJSc8jdZORQTURu6BMwxrKbGg",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.7148,
                         longitude = 139.7967,
@@ -136,7 +137,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                         id = 9,
                         day = 2,
                         sequence = 2,
-                        googlePlaceId = "ChIJexample5",
+                        googlePlaceId = "ChIJU8SvORUCNTERtCYCUqP64OY",
                         thumbnail = TEST_THUMBNAIL_URL,
                         latitude = 35.7120,
                         longitude = 139.7960,
@@ -163,7 +164,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                     days = 2,
                     videoInfo = VideoInfo(
                         title = "방콕 풀코스, 동남아 안 가본 곽튜브와 함께 【방콕】",
-                        name = "빠니보틀",
+                        creatorName = "빠니보틀",
                         profileImage = TEST_PROFILE_IMAGE_URL,
                         thumbnail = TEST_THUMBNAIL_URL,
                         link = "https://www.youtube.com/watch?v=F2utz6L76D0",
@@ -200,7 +201,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             is TravelDetailIntent.ConfirmChangeTransportSegment -> confirmChangeTransportSegment(intent.segment)
             is TravelDetailIntent.ClickPlaceItem -> clickPlaceItem(intent.place)
             is TravelDetailIntent.DismissPlaceBottomSheet -> dismissPlaceBottomSheet()
-            is TravelDetailIntent.NavigateToPlaceDetail -> navigateToPlaceDetail(intent.placeId)
+            is TravelDetailIntent.NavigateToTravelPlaceDetail -> navigateToPlaceDetail(intent.placeId)
             is TravelDetailIntent.ClickAddTime -> clickAddTime()
             is TravelDetailIntent.ClickAddCost -> clickAddCost()
             is TravelDetailIntent.ClickAddMemo -> clickAddMemo()
@@ -441,7 +442,18 @@ class TravelDetailViewModel @AssistedInject constructor(
     }
 
     private fun navigateToPlaceDetail(placeId: String) {
-        postSideEffect(TravelDetailSideEffect.NavigateToPlaceDetail(placeId))
+        val place = state.value.selectedPlace ?: return
+        val tipContent = place.travelerTips.takeIf { it.isNotEmpty() }?.let {
+            TipContent(creatorName = state.value.contentInfo.videoInfo.creatorName, tips = it)
+        }
+        val alternativePlaces = place.alternativePlaces.takeIf { it.isNotEmpty() }
+        postSideEffect(
+            TravelDetailSideEffect.NavigateToTravelPlaceDetail(
+                placeId = placeId,
+                tipContent = tipContent,
+                alternativePlaces = alternativePlaces,
+            ),
+        )
         reduce {
             copy(
                 showPlaceBottomSheet = false,

@@ -1,11 +1,10 @@
-package com.yapp.ndgl.feature.travel.placedetail
+package com.yapp.ndgl.feature.travel.followtravel.placedetail
 
 import androidx.lifecycle.viewModelScope
 import com.yapp.ndgl.core.base.BaseViewModel
 import com.yapp.ndgl.core.util.suspendRunCatching
 import com.yapp.ndgl.data.travel.repository.PlaceRepository
 import com.yapp.ndgl.feature.travel.model.AlternativePlace
-import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.Price
 import com.yapp.ndgl.feature.travel.model.PriceRange
@@ -21,14 +20,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.hours
 
-@HiltViewModel(assistedFactory = PlaceDetailViewModel.Factory::class)
-class PlaceDetailViewModel @AssistedInject constructor(
+@HiltViewModel(assistedFactory = FollowPlaceDetailViewModel.Factory::class)
+class FollowPlaceDetailViewModel @AssistedInject constructor(
     @Assisted private val placeId: String,
     @Assisted private val tipContent: RouteTipContent?,
     @Assisted private val alternativePlaces: List<RouteAlternativePlace>,
     private val placeRepository: PlaceRepository,
-) : BaseViewModel<PlaceDetailState, PlaceDetailIntent, PlaceDetailSideEffect>(
-    initialState = PlaceDetailState(),
+) : BaseViewModel<FollowPlaceDetailState, FollowPlaceDetailIntent, FollowPlaceDetailSideEffect>(
+    initialState = FollowPlaceDetailState(),
 ) {
     init {
         loadPlaceDetail()
@@ -43,7 +42,7 @@ class PlaceDetailViewModel @AssistedInject constructor(
             val place = response.place
             reduce {
                 copy(
-                    placeInfo = PlaceInfo(
+                    placeInfo = FollowPlaceInfo(
                         id = place.id,
                         name = place.name,
                         placeType = place.category.toPlaceType(),
@@ -67,6 +66,8 @@ class PlaceDetailViewModel @AssistedInject constructor(
                         estimatedDuration = 1.hours,
                         thumbnail = place.thumbnail.orEmpty(),
                         tipContent = tipContent?.let { TipContent(creatorName = it.creatorName, tips = it.tips) },
+                        latitude = place.location.latitude,
+                        longitude = place.location.longitude,
                         alternativePlaces = alternativePlaces.map { routePlace ->
                             AlternativePlace(
                                 id = routePlace.id,
@@ -75,8 +76,6 @@ class PlaceDetailViewModel @AssistedInject constructor(
                                 placeType = routePlace.placeType.toPlaceType(),
                             )
                         },
-                        latitude = place.location.latitude,
-                        longitude = place.location.longitude,
                     ),
                 )
             }
@@ -86,7 +85,7 @@ class PlaceDetailViewModel @AssistedInject constructor(
     }
 
     private fun loadPlacePhotos() = viewModelScope.launch {
-        repeat(3) { index ->
+        repeat(3) {
             delay(1000)
             val result = suspendRunCatching { placeRepository.getPlacePhotos(placeId) }
             val photos = result.getOrNull()?.photos
@@ -106,52 +105,25 @@ class PlaceDetailViewModel @AssistedInject constructor(
         }
     }
 
-    override suspend fun handleIntent(intent: PlaceDetailIntent) {
+    override suspend fun handleIntent(intent: FollowPlaceDetailIntent) {
         when (intent) {
-            is PlaceDetailIntent.SelectTab -> selectTab(intent.tab)
-            is PlaceDetailIntent.ClickChangePlace -> clickChangePlace(intent.alternativePlace)
-            is PlaceDetailIntent.ConfirmChangePlace -> confirmChangePlace()
-            is PlaceDetailIntent.DismissChangeModal -> dismissChangeModal()
-            is PlaceDetailIntent.ClickAddress -> clickAddress()
-            is PlaceDetailIntent.ClickMenu -> clickMenu()
+            is FollowPlaceDetailIntent.SelectTab -> reduce { copy(selectedTab = intent.tab) }
+            is FollowPlaceDetailIntent.ClickAddress -> {
+                state.value.placeInfo.googleMapsUri?.let {
+                    postSideEffect(FollowPlaceDetailSideEffect.NavigateToBrowser(it))
+                }
+            }
+
+            is FollowPlaceDetailIntent.ClickMenu -> {
+                state.value.placeInfo.websiteUrl?.let {
+                    postSideEffect(FollowPlaceDetailSideEffect.NavigateToBrowser(it))
+                }
+            }
         }
-    }
-
-    private fun selectTab(tab: PlaceDetailTab) {
-        reduce { copy(selectedTab = tab) }
-    }
-
-    private fun clickChangePlace(alternativePlace: AlternativePlace) {
-        reduce { copy(selectedAlternativePlace = alternativePlace, showChangeModal = true) }
-    }
-
-    // TODO("Plan B 장소 변경 로직")
-    private fun confirmChangePlace() {
-        reduce {
-            copy(
-                showChangeModal = false,
-            )
-        }
-    }
-
-    private fun dismissChangeModal() {
-        reduce { copy(showChangeModal = false) }
-    }
-
-    private fun clickAddress() {
-        state.value.placeInfo.googleMapsUri?.let { postSideEffect(PlaceDetailSideEffect.NavigateToBrowser(it)) }
-    }
-
-    private fun clickMenu() {
-        state.value.placeInfo.websiteUrl?.let { postSideEffect(PlaceDetailSideEffect.NavigateToBrowser(it)) }
     }
 
     @AssistedFactory
     interface Factory {
-        fun create(
-            placeId: String,
-            tipContent: RouteTipContent?,
-            alternativePlaces: List<RouteAlternativePlace>,
-        ): PlaceDetailViewModel
+        fun create(placeId: String, tipContent: RouteTipContent?, alternativePlaces: List<RouteAlternativePlace>): FollowPlaceDetailViewModel
     }
 }

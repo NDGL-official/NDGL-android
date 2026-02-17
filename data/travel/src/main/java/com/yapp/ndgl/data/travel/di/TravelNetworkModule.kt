@@ -1,5 +1,6 @@
 package com.yapp.ndgl.data.travel.di
 
+import com.yapp.ndgl.data.travel.api.PlaceApi
 import com.yapp.ndgl.data.travel.api.TravelProgramApi
 import com.yapp.ndgl.data.travel.api.TravelTemplateApi
 import com.yapp.ndgl.data.travel.api.UserTravelApi
@@ -30,4 +31,10 @@ object TravelNetworkModule {
     fun provideUserTravelApi(
         retrofit: Retrofit,
     ): UserTravelApi = retrofit.create(UserTravelApi::class.java)
+
+    @Provides
+    @Singleton
+    fun providePlaceApi(
+        retrofit: Retrofit,
+    ): PlaceApi = retrofit.create(PlaceApi::class.java)
 }

@@ -1,4 +1,4 @@
-package com.yapp.ndgl.feature.travel.placedetail
+package com.yapp.ndgl.feature.travel.followtravel.placedetail
 
 import com.yapp.ndgl.core.base.UiIntent
 import com.yapp.ndgl.core.base.UiSideEffect
@@ -13,15 +13,13 @@ import com.yapp.ndgl.feature.travel.model.TipContent
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
-data class PlaceDetailState(
-    val placeInfo: PlaceInfo = PlaceInfo(),
+data class FollowPlaceDetailState(
+    val placeInfo: FollowPlaceInfo = FollowPlaceInfo(),
     val selectedTab: PlaceDetailTab = PlaceDetailTab.INFO,
     val photos: List<PlacePhoto> = emptyList(),
-    val selectedAlternativePlace: AlternativePlace? = null,
-    val showChangeModal: Boolean = false,
 ) : UiState
 
-data class PlaceInfo(
+data class FollowPlaceInfo(
     val id: String = "",
     val name: String = "",
     val placeType: PlaceType = PlaceType.ATTRACTION,
@@ -36,23 +34,20 @@ data class PlaceInfo(
     val estimatedDuration: Duration = 1.hours,
     val thumbnail: String = "",
     val tipContent: TipContent? = null,
-    val alternativePlaces: List<AlternativePlace> = emptyList(),
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
+    val alternativePlaces: List<AlternativePlace> = emptyList(),
 ) {
     val formattedRatingCount: String
         get() = userRatingCount?.formatDecimal() ?: ""
 }
 
-sealed interface PlaceDetailIntent : UiIntent {
-    data class SelectTab(val tab: PlaceDetailTab) : PlaceDetailIntent
-    data class ClickChangePlace(val alternativePlace: AlternativePlace) : PlaceDetailIntent
-    data object ConfirmChangePlace : PlaceDetailIntent
-    data object DismissChangeModal : PlaceDetailIntent
-    data object ClickAddress : PlaceDetailIntent
-    data object ClickMenu : PlaceDetailIntent
+sealed interface FollowPlaceDetailIntent : UiIntent {
+    data class SelectTab(val tab: PlaceDetailTab) : FollowPlaceDetailIntent
+    data object ClickAddress : FollowPlaceDetailIntent
+    data object ClickMenu : FollowPlaceDetailIntent
 }
 
-sealed interface PlaceDetailSideEffect : UiSideEffect {
-    data class NavigateToBrowser(val url: String) : PlaceDetailSideEffect
+sealed interface FollowPlaceDetailSideEffect : UiSideEffect {
+    data class NavigateToBrowser(val url: String) : FollowPlaceDetailSideEffect
 }

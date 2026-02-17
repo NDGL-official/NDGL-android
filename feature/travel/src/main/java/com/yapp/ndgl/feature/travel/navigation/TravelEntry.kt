@@ -7,6 +7,8 @@ import com.yapp.ndgl.feature.travel.datepicker.DatePickerRoute
 import com.yapp.ndgl.feature.travel.datepicker.DatePickerViewModel
 import com.yapp.ndgl.feature.travel.followtravel.FollowTravelRoute
 import com.yapp.ndgl.feature.travel.followtravel.FollowTravelViewModel
+import com.yapp.ndgl.feature.travel.followtravel.placedetail.FollowPlaceDetailRoute
+import com.yapp.ndgl.feature.travel.followtravel.placedetail.FollowPlaceDetailViewModel
 import com.yapp.ndgl.feature.travel.placedetail.PlaceDetailRoute
 import com.yapp.ndgl.feature.travel.placedetail.PlaceDetailViewModel
 import com.yapp.ndgl.feature.travel.travel.TravelRoute
@@ -14,6 +16,8 @@ import com.yapp.ndgl.feature.travel.traveldetail.TravelDetailRoute
 import com.yapp.ndgl.feature.travel.traveldetail.TravelDetailViewModel
 import com.yapp.ndgl.navigation.Navigator
 import com.yapp.ndgl.navigation.Route
+import com.yapp.ndgl.navigation.model.RouteAlternativePlace
+import com.yapp.ndgl.navigation.model.RouteTipContent
 
 fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
     entry<Route.Travel> {
@@ -37,6 +41,17 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
             navigateToDatePicker = { tripDays ->
                 navigator.navigate(Route.DatePicker(tripDays))
             },
+            navigateToFollowPlaceDetail = { placeId, tipContent, alternativePlaces ->
+                navigator.navigate(
+                    Route.FollowPlaceDetail(
+                        placeId = placeId,
+                        tipContent = tipContent?.let { RouteTipContent(creatorName = it.creatorName, tips = it.tips) },
+                        alternativePlaces = alternativePlaces?.map {
+                            RouteAlternativePlace(id = it.id, name = it.name, thumbnail = it.thumbnail, placeType = it.placeType.name)
+                        } ?: emptyList(),
+                    ),
+                )
+            },
         )
     }
     entry<Route.TravelDetail> { route ->
@@ -47,15 +62,41 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
         TravelDetailRoute(
             viewModel = viewModel,
             navigateBack = { navigator.goBack() },
-            navigateToPlaceDetail = { placeId ->
-                navigator.navigate(Route.PlaceDetail(placeId))
+            navigateToTravelPlaceDetail = { placeId, tipContent, alternativePlaces ->
+                navigator.navigate(
+                    Route.PlaceDetail(
+                        placeId = placeId,
+                        tipContent = tipContent?.let { RouteTipContent(creatorName = it.creatorName, tips = it.tips) },
+                        alternativePlaces = alternativePlaces?.map {
+                            RouteAlternativePlace(id = it.id, name = it.name, thumbnail = it.thumbnail, placeType = it.placeType.name)
+                        } ?: emptyList(),
+                    ),
+                )
             },
+        )
+    }
+    entry<Route.FollowPlaceDetail> { route ->
+        val viewModel =
+            hiltViewModel<FollowPlaceDetailViewModel, FollowPlaceDetailViewModel.Factory> { factory ->
+                factory.create(
+                    placeId = route.placeId,
+                    tipContent = route.tipContent,
+                    alternativePlaces = route.alternativePlaces,
+                )
+            }
+        FollowPlaceDetailRoute(
+            viewModel = viewModel,
+            navigateBack = { navigator.goBack() },
         )
     }
     entry<Route.PlaceDetail> { route ->
         val viewModel =
             hiltViewModel<PlaceDetailViewModel, PlaceDetailViewModel.Factory> { factory ->
-                factory.create(placeId = route.placeId)
+                factory.create(
+                    placeId = route.placeId,
+                    tipContent = route.tipContent,
+                    alternativePlaces = route.alternativePlaces,
+                )
             }
         PlaceDetailRoute(
             viewModel = viewModel,

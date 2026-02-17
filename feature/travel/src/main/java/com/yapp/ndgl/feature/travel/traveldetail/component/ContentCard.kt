@@ -102,7 +102,7 @@ fun ContentCard(contentInfo: ContentInfo) {
                         Text(
                             text = stringResource(
                                 R.string.content_card_info_format,
-                                contentInfo.videoInfo.name,
+                                contentInfo.videoInfo.creatorName,
                                 contentInfo.country,
                                 contentInfo.nights,
                                 contentInfo.days,
@@ -220,7 +220,7 @@ fun PreviewContentCard() {
                 days = 4,
                 videoInfo = VideoInfo(
                     title = "방콕 풀코스, 동남아 안 가본 곽튜브와 함께 【방콕】",
-                    name = "빠니보틀",
+                    creatorName = "빠니보틀",
                     profileImage = "",
                     thumbnail = "",
                     link = "",

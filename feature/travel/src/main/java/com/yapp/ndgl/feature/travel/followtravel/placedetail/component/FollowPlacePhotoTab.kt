@@ -1,4 +1,4 @@
-package com.yapp.ndgl.feature.travel.placedetail.component
+package com.yapp.ndgl.feature.travel.followtravel.placedetail.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,14 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 
 @Composable
-internal fun PlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: List<PlacePhoto>) {
+internal fun FollowPlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: List<PlacePhoto>) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,26 +72,5 @@ internal fun PlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: List<Place
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun PlacePhotoTabPreview() {
-    val mockPhotos = listOf(
-        PlacePhoto(url = "", width = 400, height = 400),
-        PlacePhoto(url = "", width = 400, height = 600),
-        PlacePhoto(url = "", width = 400, height = 300),
-        PlacePhoto(url = "", width = 400, height = 700),
-    )
-
-    val leftPhotos = mockPhotos.filterIndexed { index, _ -> index % 2 == 0 }
-    val rightPhotos = mockPhotos.filterIndexed { index, _ -> index % 2 != 0 }
-
-    NDGLTheme {
-        PlacePhotoTab(
-            leftPhotos = leftPhotos,
-            rightPhotos = rightPhotos,
-        )
     }
 }
