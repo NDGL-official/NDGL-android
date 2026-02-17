@@ -41,6 +41,8 @@ import com.yapp.ndgl.feature.travel.followtravel.component.ContentCard
 import com.yapp.ndgl.feature.travel.followtravel.component.PlaceItem
 import com.yapp.ndgl.feature.travel.followtravel.component.TransportSegment
 import com.yapp.ndgl.feature.travel.followtravel.component.TravelMap
+import com.yapp.ndgl.feature.travel.model.AlternativePlace
+import com.yapp.ndgl.feature.travel.model.TipContent
 import kotlinx.collections.immutable.toPersistentList
 
 @Composable
@@ -48,18 +50,24 @@ internal fun FollowTravelRoute(
     viewModel: FollowTravelViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
     navigateToDatePicker: (Int) -> Unit,
+    navigateToFollowPlaceDetail:
+    (placeId: String, tipContent: TipContent?, alternativePlaces: List<AlternativePlace>?) -> Unit,
 ) {
     val state by viewModel.collectAsState()
 
-    // TODO  viewModel.collectSideEffect { sideEffect -> }
+    viewModel.collectSideEffect { sideEffect ->
+        when (sideEffect) {
+            is FollowTravelSideEffect.NavigateToFollowPlaceDetail ->
+                navigateToFollowPlaceDetail(sideEffect.placeId, sideEffect.tipContent, sideEffect.alternativePlaces)
+        }
+    }
 
     FollowTravelScreen(
         state = state,
         clickBackButton = navigateBack,
         selectDay = { viewModel.onIntent(FollowTravelIntent.SelectDay(it)) },
-        clickFollowTravel = {
-            navigateToDatePicker(state.days)
-        },
+        clickFollowTravel = { navigateToDatePicker(state.days) },
+        clickPlaceItem = { place -> viewModel.onIntent(FollowTravelIntent.ClickPlaceItem(place)) },
     )
 }
 
@@ -69,6 +77,7 @@ private fun FollowTravelScreen(
     clickBackButton: () -> Unit,
     selectDay: (Int) -> Unit,
     clickFollowTravel: () -> Unit,
+    clickPlaceItem: (TravelPlace) -> Unit,
 ) {
     val tabs = (1..state.days).map { day ->
         NDGLChipTabAttr.Tab(
@@ -170,7 +179,7 @@ private fun FollowTravelScreen(
             currentPlaces.forEachIndexed { index, place ->
                 item(key = "place_${place.id}") {
                     Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-                        PlaceItem(place = place, onClick = {}) // TODO("클릭 시 장소 상세보기 화면")
+                        PlaceItem(place = place, onClick = { clickPlaceItem(place) })
                     }
                 }
 
@@ -227,5 +236,6 @@ private fun FollowTravelScreenPreview() {
         clickBackButton = {},
         selectDay = {},
         clickFollowTravel = {},
+        clickPlaceItem = {},
     )
 }

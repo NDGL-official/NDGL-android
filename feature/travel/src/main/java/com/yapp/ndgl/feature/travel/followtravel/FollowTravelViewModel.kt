@@ -7,6 +7,8 @@ import com.yapp.ndgl.core.util.toCountryName
 import com.yapp.ndgl.data.travel.model.TravelTemplateContentInfo
 import com.yapp.ndgl.data.travel.model.TravelTemplateItinerary
 import com.yapp.ndgl.data.travel.repository.TravelTemplateRepository
+import com.yapp.ndgl.feature.travel.model.AlternativePlace
+import com.yapp.ndgl.feature.travel.model.TipContent
 import com.yapp.ndgl.feature.travel.model.TransportSegment
 import com.yapp.ndgl.feature.travel.model.toOpeningHours
 import com.yapp.ndgl.feature.travel.model.toPlaceType
@@ -74,6 +76,18 @@ class FollowTravelViewModel @AssistedInject constructor(
             is FollowTravelIntent.ClickFollowTravel -> {
                 // TODO: Handle follow
             }
+
+            is FollowTravelIntent.ClickPlaceItem -> {
+                postSideEffect(
+                    FollowTravelSideEffect.NavigateToFollowPlaceDetail(
+                        placeId = intent.place.googlePlaceId,
+                        tipContent = intent.place.travelerTips.takeIf { it.isNotEmpty() }?.let {
+                            TipContent(creatorName = state.value.contentInfo.videoInfo.creatorName, tips = it)
+                        },
+                        alternativePlaces = intent.place.alternativePlaces.takeIf { it.isNotEmpty() },
+                    ),
+                )
+            }
         }
     }
 
@@ -84,7 +98,7 @@ class FollowTravelViewModel @AssistedInject constructor(
                 id = item.id,
                 day = item.day,
                 sequence = item.sequence,
-                estimatedDuration = (item.estimatedDuration ?: 0).minutes,
+                estimatedDuration = (item.estimatedDuration).minutes,
                 googlePlaceId = item.place.googlePlaceId,
                 thumbnail = item.place.thumbnail,
                 latitude = item.place.latitude,
@@ -98,6 +112,15 @@ class FollowTravelViewModel @AssistedInject constructor(
                         type = transport.mode.toTransportType(),
                         duration = transport.timeMin.minutes,
                         distance = ((nextItem.distanceKm ?: 0.0) * 1000).toInt(),
+                    )
+                },
+                travelerTips = item.travelerTips.orEmpty(),
+                alternativePlaces = item.planB.orEmpty().map { planB ->
+                    AlternativePlace(
+                        id = "",
+                        name = planB.name,
+                        thumbnail = planB.feature ?: "",
+                        placeType = item.place.category.toPlaceType(),
                     )
                 },
             )
