@@ -40,10 +40,10 @@ import coil3.compose.AsyncImage
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.formatString
+import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.PlaceType
-import com.yapp.ndgl.feature.travel.placedetail.AlternativePlace
+import com.yapp.ndgl.feature.travel.model.TipContent
 import com.yapp.ndgl.feature.travel.placedetail.PlaceInfo
-import com.yapp.ndgl.feature.travel.placedetail.TipContent
 import kotlin.time.Duration.Companion.hours
 
 @Composable
@@ -96,15 +96,6 @@ internal fun PlaceInfoTab(
                     )
                 }
             }
-            if (placeInfo.openingHours != null) {
-                PlaceInfoRow(iconRes = R.drawable.ic_24_clock) {
-                    Text(
-                        stringResource(R.string.opening_hours_format, placeInfo.openingHours),
-                        color = NDGLTheme.colors.black700,
-                        style = NDGLTheme.typography.bodyMdMedium,
-                    )
-                }
-            }
             PlaceInfoRow(iconRes = R.drawable.ic_24_clock) {
                 Text(
                     stringResource(R.string.estimated_duration_format, placeInfo.estimatedDuration.formatString()),
@@ -126,9 +117,9 @@ internal fun PlaceInfoTab(
 
             Spacer(modifier = Modifier.height(32.dp))
             PlaceTipsPager(tips = tipContent.tips, creatorName = tipContent.creatorName)
-            Spacer(modifier = Modifier.height(32.dp))
         }
         if (placeInfo.alternativePlaces.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(32.dp))
             Text(stringResource(R.string.place_detail_plan_b_message), color = NDGLTheme.colors.black700, style = NDGLTheme.typography.bodyLgSemiBold)
             Spacer(modifier = Modifier.height(16.dp))
             AlternativePlaceContent(alternativePlaces = placeInfo.alternativePlaces, onChangePlaceClick = onChangePlaceClick)
@@ -313,13 +304,13 @@ private fun PlaceInfoTabPreview() {
                 ),
                 alternativePlaces = listOf(
                     AlternativePlace(
-                        id = 2,
+                        id = "",
                         name = "젤라또 디 산 크리스피노",
                         thumbnail = "",
                         placeType = PlaceType.CAFE,
                     ),
                     AlternativePlace(
-                        id = 3,
+                        id = "",
                         name = "지올리티",
                         thumbnail = "",
                         placeType = PlaceType.CAFE,
