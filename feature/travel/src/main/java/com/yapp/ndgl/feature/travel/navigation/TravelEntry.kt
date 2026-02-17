@@ -9,9 +9,9 @@ import com.yapp.ndgl.feature.travel.followtravel.FollowTravelRoute
 import com.yapp.ndgl.feature.travel.followtravel.FollowTravelViewModel
 import com.yapp.ndgl.feature.travel.followtravel.placedetail.FollowPlaceDetailRoute
 import com.yapp.ndgl.feature.travel.followtravel.placedetail.FollowPlaceDetailViewModel
+import com.yapp.ndgl.feature.travel.mytravel.MyTravelRoute
 import com.yapp.ndgl.feature.travel.placedetail.PlaceDetailRoute
 import com.yapp.ndgl.feature.travel.placedetail.PlaceDetailViewModel
-import com.yapp.ndgl.feature.travel.travel.TravelRoute
 import com.yapp.ndgl.feature.travel.traveldetail.TravelDetailRoute
 import com.yapp.ndgl.feature.travel.traveldetail.TravelDetailViewModel
 import com.yapp.ndgl.navigation.Navigator
@@ -21,12 +21,16 @@ import com.yapp.ndgl.navigation.model.RouteTipContent
 
 fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
     entry<Route.Travel> {
-        TravelRoute(
+        MyTravelRoute(
             navigateToFollowTravel = { travelId, days ->
                 navigator.navigate(Route.FollowTravel(travelId, days))
             },
             navigateToTravelDetail = { travelId ->
-                navigator.navigate(Route.TravelDetail(travelId))
+                // FIXME: Travel id long 타입으로 변경
+                navigator.navigate(Route.TravelDetail(travelId.toInt()))
+            },
+            navigateToTravelPlace = { placeId ->
+                navigator.navigate(Route.PlaceDetail(placeId))
             },
         )
     }

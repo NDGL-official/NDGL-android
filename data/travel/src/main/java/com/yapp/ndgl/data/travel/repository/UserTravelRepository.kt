@@ -3,6 +3,7 @@ package com.yapp.ndgl.data.travel.repository
 import com.yapp.ndgl.data.core.model.error.HttpResponseException
 import com.yapp.ndgl.data.core.model.getData
 import com.yapp.ndgl.data.travel.api.UserTravelApi
+import com.yapp.ndgl.data.travel.model.UpcomingTravelList
 import com.yapp.ndgl.data.travel.model.UpcomingTravelResponse
 import java.net.HttpURLConnection
 import javax.inject.Inject
@@ -22,5 +23,9 @@ class UserTravelRepository @Inject constructor(
                 throw e
             }
         }
+    }
+
+    suspend fun getUpcomingTravelList(): UpcomingTravelList {
+        return userTravelApi.getUpcomingTravelList().getData()
     }
 }

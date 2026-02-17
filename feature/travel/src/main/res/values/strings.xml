@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Upcoming Travel Card Section -->
+    <string name="my_travel_upcoming_travel_empty_title">아직 등록된 여행지가 없어요</string>
+    <string name="my_travel_upcoming_travel_empty_description">새 여행 일정을 만들어 보세요!</string>
+    <string name="my_travel_upcoming_travel_travel_duration">%s~%s</string>
+    <string name="my_travel_upcoming_travel_date_format">M월 d일</string>
+    <string name="my_travel_upcoming_travel_in_progress_title">%1$s %2$d일차 입니다!</string>
+    <string name="my_travel_upcoming_travel_d_day_minus">D-%d</string>
+    <string name="my_travel_upcoming_travel_d_day_plus">D+%d</string>
+
+    <!-- Upcoming Travel List Section -->
+    <string name="my_travel_upcoming_list_header">다가오는 여행</string>
+    <string name="my_travel_upcoming_list_date_format">M월 d일</string>
+    <string name="my_travel_upcoming_list_travel_duration">%s~%s</string>
+    <string name="my_travel_upcoming_list_d_day_minus">D-%d</string>
+    <string name="my_travel_upcoming_list_d_day_plus">D+%d</string>
+    <string name="my_travel_upcoming_list_empty_title">아직 예정된 여행이 없어요.</string>
+    <string name="my_travel_upcoming_list_empty_description">따라가기 영상을 담아두면 여행 준비가 쉬워져요.</string>
+    <string name="my_travel_upcoming_list_find_new_travel">새로운 여행지 찾아보기</string>
+
+    <!-- Recommended Travel Section -->
+    <string name="my_travel_recommended_travel_header">추천하는 따라가기 여행</string>
+    <string name="my_travel_recommended_travel_nights_days">%1$d박 %2$d일</string>
+</resources>
