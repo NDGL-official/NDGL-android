@@ -5,6 +5,8 @@ import com.yapp.ndgl.core.base.BaseViewModel
 import com.yapp.ndgl.core.util.suspendRunCatching
 import com.yapp.ndgl.data.travel.repository.UserTravelRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -77,7 +79,27 @@ class MyTravelViewModel @Inject constructor(
     }
 
     private fun loadUpcomingTravelList() {
-        // FIXME: 다가오는 여행 목록 조회
+        viewModelScope.launch {
+            suspendRunCatching { userTravelRepository.getUpcomingTravelList() }
+                .onSuccess { result ->
+                    val today = LocalDate.now()
+                    val travels = result.content.map { travel ->
+                        val dDay = ChronoUnit.DAYS.between(today, travel.startDate).toInt()
+                        MyTravelState.UpcomingTravelItem(
+                            travelId = travel.id,
+                            title = travel.title,
+                            startDate = travel.startDate,
+                            endDate = travel.endDate,
+                            imageUrl = travel.thumbnail ?: "",
+                            dDay = dDay,
+                        )
+                    }.toImmutableList()
+                    reduce { copy(upcomingTravels = travels) }
+                }
+                .onFailure {
+                    reduce { copy(upcomingTravels = persistentListOf()) }
+                }
+        }
     }
 
     override suspend fun handleIntent(intent: MyTravelIntent) {
@@ -85,6 +107,7 @@ class MyTravelViewModel @Inject constructor(
             is MyTravelIntent.ClickTravel -> postNavigateToFollowTravel(travelId = intent.travelId)
             is MyTravelIntent.ClickTravelDetail -> postNavigateToTravelDetail(travelId = intent.travelId)
             is MyTravelIntent.ClickPlaceDetail -> postNavigateToPlaceDetail(placeId = intent.placeId)
+            MyTravelIntent.ClickFindNewTravel -> postNavigateToPopularTravelList()
         }
     }
 
@@ -98,5 +121,9 @@ class MyTravelViewModel @Inject constructor(
 
     private fun postNavigateToPlaceDetail(placeId: String) {
         postSideEffect(MyTravelSideEffect.NavigateToTravelPlace(placeId = placeId))
+    }
+
+    private fun postNavigateToPopularTravelList() {
+        postSideEffect(MyTravelSideEffect.NavigateToPopularTravelList)
     }
 }

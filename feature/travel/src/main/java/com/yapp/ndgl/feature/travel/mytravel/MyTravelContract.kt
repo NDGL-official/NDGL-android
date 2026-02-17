@@ -6,11 +6,14 @@ import com.yapp.ndgl.core.base.UiIntent
 import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
 import com.yapp.ndgl.data.travel.model.PlaceCategory
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDate
 
 @Immutable
 data class MyTravelState(
     val upcomingTravel: UpcomingTravel? = null,
+    val upcomingTravels: ImmutableList<UpcomingTravelItem> = persistentListOf(),
 ) : UiState {
     @Stable
     sealed class UpcomingTravel {
@@ -40,6 +43,7 @@ data class MyTravelState(
         ) : UpcomingTravel()
     }
 
+    @Immutable
     data class TravelPlace(
         val placeId: String,
         val category: PlaceCategory,
@@ -47,16 +51,28 @@ data class MyTravelState(
         val name: String,
         val thumbnailUrl: String,
     )
+
+    @Immutable
+    data class UpcomingTravelItem(
+        val travelId: Long,
+        val title: String,
+        val startDate: LocalDate,
+        val endDate: LocalDate,
+        val imageUrl: String,
+        val dDay: Int,
+    )
 }
 
 sealed interface MyTravelIntent : UiIntent {
     data class ClickTravel(val travelId: Long) : MyTravelIntent
     data class ClickTravelDetail(val travelId: Long) : MyTravelIntent
     data class ClickPlaceDetail(val placeId: String) : MyTravelIntent
+    data object ClickFindNewTravel : MyTravelIntent
 }
 
 sealed interface MyTravelSideEffect : UiSideEffect {
     data class NavigateToFollowTravel(val travelId: Long, val days: Int) : MyTravelSideEffect
     data class NavigateToTravelDetail(val travelId: Long) : MyTravelSideEffect
     data class NavigateToTravelPlace(val placeId: String) : MyTravelSideEffect
+    data object NavigateToPopularTravelList : MyTravelSideEffect
 }

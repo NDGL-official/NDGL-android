@@ -2,6 +2,7 @@ package com.yapp.ndgl.feature.travel.mytravel
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
@@ -37,6 +39,9 @@ internal fun MyTravelRoute(
         onPlaceClick = { placeId ->
             viewModel.onIntent(MyTravelIntent.ClickPlaceDetail(placeId = placeId))
         },
+        onNewTravelFindClick = {
+            viewModel.onIntent(MyTravelIntent.ClickFindNewTravel)
+        },
     )
 
     viewModel.collectSideEffect { sideEffect ->
@@ -53,6 +58,10 @@ internal fun MyTravelRoute(
             is MyTravelSideEffect.NavigateToTravelPlace -> navigateToTravelPlace(
                 sideEffect.placeId,
             )
+
+            MyTravelSideEffect.NavigateToPopularTravelList -> {
+                // FIXME: navigate to popular travel list
+            }
         }
     }
 }
@@ -62,6 +71,7 @@ private fun MyTravelScreen(
     state: MyTravelState,
     onTravelClick: (Long) -> Unit,
     onPlaceClick: (String) -> Unit,
+    onNewTravelFindClick: () -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -89,7 +99,11 @@ private fun MyTravelScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
+            contentPadding = PaddingValues(
+                top = 20.dp,
+                bottom = 100.dp,
+            ),
+            verticalArrangement = Arrangement.spacedBy(40.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             if (state.upcomingTravel != null) {
@@ -101,6 +115,13 @@ private fun MyTravelScreen(
                         onPlaceClick = onPlaceClick,
                     )
                 }
+            }
+            item {
+                UpcomingTravelListSection(
+                    upcomingTravels = state.upcomingTravels,
+                    onUserTravelClick = onTravelClick,
+                    onNewTravelFindClick = onNewTravelFindClick,
+                )
             }
         }
     }
@@ -114,6 +135,7 @@ private fun MyTravelScreenPreview() {
             state = MyTravelState(),
             onTravelClick = {},
             onPlaceClick = {},
+            onNewTravelFindClick = {},
         )
     }
 }
