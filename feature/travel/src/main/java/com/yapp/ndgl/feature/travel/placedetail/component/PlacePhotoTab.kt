@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -37,7 +39,14 @@ internal fun PlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: List<Place
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(photo.aspectRatio)
+                        .then(
+                            if (photo.height == 0) {
+                                Modifier.height(44.dp)
+                            } else {
+                                Modifier
+                                    .aspectRatio(photo.aspectRatio)
+                            },
+                        )
                         .clip(RoundedCornerShape(8.dp))
                         .background(Color.LightGray),
                     contentScale = ContentScale.Crop,
@@ -52,9 +61,13 @@ internal fun PlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: List<Place
                 AsyncImage(
                     model = photo.url,
                     contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(photo.aspectRatio)
+                    modifier = if (photo.height == 0) {
+                        Modifier.size(44.dp)
+                    } else {
+                        Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(photo.aspectRatio)
+                    }
                         .clip(RoundedCornerShape(8.dp))
                         .background(Color.LightGray),
                     contentScale = ContentScale.Crop,
