@@ -53,7 +53,7 @@ fun NDGLBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         dragHandle = if (showDragHandle) {
-            { BottomSheetDefaults.DragHandle() }
+            { NDGLBottomSheetDragHandle() }
         } else {
             null
         },
@@ -112,7 +112,11 @@ private fun NDGLBottomSheetWithHandlePreview() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NDGLBottomSheetDragHandle() {
+    BottomSheetDefaults.DragHandle(width = 56.dp, height = 5.dp, color = NDGLTheme.colors.black400)
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun NDGLBottomSheetWithoutHandlePreview() {
