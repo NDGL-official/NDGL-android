@@ -21,25 +21,44 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationIcon
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.data.travel.model.PlaceCategory
 import com.yapp.ndgl.data.travel.model.ProgramType
+import com.yapp.ndgl.feature.home.model.TravelContent
 import java.time.LocalDate
 
 @Composable
 internal fun HomeRoute(
     viewModel: HomeViewModel = hiltViewModel(),
+    navigateToTemplateSearch: () -> Unit,
+    navigateToFollowTravel: (Long, Int) -> Unit,
 ) {
     val state by viewModel.collectAsState()
+
     HomeScreen(
         state = state,
+        onSearchClick = {
+            viewModel.onIntent(HomeIntent.ClickSearchTravelTemplate)
+        },
         onTabSelected = { index ->
             viewModel.onIntent(HomeIntent.SelectPopularTravelTab(index))
         },
+        onTravelClick = { travelId ->
+            viewModel.onIntent(HomeIntent.ClickTravel(travelId))
+        },
     )
+
+    viewModel.collectSideEffect { sideEffect ->
+        when (sideEffect) {
+            HomeSideEffect.NavigateToSearchTravelTemplate -> navigateToTemplateSearch()
+            is HomeSideEffect.NavigateToFollowTravel -> navigateToFollowTravel(sideEffect.travelId, sideEffect.days)
+        }
+    }
 }
 
 @Composable
 private fun HomeScreen(
-    state: HomeState = HomeState(),
-    onTabSelected: (Int) -> Unit = {},
+    state: HomeState,
+    onSearchClick: () -> Unit,
+    onTabSelected: (Int) -> Unit,
+    onTravelClick: (Long) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -52,7 +71,7 @@ private fun HomeScreen(
                 trailingContents = {
                     NDGLNavigationIcon(
                         icon = R.drawable.ic_28_search,
-                        onClick = { /* FIXME: 홈 검색 */ },
+                        onClick = onSearchClick,
                     )
                     NDGLNavigationIcon(
                         icon = R.drawable.ic_28_settings,
@@ -84,6 +103,7 @@ private fun HomeScreen(
                         selectedTabIndex = state.popularTravelSelectedTabIndex,
                         travels = state.filteredPopularTravels,
                         onTabSelected = onTabSelected,
+                        onTravelClick = onTravelClick,
                     )
                 }
             }
@@ -104,7 +124,7 @@ private fun HomeScreen(
 @Composable
 private fun HomeScreenPreview() {
     val sampleTravels = listOf(
-        HomeState.TravelContent(
+        TravelContent(
             travelId = 1,
             title = "곽준빈의 신혼여행",
             country = "FR",
@@ -115,7 +135,7 @@ private fun HomeScreenPreview() {
             programType = ProgramType.YOUTUBE,
             thumbnail = "https://picsum.photos/200/300",
         ),
-        HomeState.TravelContent(
+        TravelContent(
             travelId = 2,
             title = "스위스 여행",
             country = "CH",
@@ -126,7 +146,7 @@ private fun HomeScreenPreview() {
             programType = ProgramType.TV,
             thumbnail = "https://picsum.photos/200/300",
         ),
-        HomeState.TravelContent(
+        TravelContent(
             travelId = 3,
             title = "충격적인 북유럽 물가",
             country = "DK",
@@ -175,6 +195,9 @@ private fun HomeScreenPreview() {
                 ),
                 allPopularTravels = sampleTravels,
             ),
+            onSearchClick = {},
+            onTabSelected = {},
+            onTravelClick = {},
         )
     }
 }

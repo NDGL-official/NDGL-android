@@ -130,11 +130,16 @@ class MyTravelViewModel @Inject constructor(
 
     override suspend fun handleIntent(intent: MyTravelIntent) {
         when (intent) {
+            MyTravelIntent.ClickSearchTravelTemplate -> postNavigateToSearchTravelTemplate()
             is MyTravelIntent.ClickTravel -> postNavigateToFollowTravel(travelId = intent.travelId)
             is MyTravelIntent.ClickTravelDetail -> postNavigateToTravelDetail(travelId = intent.travelId)
             is MyTravelIntent.ClickPlaceDetail -> postNavigateToPlaceDetail(placeId = intent.placeId)
             MyTravelIntent.ClickFindNewTravel -> postNavigateToPopularTravelList()
         }
+    }
+
+    private fun postNavigateToSearchTravelTemplate() {
+        postSideEffect(MyTravelSideEffect.NavigateToSearchTravelTemplate)
     }
 
     private fun postNavigateToFollowTravel(travelId: Long, days: Int = 1) {
