@@ -93,6 +93,8 @@ internal fun TravelDetailRoute(
     viewModel: TravelDetailViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
     navigateToTravelPlaceDetail: (String, TipContent?, List<AlternativePlace>?) -> Unit,
+    navigateToAddItinerary:
+    (travelId: Long, day: Int, country: String, representativeLatitude: Double, representativeLongitude: Double) -> Unit,
 ) {
     val state by viewModel.collectAsState()
     val context = LocalContext.current
@@ -106,6 +108,16 @@ internal fun TravelDetailRoute(
 
             is TravelDetailSideEffect.NavigateToBrowser -> {
                 context.launchBrowser(sideEffect.url)
+            }
+
+            is TravelDetailSideEffect.NavigateToAddItinerary -> {
+                navigateToAddItinerary(
+                    sideEffect.travelId,
+                    sideEffect.day,
+                    sideEffect.country,
+                    sideEffect.representativeLatLng.latitude,
+                    sideEffect.representativeLatLng.longitude,
+                )
             }
         }
     }

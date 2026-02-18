@@ -1,5 +1,6 @@
 package com.yapp.ndgl.feature.travel.traveldetail
 
+import com.google.android.gms.maps.model.LatLng
 import com.yapp.ndgl.core.base.UiIntent
 import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
@@ -12,6 +13,7 @@ import kotlin.time.Duration.Companion.hours
 
 data class TravelDetailState(
     val contentInfo: ContentInfo = ContentInfo(),
+    val country: String = "",
     val selectedDay: Int = 1,
     val itineraries: List<Itinerary> = emptyList(),
     val tempItineraries: List<Itinerary> = emptyList(),
@@ -26,7 +28,22 @@ data class TravelDetailState(
     val showTransportBottomSheet: Boolean = false,
     val showCostModal: Boolean = false,
     val showMemoModal: Boolean = false,
-) : UiState
+) : UiState {
+    val representativeLatLng: LatLng
+        get() {
+            val currentDayPlaces = itineraries.getOrNull(selectedDay - 1)?.places
+            val firstPlaceInSelectedDay = currentDayPlaces?.firstOrNull()
+
+            if (firstPlaceInSelectedDay != null) {
+                return LatLng(firstPlaceInSelectedDay.latitude, firstPlaceInSelectedDay.longitude)
+            }
+
+            return itineraries
+                .flatMap { it.places }
+                .firstOrNull()
+                ?.let { LatLng(it.latitude, it.longitude) } ?: LatLng(37.5665, 126.9780) // 모든 일차가 비어 있다면 '서울' 좌표 반환
+        }
+}
 
 data class ContentInfo(
     val travelId: String = "",
@@ -95,7 +112,7 @@ data class TravelPlace(
     data class UserData(
         val memo: String? = null,
         val cost: Int? = null,
-        val estimatedDuration: Duration = 0.hours,
+        val estimatedDuration: Duration = 1.hours,
     )
 }
 
@@ -144,4 +161,10 @@ sealed interface TravelDetailSideEffect : UiSideEffect {
     ) : TravelDetailSideEffect
 
     data class NavigateToBrowser(val url: String) : TravelDetailSideEffect
+    data class NavigateToAddItinerary(
+        val travelId: Long,
+        val day: Int,
+        val country: String,
+        val representativeLatLng: LatLng,
+    ) : TravelDetailSideEffect
 }

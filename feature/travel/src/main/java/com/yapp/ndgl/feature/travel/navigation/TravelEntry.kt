@@ -3,6 +3,11 @@ package com.yapp.ndgl.feature.travel.navigation
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.google.android.gms.maps.model.LatLng
+import com.yapp.ndgl.feature.travel.additinerary.AddItineraryRoute
+import com.yapp.ndgl.feature.travel.additinerary.AddItineraryViewModel
+import com.yapp.ndgl.feature.travel.addplace.AddPlaceRoute
+import com.yapp.ndgl.feature.travel.addplace.AddPlaceViewModel
 import com.yapp.ndgl.feature.travel.datepicker.DatePickerRoute
 import com.yapp.ndgl.feature.travel.datepicker.DatePickerViewModel
 import com.yapp.ndgl.feature.travel.followtravel.FollowTravelRoute
@@ -26,8 +31,7 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
                 navigator.navigate(Route.FollowTravel(travelId, days))
             },
             navigateToTravelDetail = { travelId ->
-                // FIXME: Travel id long 타입으로 변경
-                navigator.navigate(Route.TravelDetail(travelId.toInt()))
+                navigator.navigate(Route.TravelDetail(travelId))
             },
             navigateToTravelPlace = { placeId ->
                 navigator.navigate(Route.PlaceDetail(placeId))
@@ -73,9 +77,12 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
                         tipContent = tipContent?.let { RouteTipContent(creatorName = it.creatorName, tips = it.tips) },
                         alternativePlaces = alternativePlaces?.map {
                             RouteAlternativePlace(id = it.id, name = it.name, thumbnail = it.thumbnail, placeType = it.placeType.name)
-                        } ?: emptyList(),
+                        },
                     ),
                 )
+            },
+            navigateToAddItinerary = { travelId, day, country, representativeLatitude, representativeLongitude ->
+                navigator.navigate(Route.AddItinerary(travelId, day, country, representativeLatitude, representativeLongitude))
             },
         )
     }
@@ -113,6 +120,32 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
                 factory.create(tripDays = route.tripDays)
             }
         DatePickerRoute(
+            viewModel = viewModel,
+            navigateBack = { navigator.goBack() },
+        )
+    }
+    entry<Route.AddItinerary> { route ->
+        val viewModel =
+            hiltViewModel<AddItineraryViewModel, AddItineraryViewModel.Factory> { factory ->
+                factory.create(
+                    travelId = route.travelId,
+                    day = route.day,
+                    country = route.country,
+                    representativeLatLng = LatLng(route.representativeLatitude, route.representativeLongitude),
+                )
+            }
+        AddItineraryRoute(
+            viewModel = viewModel,
+            navigateBack = { navigator.goBack() },
+            navigateToAddPlace = { placeId -> navigator.navigate(Route.AddPlace(placeId)) },
+        )
+    }
+    entry<Route.AddPlace> { route ->
+        val viewModel =
+            hiltViewModel<AddPlaceViewModel, AddPlaceViewModel.Factory> { factory ->
+                factory.create(placeId = route.placeId)
+            }
+        AddPlaceRoute(
             viewModel = viewModel,
             navigateBack = { navigator.goBack() },
         )
