@@ -27,6 +27,9 @@ import com.yapp.ndgl.navigation.model.RouteTipContent
 fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
     entry<Route.Travel> {
         MyTravelRoute(
+            navigateToTemplateSearch = {
+                navigator.navigate(Route.TemplateSearch)
+            },
             navigateToFollowTravel = { travelId, days ->
                 navigator.navigate(Route.FollowTravel(travelId, days))
             },

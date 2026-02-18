@@ -79,6 +79,7 @@ data class MyTravelState(
 }
 
 sealed interface MyTravelIntent : UiIntent {
+    data object ClickSearchTravelTemplate : MyTravelIntent
     data class ClickTravel(val travelId: Long) : MyTravelIntent
     data class ClickTravelDetail(val travelId: Long) : MyTravelIntent
     data class ClickPlaceDetail(val placeId: String) : MyTravelIntent
@@ -86,6 +87,7 @@ sealed interface MyTravelIntent : UiIntent {
 }
 
 sealed interface MyTravelSideEffect : UiSideEffect {
+    data object NavigateToSearchTravelTemplate : MyTravelSideEffect
     data class NavigateToFollowTravel(val travelId: Long, val days: Int) : MyTravelSideEffect
     data class NavigateToTravelDetail(val travelId: Long) : MyTravelSideEffect
     data class NavigateToTravelPlace(val placeId: String) : MyTravelSideEffect

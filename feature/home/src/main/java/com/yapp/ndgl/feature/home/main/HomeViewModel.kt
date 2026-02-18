@@ -9,6 +9,7 @@ import com.yapp.ndgl.data.travel.model.TravelTemplateSummary
 import com.yapp.ndgl.data.travel.repository.TravelProgramRepository
 import com.yapp.ndgl.data.travel.repository.TravelTemplateRepository
 import com.yapp.ndgl.data.travel.repository.UserTravelRepository
+import com.yapp.ndgl.feature.home.model.TravelContent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -140,7 +141,7 @@ class HomeViewModel @Inject constructor(
                 ?.take(MAX_POPULAR_TRAVEL_COUNT)
                 ?: emptyList()
 
-            val travelsByProgram = mutableMapOf<Long, List<HomeState.TravelContent>>()
+            val travelsByProgram = mutableMapOf<Long, List<TravelContent>>()
             popularTemplateDeferred.awaitAll().forEach { (program, result) ->
                 travelsByProgram[program.id] = result?.content
                     ?.map { it.toTravelContent() }
@@ -168,15 +169,7 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    override suspend fun handleIntent(intent: HomeIntent) {
-        when (intent) {
-            is HomeIntent.SelectPopularTravelTab -> {
-                reduce { copy(popularTravelSelectedTabIndex = intent.index) }
-            }
-        }
-    }
-
-    private fun TravelTemplateSummary.toTravelContent() = HomeState.TravelContent(
+    private fun TravelTemplateSummary.toTravelContent() = TravelContent(
         travelId = id,
         title = title,
         country = country,
@@ -187,6 +180,26 @@ class HomeViewModel @Inject constructor(
         programType = programType,
         thumbnail = thumbnail ?: "",
     )
+
+    override suspend fun handleIntent(intent: HomeIntent) {
+        when (intent) {
+            HomeIntent.ClickSearchTravelTemplate -> postNavigateToSearchTravelTemplate()
+
+            is HomeIntent.SelectPopularTravelTab -> {
+                reduce { copy(popularTravelSelectedTabIndex = intent.index) }
+            }
+
+            is HomeIntent.ClickTravel -> postNavigateToTravelTemplate(travelId = intent.travelId)
+        }
+    }
+
+    private fun postNavigateToSearchTravelTemplate() {
+        postSideEffect(HomeSideEffect.NavigateToSearchTravelTemplate)
+    }
+
+    private fun postNavigateToTravelTemplate(travelId: Long) {
+        postSideEffect(HomeSideEffect.NavigateToFollowTravel(travelId = travelId, days = 1))
+    }
 
     companion object {
         private const val MAX_POPULAR_TRAVEL_COUNT = 9

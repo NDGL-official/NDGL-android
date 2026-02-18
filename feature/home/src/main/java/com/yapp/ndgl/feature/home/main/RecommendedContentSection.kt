@@ -33,7 +33,7 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.FlagEmojiUtil.toFlagEmoji
 import com.yapp.ndgl.data.travel.model.ProgramType
 import com.yapp.ndgl.feature.home.R
-import com.yapp.ndgl.feature.home.main.HomeState.TravelContent
+import com.yapp.ndgl.feature.home.model.TravelContent
 import com.yapp.ndgl.feature.home.util.toIconRes
 
 @Composable

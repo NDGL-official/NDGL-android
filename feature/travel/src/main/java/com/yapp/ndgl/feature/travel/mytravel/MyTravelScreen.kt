@@ -25,6 +25,7 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 @Composable
 internal fun MyTravelRoute(
     viewModel: MyTravelViewModel = hiltViewModel(),
+    navigateToTemplateSearch: () -> Unit,
     navigateToFollowTravel: (Long, Int) -> Unit,
     navigateToTravelDetail: (Long) -> Unit,
     navigateToTravelPlace: (String) -> Unit,
@@ -33,6 +34,9 @@ internal fun MyTravelRoute(
 
     MyTravelScreen(
         state = state,
+        onSearchClick = {
+            viewModel.onIntent(MyTravelIntent.ClickSearchTravelTemplate)
+        },
         onTravelClick = { travelId ->
             viewModel.onIntent(MyTravelIntent.ClickTravelDetail(travelId = travelId))
         },
@@ -49,6 +53,8 @@ internal fun MyTravelRoute(
 
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
+            MyTravelSideEffect.NavigateToSearchTravelTemplate -> navigateToTemplateSearch()
+
             is MyTravelSideEffect.NavigateToFollowTravel -> navigateToFollowTravel(
                 sideEffect.travelId,
                 sideEffect.days,
@@ -72,6 +78,7 @@ internal fun MyTravelRoute(
 @Composable
 private fun MyTravelScreen(
     state: MyTravelState,
+    onSearchClick: () -> Unit,
     onTravelClick: (Long) -> Unit,
     onPlaceClick: (String) -> Unit,
     onNewTravelFindClick: () -> Unit,
@@ -89,7 +96,7 @@ private fun MyTravelScreen(
                 trailingContents = {
                     NDGLNavigationIcon(
                         icon = R.drawable.ic_28_search,
-                        onClick = { /* FIXME: 홈 검색 */ },
+                        onClick = onSearchClick,
                     )
                     NDGLNavigationIcon(
                         icon = R.drawable.ic_28_settings,
@@ -145,6 +152,7 @@ private fun MyTravelScreenPreview() {
     NDGLTheme {
         MyTravelScreen(
             state = MyTravelState(),
+            onSearchClick = {},
             onTravelClick = {},
             onPlaceClick = {},
             onNewTravelFindClick = {},

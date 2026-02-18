@@ -13,6 +13,7 @@
     <string name="add_time">시간 추가</string>
     <string name="add_memo">메모 추가</string>
     <string name="common_dot_separator">•</string>
+    <string name="common_retry">다시 시도</string>
 
     <!-- Transport Segment -->
     <string name="transport_segment_format">약 %1$s • %2$s</string>

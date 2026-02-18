@@ -3,6 +3,7 @@ package com.yapp.ndgl.data.travel.api
 import com.yapp.ndgl.data.core.model.BaseResponse
 import com.yapp.ndgl.data.travel.model.PopularTravelTemplates
 import com.yapp.ndgl.data.travel.model.RecommendTravelTemplates
+import com.yapp.ndgl.data.travel.model.SearchTravelTemplates
 import com.yapp.ndgl.data.travel.model.TravelTemplateContentInfo
 import com.yapp.ndgl.data.travel.model.TravelTemplateItinerary
 import retrofit2.http.GET
@@ -30,4 +31,11 @@ interface TravelTemplateApi {
     suspend fun getTravelTemplateContentInfo(
         @Path("id") id: Long,
     ): BaseResponse<TravelTemplateContentInfo>
+
+    @GET("/api/v1/travel-templates/search")
+    suspend fun searchTravelTemplates(
+        @Query("keyword") keyword: String,
+        @Query("page") page: Int? = null,
+        @Query("size") size: Int? = null,
+    ): BaseResponse<SearchTravelTemplates>
 }

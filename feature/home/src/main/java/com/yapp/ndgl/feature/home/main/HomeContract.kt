@@ -7,6 +7,7 @@ import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
 import com.yapp.ndgl.data.travel.model.PlaceCategory
 import com.yapp.ndgl.data.travel.model.ProgramType
+import com.yapp.ndgl.feature.home.model.TravelContent
 import java.time.LocalDate
 
 @Stable
@@ -69,22 +70,15 @@ data class HomeState(
             val type: ProgramType,
         ) : TravelProgramTab
     }
-
-    data class TravelContent(
-        val travelId: Long,
-        val title: String,
-        val country: String,
-        val city: String,
-        val nights: Int,
-        val days: Int,
-        val programName: String,
-        val programType: ProgramType,
-        val thumbnail: String,
-    )
 }
 
 sealed interface HomeIntent : UiIntent {
+    data object ClickSearchTravelTemplate : HomeIntent
     data class SelectPopularTravelTab(val index: Int) : HomeIntent
+    data class ClickTravel(val travelId: Long) : HomeIntent
 }
 
-sealed interface HomeSideEffect : UiSideEffect
+sealed interface HomeSideEffect : UiSideEffect {
+    data object NavigateToSearchTravelTemplate : HomeSideEffect
+    data class NavigateToFollowTravel(val travelId: Long, val days: Int) : HomeSideEffect
+}
