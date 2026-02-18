@@ -19,7 +19,6 @@ import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.hours
 
 @HiltViewModel(assistedFactory = PlaceDetailViewModel.Factory::class)
 class PlaceDetailViewModel @AssistedInject constructor(
@@ -60,11 +59,10 @@ class PlaceDetailViewModel @AssistedInject constructor(
                         rating = place.rating,
                         userRatingCount = place.userRatingCount,
                         address = place.formattedAddress,
-                        phoneNumber = place.nationalPhoneNumber,
+                        phoneNumber = place.nationalPhoneNumber ?: place.internationalPhoneNumber,
                         openingHours = place.regularOpeningHours?.joinToString("\n"),
                         googleMapsUri = place.googleMapsUri,
                         websiteUrl = place.websiteUri,
-                        estimatedDuration = 1.hours,
                         thumbnail = place.thumbnail.orEmpty(),
                         tipContent = tipContent?.let { TipContent(creatorName = it.creatorName, tips = it.tips) },
                         alternativePlaces = alternativePlaces.map { routePlace ->
@@ -86,7 +84,7 @@ class PlaceDetailViewModel @AssistedInject constructor(
     }
 
     private fun loadPlacePhotos() = viewModelScope.launch {
-        repeat(3) { index ->
+        repeat(3) {
             delay(1000)
             val result = suspendRunCatching { placeRepository.getPlacePhotos(placeId) }
             val photos = result.getOrNull()?.photos
@@ -151,7 +149,7 @@ class PlaceDetailViewModel @AssistedInject constructor(
         fun create(
             placeId: String,
             tipContent: RouteTipContent?,
-            alternativePlaces: List<RouteAlternativePlace>,
+            alternativePlaces: List<RouteAlternativePlace>?,
         ): PlaceDetailViewModel
     }
 }
