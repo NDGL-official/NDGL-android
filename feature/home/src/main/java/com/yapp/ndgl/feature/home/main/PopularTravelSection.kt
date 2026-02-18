@@ -24,18 +24,21 @@ import com.yapp.ndgl.data.travel.model.ProgramType
 import com.yapp.ndgl.feature.home.R
 import com.yapp.ndgl.feature.home.component.TravelTemplate
 import com.yapp.ndgl.feature.home.model.TravelContent
+import com.yapp.ndgl.feature.home.model.TravelProgramTab
 import com.yapp.ndgl.feature.home.util.toIconRes
 import kotlinx.collections.immutable.toPersistentList
+import com.yapp.ndgl.core.ui.R as CoreR
 
 private const val COLUMN_ITEM_COUNT = 3
 
 @Composable
 internal fun PopularTravelSection(
-    tabs: List<HomeState.TravelProgramTab>,
+    tabs: List<TravelProgramTab>,
     selectedTabIndex: Int,
     travels: List<TravelContent>,
     onTabSelected: (Int) -> Unit,
     onTravelClick: (Long) -> Unit,
+    onTravelMoreClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -61,7 +64,7 @@ internal fun PopularTravelSection(
         NDGLOutlinedButton(
             status = NDGLOutlinedButtonAttr.Status.ACTIVE,
             label = stringResource(R.string.home_popular_travel_more_button),
-            onClick = {},
+            onClick = onTravelMoreClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp),
@@ -71,7 +74,7 @@ internal fun PopularTravelSection(
 
 @Composable
 private fun HorizontalCardSection(
-    tabs: List<HomeState.TravelProgramTab>,
+    tabs: List<TravelProgramTab>,
     selectedTabIndex: Int,
     travels: List<TravelContent>,
     onTabSelected: (Int) -> Unit,
@@ -87,11 +90,12 @@ private fun HorizontalCardSection(
         NDGLChipTab(
             tabs = tabs.map { tab ->
                 when (tab) {
-                    HomeState.TravelProgramTab.All -> NDGLChipTabAttr.Tab(
+                    TravelProgramTab.All -> NDGLChipTabAttr.Tab(
                         tag = "All",
-                        name = "전체",
+                        name = stringResource(CoreR.string.common_all),
                     )
-                    is HomeState.TravelProgramTab.Custom -> NDGLChipTabAttr.Tab(
+
+                    is TravelProgramTab.Custom -> NDGLChipTabAttr.Tab(
                         tag = tab.programId.toString(),
                         name = tab.name,
                         leadingIcon = tab.type.toIconRes(),
@@ -185,13 +189,13 @@ private fun PopularTravelSectionPreview() {
     NDGLTheme {
         PopularTravelSection(
             tabs = listOf(
-                HomeState.TravelProgramTab.All,
-                HomeState.TravelProgramTab.Custom(
+                TravelProgramTab.All,
+                TravelProgramTab.Custom(
                     programId = 1,
                     name = "빠니보틀",
                     type = ProgramType.YOUTUBE,
                 ),
-                HomeState.TravelProgramTab.Custom(
+                TravelProgramTab.Custom(
                     programId = 2,
                     name = "곽튜브",
                     type = ProgramType.TV,
@@ -201,6 +205,7 @@ private fun PopularTravelSectionPreview() {
             travels = sampleTravels,
             onTabSelected = {},
             onTravelClick = {},
+            onTravelMoreClick = {},
         )
     }
 }

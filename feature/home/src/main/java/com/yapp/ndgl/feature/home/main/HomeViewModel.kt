@@ -10,6 +10,7 @@ import com.yapp.ndgl.data.travel.repository.TravelProgramRepository
 import com.yapp.ndgl.data.travel.repository.TravelTemplateRepository
 import com.yapp.ndgl.data.travel.repository.UserTravelRepository
 import com.yapp.ndgl.feature.home.model.TravelContent
+import com.yapp.ndgl.feature.home.model.TravelProgramTab
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -124,10 +125,10 @@ class HomeViewModel @Inject constructor(
             }
 
             val tabs = buildList {
-                add(HomeState.TravelProgramTab.All)
+                add(TravelProgramTab.All)
                 programs.forEach { program ->
                     add(
-                        HomeState.TravelProgramTab.Custom(
+                        TravelProgramTab.Custom(
                             programId = program.id,
                             name = program.name,
                             type = program.type,
@@ -190,6 +191,7 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeIntent.ClickTravel -> postNavigateToTravelTemplate(travelId = intent.travelId)
+            HomeIntent.ClickTravelMore -> postNavigateToTravelMore()
         }
     }
 
@@ -199,6 +201,10 @@ class HomeViewModel @Inject constructor(
 
     private fun postNavigateToTravelTemplate(travelId: Long) {
         postSideEffect(HomeSideEffect.NavigateToFollowTravel(travelId = travelId, days = 1))
+    }
+
+    private fun postNavigateToTravelMore() {
+        postSideEffect(HomeSideEffect.NavigateToTravelMore)
     }
 
     companion object {
