@@ -4,6 +4,7 @@ import com.yapp.ndgl.data.core.model.getData
 import com.yapp.ndgl.data.travel.api.TravelTemplateApi
 import com.yapp.ndgl.data.travel.model.PopularTravelTemplates
 import com.yapp.ndgl.data.travel.model.RecommendTravelTemplates
+import com.yapp.ndgl.data.travel.model.SearchTravelTemplates
 import com.yapp.ndgl.data.travel.model.TravelTemplateContentInfo
 import com.yapp.ndgl.data.travel.model.TravelTemplateItinerary
 import javax.inject.Inject
@@ -18,7 +19,9 @@ class TravelTemplateRepository @Inject constructor(
     }
 
     suspend fun getPopularTravelTemplates(travelProgramId: Long): PopularTravelTemplates {
-        return travelTemplateApi.getPopularTravelTemplates(travelProgramId = travelProgramId).getData()
+        return travelTemplateApi.getPopularTravelTemplates(
+            travelProgramId = travelProgramId,
+        ).getData()
     }
 
     suspend fun getRecommendTravelTemplates(): RecommendTravelTemplates {
@@ -31,5 +34,9 @@ class TravelTemplateRepository @Inject constructor(
 
     suspend fun getTravelTemplateContentInfo(travelId: Long): TravelTemplateContentInfo {
         return travelTemplateApi.getTravelTemplateContentInfo(id = travelId).getData()
+    }
+
+    suspend fun searchTravelTemplates(keyword: String): SearchTravelTemplates {
+        return travelTemplateApi.searchTravelTemplates(keyword = keyword).getData()
     }
 }
