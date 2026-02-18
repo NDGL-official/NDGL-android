@@ -21,7 +21,7 @@ private const val TEST_THUMBNAIL_URL =
 
 @HiltViewModel(assistedFactory = TravelDetailViewModel.Factory::class)
 class TravelDetailViewModel @AssistedInject constructor(
-    @Assisted private val travelId: Int,
+    @Assisted private val travelId: Long,
 ) : BaseViewModel<TravelDetailState, TravelDetailIntent, TravelDetailSideEffect>(
     initialState = TravelDetailState(),
 ) {
@@ -234,7 +234,14 @@ class TravelDetailViewModel @AssistedInject constructor(
     }
 
     private fun clickAddScheduleButton() {
-        // TODO: Handle add schedule
+        postSideEffect(
+            TravelDetailSideEffect.NavigateToAddItinerary(
+                travelId = travelId,
+                day = state.value.selectedDay,
+                country = state.value.country,
+                representativeLatLng = state.value.representativeLatLng,
+            ),
+        )
     }
 
     private fun checkPlaceItem(placeId: Int) {
@@ -587,7 +594,7 @@ class TravelDetailViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(travelId: Int): TravelDetailViewModel
+        fun create(travelId: Long): TravelDetailViewModel
     }
 
     companion object {

@@ -113,4 +113,13 @@
     <string name="transport_bottom_sheet_title">이동수단 변경</string>
     <string name="transport_bottom_sheet_button">확인</string>
 
+    <!-- Add Itinerary -->
+    <string name="add_itinerary_search_placeholder">장소를 검색해보세요</string>
+    <string name="add_itinerary_search_empty_hint">가고 싶은 여행장소를 검색 할 수 있어요</string>
+    <string name="add_itinerary_chip_day_format">%d일차 추천 장소</string>
+    <string name="add_itinerary_chip_recently_saved">최근 저장한 장소</string>
+    <string name="add_itinerary_search_no_result_title">검색 결과가 없어요</string>
+    <string name="add_itinerary_search_no_result_description">철자를 확인하거나\n다른 키워드로 검색해보세요</string>
+    <string name="add_itinerary_chip_recommended">%d일차 추천 장소</string>
+    <string name="add_itinerary_chip_recent">최근 저장한 장소</string>
 </resources>

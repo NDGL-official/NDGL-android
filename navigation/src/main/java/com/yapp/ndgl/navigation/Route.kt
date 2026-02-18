@@ -23,13 +23,13 @@ sealed interface Route : NavKey {
     data class DatePicker(val tripDays: Int) : Route
 
     @Serializable
-    data class TravelDetail(val travelId: Int) : Route
+    data class TravelDetail(val travelId: Long) : Route
 
     @Serializable
     data class PlaceDetail(
         val placeId: String,
         val tipContent: RouteTipContent? = null,
-        val alternativePlaces: List<RouteAlternativePlace> = emptyList(),
+        val alternativePlaces: List<RouteAlternativePlace>? = null,
     ) : Route
 
     @Serializable
@@ -38,6 +38,18 @@ sealed interface Route : NavKey {
         val tipContent: RouteTipContent? = null,
         val alternativePlaces: List<RouteAlternativePlace> = emptyList(),
     ) : Route
+
+    @Serializable
+    data class AddItinerary(
+        val travelId: Long,
+        val day: Int,
+        val country: String,
+        val representativeLatitude: Double,
+        val representativeLongitude: Double,
+    ) : Route
+
+    @Serializable
+    data class AddPlace(val placeId: String) : Route
 
     @Serializable
     data object TravelHelper : Route
