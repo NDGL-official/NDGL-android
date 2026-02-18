@@ -44,7 +44,7 @@ internal fun TravelMap(
 ) {
     val routePoints = remember(places) {
         places.map { place ->
-            LatLng(place.latitude, place.longitude)
+            LatLng(place.placeInfo.latitude, place.placeInfo.longitude)
         }
     }
 
@@ -56,7 +56,7 @@ internal fun TravelMap(
     }
 
     val initialPosition = CameraPosition.fromLatLngZoom(
-        LatLng(places.first().latitude, places.first().longitude),
+        LatLng(places.first().placeInfo.latitude, places.first().placeInfo.longitude),
         15f,
     )
 
@@ -67,12 +67,12 @@ internal fun TravelMap(
     LaunchedEffect(places) {
         val cameraUpdate = when {
             places.size == 1 -> {
-                CameraUpdateFactory.newLatLngZoom(LatLng(places.first().latitude, places.first().longitude), 15f)
+                CameraUpdateFactory.newLatLngZoom(LatLng(places.first().placeInfo.latitude, places.first().placeInfo.longitude), 15f)
             }
 
             else -> {
                 val bounds = LatLngBounds.Builder().apply {
-                    places.forEach { include(LatLng(it.latitude, it.longitude)) }
+                    places.forEach { place -> include(LatLng(place.placeInfo.latitude, place.placeInfo.longitude)) }
                 }.build()
                 CameraUpdateFactory.newLatLngBounds(bounds, 100)
             }
@@ -130,7 +130,8 @@ internal fun TravelMap(
 private fun PlaceMarker(
     place: TravelPlace,
 ) {
-    val markerState = remember(place.id) { MarkerState(position = LatLng(place.latitude, place.longitude)) }
+    val markerState =
+        remember(place.id) { MarkerState(position = LatLng(place.placeInfo.latitude, place.placeInfo.longitude)) }
 
     MarkerComposable(
         state = markerState,
@@ -145,11 +146,11 @@ private fun PlaceMarker(
                     offsetY = 1.dp,
                     blur = 2.dp,
                 )
-                .background(color = place.placeType.getColor(), shape = CircleShape),
+                .background(color = place.placeInfo.placeType.getColor(), shape = CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                place.sequence.toString(),
+                place.placeInfo.sequence.toString(),
                 color = NDGLTheme.colors.white,
                 style = NDGLTheme.typography.bodyMdSemiBold,
             )

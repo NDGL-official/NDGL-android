@@ -39,8 +39,8 @@ import coil3.compose.AsyncImage
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.formatString
-import com.yapp.ndgl.feature.travel.followtravel.placedetail.FollowPlaceInfo
 import com.yapp.ndgl.feature.travel.model.AlternativePlace
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.TipContent
 import kotlin.collections.forEach
@@ -48,7 +48,7 @@ import kotlin.time.Duration.Companion.hours
 
 @Composable
 internal fun FollowPlaceInfoTab(
-    placeInfo: FollowPlaceInfo,
+    placeInfo: PlaceInfo,
     clickAddress: () -> Unit,
     clickMenu: () -> Unit,
 ) {
@@ -111,13 +111,13 @@ internal fun FollowPlaceInfoTab(
             color = NDGLTheme.colors.black200,
         )
 
-        if (placeInfo.tipContent != null) {
+        if (placeInfo.tipContent?.tips != null) {
             val tipContent = placeInfo.tipContent
             Spacer(modifier = Modifier.height(32.dp))
             FollowPlaceTipsPager(tips = tipContent.tips, creatorName = tipContent.creatorName)
         }
 
-        if (placeInfo.alternativePlaces.isNotEmpty()) {
+        if (placeInfo.alternativePlaces != null) {
             Spacer(modifier = Modifier.height(32.dp))
             Text(stringResource(R.string.place_detail_plan_b_message), color = NDGLTheme.colors.black700, style = NDGLTheme.typography.bodyLgSemiBold)
             Spacer(modifier = Modifier.height(16.dp))
@@ -267,8 +267,8 @@ private fun FollowAlternativePlaceContent(
 private fun FollowPlaceInfoTabPreview() {
     NDGLTheme {
         FollowPlaceInfoTab(
-            placeInfo = FollowPlaceInfo(
-                id = "",
+            placeInfo = PlaceInfo(
+                googlePlaceId = "",
                 name = "젤라테리아 파씨",
                 address = "로마 비아 프린시페",
                 phoneNumber = "+39 06 446 4740",

@@ -68,10 +68,14 @@ import com.yapp.ndgl.core.ui.util.launchBrowser
 import com.yapp.ndgl.core.ui.util.rememberReorderableState
 import com.yapp.ndgl.core.ui.util.reorderable
 import com.yapp.ndgl.feature.travel.model.AlternativePlace
+import com.yapp.ndgl.feature.travel.model.Budget
+import com.yapp.ndgl.feature.travel.model.ContentInfo
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.TipContent
 import com.yapp.ndgl.feature.travel.model.TransportSegment
 import com.yapp.ndgl.feature.travel.model.TransportType
+import com.yapp.ndgl.feature.travel.model.VideoInfo
 import com.yapp.ndgl.feature.travel.traveldetail.component.ContentCard
 import com.yapp.ndgl.feature.travel.traveldetail.component.DurationPickerContent
 import com.yapp.ndgl.feature.travel.traveldetail.component.EditControlBar
@@ -103,7 +107,7 @@ internal fun TravelDetailRoute(
         when (sideEffect) {
             is TravelDetailSideEffect.NavigateBack -> navigateBack()
             is TravelDetailSideEffect.NavigateToTravelPlaceDetail -> {
-                navigateToTravelPlaceDetail(sideEffect.placeId, sideEffect.tipContent, sideEffect.alternativePlaces)
+                navigateToTravelPlaceDetail(sideEffect.googlePlaceId, sideEffect.tipContent, sideEffect.alternativePlaces)
             }
 
             is TravelDetailSideEffect.NavigateToBrowser -> {
@@ -172,7 +176,7 @@ private fun TravelDetailScreen(
     clickStartTimeSetting: () -> Unit,
     clickEditTravel: () -> Unit,
     clickAddScheduleButton: () -> Unit,
-    checkPlaceItem: (placeId: Int) -> Unit,
+    checkPlaceItem: (Long) -> Unit,
     checkSelectAll: () -> Unit,
     clickDeleteSelectedPlaces: () -> Unit,
     confirmDeleteSelectedPlaces: () -> Unit,
@@ -188,9 +192,9 @@ private fun TravelDetailScreen(
     confirmChangeTransport: (TransportSegment) -> Unit,
     dismissTransportBottomSheet: () -> Unit,
     clickPlaceItem: (TravelPlace) -> Unit,
-    clickAddTime: (Int) -> Unit,
-    clickAddMemo: (Int) -> Unit,
-    clickAddCost: (Int) -> Unit,
+    clickAddTime: (Long) -> Unit,
+    clickAddMemo: (Long) -> Unit,
+    clickAddCost: (Long) -> Unit,
     clickFindRoute: (String) -> Unit,
     dismissPlaceBottomSheet: () -> Unit,
     navigateToTravelPlaceDetail: (String) -> Unit,
@@ -546,7 +550,7 @@ private fun TravelDetailScreen(
             PlaceBottomSheet(
                 place = state.selectedPlace,
                 onDismissRequest = dismissPlaceBottomSheet,
-                navigateToTravelPlaceDetail = { navigateToTravelPlaceDetail(state.selectedPlace.googlePlaceId) },
+                navigateToTravelPlaceDetail = { navigateToTravelPlaceDetail(state.selectedPlace.placeInfo.googlePlaceId) },
                 onAddTimeClick = clickAddTime,
                 onAddCostClick = clickAddCost,
                 onAddMemoClick = clickAddMemo,
@@ -633,7 +637,6 @@ private fun TravelDetailScreenPreview() {
         TravelDetailScreen(
             state = TravelDetailState(
                 contentInfo = ContentInfo(
-                    travelId = "TRAVEL_001",
                     country = "태국",
                     city = "방콕",
                     budgetPerPerson = Budget(1200000),
@@ -654,32 +657,34 @@ private fun TravelDetailScreenPreview() {
                         places = listOf(
                             TravelPlace(
                                 id = 1,
-                                day = 1,
-                                sequence = 1,
-                                googlePlaceId = "",
-                                thumbnail = "",
-                                latitude = 35.6585805,
-                                longitude = 139.7454329,
-                                name = "도쿄 타워",
-                                regularOpeningHours = "09:00~23:00",
-                                googleMapsUri = "",
-                                placeType = PlaceType.ATTRACTION,
+                                placeInfo = PlaceInfo(
+                                    day = 1,
+                                    sequence = 1,
+                                    googlePlaceId = "",
+                                    thumbnail = "",
+                                    latitude = 35.6585805,
+                                    longitude = 139.7454329,
+                                    name = "도쿄 타워",
+                                    googleMapsUri = "",
+                                    placeType = PlaceType.ATTRACTION,
+                                ),
                                 userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
                                 transportToNext = TransportSegment(type = TransportType.CAR, duration = 25.minutes, distance = 3500),
                                 startTime = 8.hours,
                             ),
                             TravelPlace(
                                 id = 2,
-                                day = 1,
-                                sequence = 2,
-                                googlePlaceId = "",
-                                thumbnail = "",
-                                latitude = 35.6654,
-                                longitude = 139.7707,
-                                name = "츠키지 스시 다이",
-                                regularOpeningHours = "11:00~22:00",
-                                googleMapsUri = "",
-                                placeType = PlaceType.RESTAURANT,
+                                placeInfo = PlaceInfo(
+                                    day = 1,
+                                    sequence = 2,
+                                    googlePlaceId = "",
+                                    thumbnail = "",
+                                    latitude = 35.6654,
+                                    longitude = 139.7707,
+                                    name = "츠키지 스시 다이",
+                                    googleMapsUri = "",
+                                    placeType = PlaceType.RESTAURANT,
+                                ),
                                 userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
                                 startTime = 0.hours,
                                 transportToNext = null,
@@ -734,7 +739,7 @@ private fun TravelDetailScreenEditModePreview() {
         TravelDetailScreen(
             state = TravelDetailState(
                 contentInfo = ContentInfo(
-                    travelId = "TRAVEL_001",
+                    travelId = 0,
                     country = "태국",
                     city = "방콕",
                     budgetPerPerson = Budget(1200000),
@@ -755,32 +760,34 @@ private fun TravelDetailScreenEditModePreview() {
                         places = listOf(
                             TravelPlace(
                                 id = 1,
-                                day = 1,
-                                sequence = 1,
-                                googlePlaceId = "",
-                                thumbnail = "",
-                                latitude = 35.6585805,
-                                longitude = 139.7454329,
-                                name = "도쿄 타워",
-                                regularOpeningHours = "09:00~23:00",
-                                googleMapsUri = "",
-                                placeType = PlaceType.ATTRACTION,
+                                placeInfo = PlaceInfo(
+                                    day = 1,
+                                    sequence = 1,
+                                    googlePlaceId = "",
+                                    thumbnail = "",
+                                    latitude = 35.6585805,
+                                    longitude = 139.7454329,
+                                    name = "도쿄 타워",
+                                    googleMapsUri = "",
+                                    placeType = PlaceType.ATTRACTION,
+                                ),
                                 userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
                                 transportToNext = TransportSegment(type = TransportType.CAR, duration = 25.minutes, distance = 3500),
                                 startTime = 0.hours,
                             ),
                             TravelPlace(
                                 id = 2,
-                                day = 1,
-                                sequence = 2,
-                                googlePlaceId = "",
-                                thumbnail = "",
-                                latitude = 35.6654,
-                                longitude = 139.7707,
-                                name = "츠키지 스시 다이",
-                                regularOpeningHours = "11:00~22:00",
-                                googleMapsUri = "",
-                                placeType = PlaceType.RESTAURANT,
+                                placeInfo = PlaceInfo(
+                                    day = 1,
+                                    sequence = 2,
+                                    googlePlaceId = "",
+                                    thumbnail = "",
+                                    latitude = 35.6654,
+                                    longitude = 139.7707,
+                                    name = "츠키지 스시 다이",
+                                    googleMapsUri = "",
+                                    placeType = PlaceType.RESTAURANT,
+                                ),
                                 userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
                                 transportToNext = null,
                                 startTime = 8.hours,

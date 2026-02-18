@@ -52,6 +52,7 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.launchBrowser
 import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.Price
@@ -303,12 +304,11 @@ private fun PlaceDetailScreenPreview() {
         PlaceDetailScreen(
             state = PlaceDetailState(
                 placeInfo = PlaceInfo(
-                    id = "",
+                    googlePlaceId = "",
                     name = "젤라테리아 파씨",
                     placeType = PlaceType.RESTAURANT,
                     address = "로마 비아 프린시페",
                     phoneNumber = "+39 06 446 4740",
-                    openingHours = "매일 01:00~23:00",
                     websiteUrl = "https://example.com",
                     rating = 4.7,
                     userRatingCount = 3971,

@@ -27,14 +27,14 @@ sealed interface Route : NavKey {
 
     @Serializable
     data class PlaceDetail(
-        val placeId: String,
+        val googlePlaceId: String,
         val tipContent: RouteTipContent? = null,
         val alternativePlaces: List<RouteAlternativePlace>? = null,
     ) : Route
 
     @Serializable
     data class FollowPlaceDetail(
-        val placeId: String,
+        val googlePlaceId: String,
         val tipContent: RouteTipContent? = null,
         val alternativePlaces: List<RouteAlternativePlace> = emptyList(),
     ) : Route

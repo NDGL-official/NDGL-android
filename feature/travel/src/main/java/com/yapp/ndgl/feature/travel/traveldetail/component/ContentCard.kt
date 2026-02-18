@@ -45,9 +45,9 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
-import com.yapp.ndgl.feature.travel.traveldetail.Budget
-import com.yapp.ndgl.feature.travel.traveldetail.ContentInfo
-import com.yapp.ndgl.feature.travel.traveldetail.VideoInfo
+import com.yapp.ndgl.feature.travel.model.Budget
+import com.yapp.ndgl.feature.travel.model.ContentInfo
+import com.yapp.ndgl.feature.travel.model.VideoInfo
 
 @Composable
 fun ContentCard(contentInfo: ContentInfo) {
@@ -212,7 +212,6 @@ fun PreviewContentCard() {
     NDGLTheme {
         ContentCard(
             contentInfo = ContentInfo(
-                travelId = "TRAVEL_001",
                 country = "태국",
                 city = "방콕",
                 budgetPerPerson = Budget(1200000),

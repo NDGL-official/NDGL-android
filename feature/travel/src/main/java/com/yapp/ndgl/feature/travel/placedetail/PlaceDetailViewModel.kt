@@ -7,9 +7,8 @@ import com.yapp.ndgl.data.travel.repository.PlaceRepository
 import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
-import com.yapp.ndgl.feature.travel.model.Price
-import com.yapp.ndgl.feature.travel.model.PriceRange
 import com.yapp.ndgl.feature.travel.model.TipContent
+import com.yapp.ndgl.feature.travel.model.toPlaceInfo
 import com.yapp.ndgl.feature.travel.model.toPlaceType
 import com.yapp.ndgl.navigation.model.RouteAlternativePlace
 import com.yapp.ndgl.navigation.model.RouteTipContent
@@ -22,9 +21,9 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = PlaceDetailViewModel.Factory::class)
 class PlaceDetailViewModel @AssistedInject constructor(
-    @Assisted private val placeId: String,
+    @Assisted private val googlePlaceId: String,
     @Assisted private val tipContent: RouteTipContent?,
-    @Assisted private val alternativePlaces: List<RouteAlternativePlace>,
+    @Assisted private val alternativePlaces: List<RouteAlternativePlace>?,
     private val placeRepository: PlaceRepository,
 ) : BaseViewModel<PlaceDetailState, PlaceDetailIntent, PlaceDetailSideEffect>(
     initialState = PlaceDetailState(),
@@ -35,37 +34,14 @@ class PlaceDetailViewModel @AssistedInject constructor(
 
     private fun loadPlaceDetail() = viewModelScope.launch {
         suspendRunCatching {
-            placeRepository.getPlace(placeId)
+            placeRepository.getPlace(googlePlaceId)
         }.onSuccess { response ->
             loadPlacePhotos()
-
-            val place = response.place
             reduce {
                 copy(
-                    placeInfo = PlaceInfo(
-                        id = place.id,
-                        name = place.name,
-                        placeType = place.category.toPlaceType(),
-                        priceRange = place.priceRange?.let {
-                            PriceRange(
-                                startPrice = Price(
-                                    currencyCode = it.startPrice.currencyCode,
-                                    units = it.startPrice.units,
-                                    symbol = it.startPrice.symbol,
-                                ),
-                                endPrice = Price(currencyCode = it.endPrice.currencyCode, units = it.endPrice.units, symbol = it.endPrice.symbol),
-                            )
-                        },
-                        rating = place.rating,
-                        userRatingCount = place.userRatingCount,
-                        address = place.formattedAddress,
-                        phoneNumber = place.nationalPhoneNumber ?: place.internationalPhoneNumber,
-                        openingHours = place.regularOpeningHours?.joinToString("\n"),
-                        googleMapsUri = place.googleMapsUri,
-                        websiteUrl = place.websiteUri,
-                        thumbnail = place.thumbnail.orEmpty(),
+                    placeInfo = response.toPlaceInfo().copy(
                         tipContent = tipContent?.let { TipContent(creatorName = it.creatorName, tips = it.tips) },
-                        alternativePlaces = alternativePlaces.map { routePlace ->
+                        alternativePlaces = alternativePlaces?.map { routePlace ->
                             AlternativePlace(
                                 id = routePlace.id,
                                 name = routePlace.name,
@@ -73,8 +49,6 @@ class PlaceDetailViewModel @AssistedInject constructor(
                                 placeType = routePlace.placeType.toPlaceType(),
                             )
                         },
-                        latitude = place.location.latitude,
-                        longitude = place.location.longitude,
                     ),
                 )
             }
@@ -86,7 +60,7 @@ class PlaceDetailViewModel @AssistedInject constructor(
     private fun loadPlacePhotos() = viewModelScope.launch {
         repeat(3) {
             delay(1000)
-            val result = suspendRunCatching { placeRepository.getPlacePhotos(placeId) }
+            val result = suspendRunCatching { placeRepository.getPlacePhotos(googlePlaceId) }
             val photos = result.getOrNull()?.photos
 
             if (!photos.isNullOrEmpty()) {
@@ -147,7 +121,7 @@ class PlaceDetailViewModel @AssistedInject constructor(
     @AssistedFactory
     interface Factory {
         fun create(
-            placeId: String,
+            googlePlaceId: String,
             tipContent: RouteTipContent?,
             alternativePlaces: List<RouteAlternativePlace>?,
         ): PlaceDetailViewModel

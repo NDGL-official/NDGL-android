@@ -56,6 +56,7 @@ import com.yapp.ndgl.feature.travel.addplace.component.AddPlaceInfoTab
 import com.yapp.ndgl.feature.travel.addplace.component.AddPlacePhotoTab
 import com.yapp.ndgl.feature.travel.addplace.component.AddPlaceTabRow
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.Price
@@ -314,13 +315,11 @@ private fun AddPlaceScreenPreview() {
     NDGLTheme {
         AddPlaceScreen(
             state = AddPlaceState(
-                placeInfo = AddPlaceInfo(
-                    id = "",
+                placeInfo = PlaceInfo(
                     name = "젤라테리아 파씨 (Gelateria Fassi)",
                     placeType = PlaceType.RESTAURANT,
                     address = "Via Principe Eugenio, 65, 00185 Roma RM, Italy",
                     phoneNumber = "+39 06 446 4740",
-                    openingHours = "매일 12:00 ~ 24:00",
                     websiteUrl = "https://www.gelateriafassi.com",
                     rating = 4.7,
                     userRatingCount = 12450,

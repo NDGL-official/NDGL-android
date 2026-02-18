@@ -64,9 +64,9 @@ internal fun SearchPlaceMap(
     ) {
         if (hasValidLocation) {
             val pinState =
-                rememberMarkerState(key = "pin_${placeInfo.id}", position = LatLng(placeInfo.latitude, placeInfo.longitude))
+                rememberMarkerState(key = "pin_${placeInfo.googlePlaceId}", position = LatLng(placeInfo.latitude, placeInfo.longitude))
             val labelState =
-                rememberMarkerState(key = "label_${placeInfo.id}", position = LatLng(placeInfo.latitude, placeInfo.longitude))
+                rememberMarkerState(key = "label_${placeInfo.googlePlaceId}", position = LatLng(placeInfo.latitude, placeInfo.longitude))
 
             Marker(state = pinState)
             MarkerComposable(

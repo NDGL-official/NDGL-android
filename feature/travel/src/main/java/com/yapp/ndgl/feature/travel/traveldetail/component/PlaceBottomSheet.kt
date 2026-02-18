@@ -38,9 +38,9 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.noRippleClickable
 import com.yapp.ndgl.core.util.formatDecimal
 import com.yapp.ndgl.core.util.formatString
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.traveldetail.TravelPlace
-import kotlin.Int
 import kotlin.String
 import kotlin.time.Duration.Companion.hours
 
@@ -49,9 +49,9 @@ internal fun PlaceBottomSheet(
     place: TravelPlace,
     onDismissRequest: () -> Unit,
     navigateToTravelPlaceDetail: () -> Unit,
-    onAddTimeClick: (Int) -> Unit,
-    onAddCostClick: (Int) -> Unit,
-    onAddMemoClick: (Int) -> Unit,
+    onAddTimeClick: (Long) -> Unit,
+    onAddCostClick: (Long) -> Unit,
+    onAddMemoClick: (Long) -> Unit,
     onFindRouteClick: (String) -> Unit,
 ) {
     NDGLBottomSheet(
@@ -77,7 +77,7 @@ internal fun PlaceBottomSheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Text(
-                            text = place.name,
+                            text = place.placeInfo.name,
                             style = NDGLTheme.typography.titleMdSemiBold,
                             color = NDGLTheme.colors.black800,
                             maxLines = 1,
@@ -100,13 +100,13 @@ internal fun PlaceBottomSheet(
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         Icon(
-                            imageVector = ImageVector.vectorResource(place.placeType.iconRes),
+                            imageVector = ImageVector.vectorResource(place.placeInfo.placeType.iconRes),
                             contentDescription = null,
                             tint = Color.Unspecified,
                             modifier = Modifier.size(14.dp),
                         )
                         Text(
-                            text = stringResource(place.placeType.labelRes),
+                            text = stringResource(place.placeInfo.placeType.labelRes),
                             style = NDGLTheme.typography.bodyMdMedium,
                             color = NDGLTheme.colors.black500,
                         )
@@ -135,7 +135,7 @@ internal fun PlaceBottomSheet(
                     }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = stringResource(R.string.opening_hours_format, place.regularOpeningHours),
+                        text = stringResource(R.string.opening_hours_format, place.regularOpeningHours.toString()),
                         style = NDGLTheme.typography.bodyMdMedium,
                         color = NDGLTheme.colors.black500,
                     )
@@ -204,33 +204,35 @@ internal fun PlaceBottomSheet(
                             }
                         }
                         Spacer(modifier = Modifier.height(40.dp))
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable {
-                                    onFindRouteClick(place.googleMapsUri)
-                                }
-                                .background(NDGLTheme.colors.white)
-                                .border(1.dp, NDGLTheme.colors.black200, RoundedCornerShape(8.dp))
-                                .padding(vertical = 17.5.dp),
-                            horizontalArrangement = Arrangement.spacedBy(
-                                space = 8.dp,
-                                alignment = Alignment.CenterHorizontally,
-                            ),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = stringResource(R.string.find_route),
-                                style = NDGLTheme.typography.bodyLgSemiBold,
-                                color = NDGLTheme.colors.black600,
-                            )
-                            Icon(
-                                imageVector = ImageVector.vectorResource(R.drawable.ic_24_map),
-                                contentDescription = null,
-                                tint = NDGLTheme.colors.black600,
-                            )
+                        if (place.placeInfo.googleMapsUri != null) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(56.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable {
+                                        onFindRouteClick(place.placeInfo.googleMapsUri)
+                                    }
+                                    .background(NDGLTheme.colors.white)
+                                    .border(1.dp, NDGLTheme.colors.black200, RoundedCornerShape(8.dp))
+                                    .padding(vertical = 17.5.dp),
+                                horizontalArrangement = Arrangement.spacedBy(
+                                    space = 8.dp,
+                                    alignment = Alignment.CenterHorizontally,
+                                ),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.find_route),
+                                    style = NDGLTheme.typography.bodyLgSemiBold,
+                                    color = NDGLTheme.colors.black600,
+                                )
+                                Icon(
+                                    imageVector = ImageVector.vectorResource(R.drawable.ic_24_map),
+                                    contentDescription = null,
+                                    tint = NDGLTheme.colors.black600,
+                                )
+                            }
                         }
                         Spacer(modifier = Modifier.height(12.dp))
                     }
@@ -245,16 +247,17 @@ internal fun PlaceBottomSheet(
 private fun PlaceBottomSheetPreview() {
     val mockPlace = TravelPlace(
         id = 1,
-        day = 1,
-        sequence = 1,
-        googlePlaceId = "",
-        thumbnail = "",
-        latitude = 0.0,
-        longitude = 0.0,
-        name = "콜로세움",
-        regularOpeningHours = "11:00~23:00",
-        googleMapsUri = "",
-        placeType = PlaceType.CAFE,
+        placeInfo = PlaceInfo(
+            day = 1,
+            sequence = 1,
+            googlePlaceId = "",
+            thumbnail = "",
+            latitude = 0.0,
+            longitude = 0.0,
+            name = "콜로세움",
+            googleMapsUri = "",
+            placeType = PlaceType.CAFE,
+        ),
         userData = TravelPlace.UserData(
             memo = "장소에 대한 메모",
             cost = 20000,

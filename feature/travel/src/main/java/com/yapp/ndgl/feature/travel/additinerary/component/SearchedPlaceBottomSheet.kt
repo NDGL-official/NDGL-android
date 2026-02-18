@@ -67,9 +67,9 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.dropShadow
 import com.yapp.ndgl.core.ui.util.noRippleClickable
 import com.yapp.ndgl.core.util.formatString
-import com.yapp.ndgl.feature.travel.additinerary.PlaceInfo
 import com.yapp.ndgl.feature.travel.additinerary.SelectedPlaceDetail
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.Price
@@ -285,7 +285,7 @@ private fun SearchedPlaceInfoHeader(isExpanded: Boolean, placeInfo: PlaceInfo, b
                         .size(28.dp)
                         .clip(CircleShape)
                         .clickable {
-                            bookmarkPlace(placeInfo.id)
+                            bookmarkPlace(placeInfo.googlePlaceId)
                         },
                     imageVector = ImageVector.vectorResource(if (placeInfo.isBookMarked) R.drawable.ic_28_star_fill else R.drawable.ic_28_star),
                     contentDescription = null,
@@ -532,14 +532,12 @@ private fun SearchedPlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: Lis
 
 private val previewPlaceDetail = SelectedPlaceDetail(
     PlaceInfo(
-        id = "1",
         name = "콜로세움",
         placeType = PlaceType.ATTRACTION,
         rating = 4.8,
         userRatingCount = 12450,
         address = "Piazza del Colosseo, 1, 00184 Roma RM, Italy",
         phoneNumber = "+39 06 3996 7700",
-        openingHours = "매일 09:00~19:00",
         websiteUrl = "https://www.colosseo.it",
         estimatedDuration = 2.hours,
         priceRange = PriceRange(

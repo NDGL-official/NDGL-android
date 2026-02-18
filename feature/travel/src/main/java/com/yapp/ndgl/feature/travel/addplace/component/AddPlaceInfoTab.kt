@@ -13,14 +13,14 @@ import androidx.compose.ui.unit.dp
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.formatString
-import com.yapp.ndgl.feature.travel.addplace.AddPlaceInfo
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.placedetail.component.PlaceInfoRow
 import kotlin.time.Duration.Companion.hours
 
 @Composable
 internal fun AddPlaceInfoTab(
-    placeInfo: AddPlaceInfo,
+    placeInfo: PlaceInfo,
     clickAddress: () -> Unit,
     clickMenu: () -> Unit,
 ) {
@@ -78,8 +78,7 @@ internal fun AddPlaceInfoTab(
 private fun AddPlaceInfoTabPreview() {
     NDGLTheme {
         AddPlaceInfoTab(
-            placeInfo = AddPlaceInfo(
-                id = "",
+            placeInfo = PlaceInfo(
                 name = "젤라테리아 파씨",
                 placeType = PlaceType.RESTAURANT,
                 address = "로마 비아 프린시페",

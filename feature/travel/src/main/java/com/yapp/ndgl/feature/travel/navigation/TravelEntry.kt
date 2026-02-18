@@ -49,11 +49,15 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
             navigateToDatePicker = { tripDays ->
                 navigator.navigate(Route.DatePicker(tripDays))
             },
-            navigateToFollowPlaceDetail = { placeId, tipContent, alternativePlaces ->
+            navigateToFollowPlaceDetail = { googlePlaceId, tipContent, alternativePlaces ->
                 navigator.navigate(
                     Route.FollowPlaceDetail(
-                        placeId = placeId,
-                        tipContent = tipContent?.let { RouteTipContent(creatorName = it.creatorName, tips = it.tips) },
+                        googlePlaceId = googlePlaceId,
+                        tipContent = tipContent?.let { content ->
+                            content.tips?.let { tips ->
+                                RouteTipContent(creatorName = content.creatorName, tips = tips)
+                            }
+                        },
                         alternativePlaces = alternativePlaces?.map {
                             RouteAlternativePlace(id = it.id, name = it.name, thumbnail = it.thumbnail, placeType = it.placeType.name)
                         } ?: emptyList(),
@@ -70,11 +74,15 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
         TravelDetailRoute(
             viewModel = viewModel,
             navigateBack = { navigator.goBack() },
-            navigateToTravelPlaceDetail = { placeId, tipContent, alternativePlaces ->
+            navigateToTravelPlaceDetail = { googlePlaceId, tipContent, alternativePlaces ->
                 navigator.navigate(
                     Route.PlaceDetail(
-                        placeId = placeId,
-                        tipContent = tipContent?.let { RouteTipContent(creatorName = it.creatorName, tips = it.tips) },
+                        googlePlaceId = googlePlaceId,
+                        tipContent = tipContent?.let { content ->
+                            content.tips?.let { tips ->
+                                RouteTipContent(creatorName = content.creatorName, tips = tips)
+                            }
+                        },
                         alternativePlaces = alternativePlaces?.map {
                             RouteAlternativePlace(id = it.id, name = it.name, thumbnail = it.thumbnail, placeType = it.placeType.name)
                         },
@@ -90,7 +98,7 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
         val viewModel =
             hiltViewModel<FollowPlaceDetailViewModel, FollowPlaceDetailViewModel.Factory> { factory ->
                 factory.create(
-                    placeId = route.placeId,
+                    googlePlaceId = route.googlePlaceId,
                     tipContent = route.tipContent,
                     alternativePlaces = route.alternativePlaces,
                 )
@@ -104,7 +112,7 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
         val viewModel =
             hiltViewModel<PlaceDetailViewModel, PlaceDetailViewModel.Factory> { factory ->
                 factory.create(
-                    placeId = route.placeId,
+                    googlePlaceId = route.googlePlaceId,
                     tipContent = route.tipContent,
                     alternativePlaces = route.alternativePlaces,
                 )
