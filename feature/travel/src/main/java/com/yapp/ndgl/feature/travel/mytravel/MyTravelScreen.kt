@@ -29,6 +29,7 @@ internal fun MyTravelRoute(
     navigateToFollowTravel: (Long, Int) -> Unit,
     navigateToTravelDetail: (Long) -> Unit,
     navigateToTravelPlace: (String) -> Unit,
+    navigateToPopularTravelList: () -> Unit,
 ) {
     val state by viewModel.collectAsState()
 
@@ -68,9 +69,7 @@ internal fun MyTravelRoute(
                 sideEffect.placeId,
             )
 
-            MyTravelSideEffect.NavigateToPopularTravelList -> {
-                // FIXME: navigate to popular travel list
-            }
+            MyTravelSideEffect.NavigateToPopularTravelList -> navigateToPopularTravelList()
         }
     }
 }

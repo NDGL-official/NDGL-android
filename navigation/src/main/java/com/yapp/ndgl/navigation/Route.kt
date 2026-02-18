@@ -17,6 +17,9 @@ sealed interface Route : NavKey {
     data object TemplateSearch : Route
 
     @Serializable
+    data object PopularTravelList : Route
+
+    @Serializable
     data object Travel : Route
 
     @Serializable

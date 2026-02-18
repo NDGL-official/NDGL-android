@@ -22,6 +22,7 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.data.travel.model.PlaceCategory
 import com.yapp.ndgl.data.travel.model.ProgramType
 import com.yapp.ndgl.feature.home.model.TravelContent
+import com.yapp.ndgl.feature.home.model.TravelProgramTab
 import java.time.LocalDate
 
 @Composable
@@ -29,6 +30,7 @@ internal fun HomeRoute(
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToTemplateSearch: () -> Unit,
     navigateToFollowTravel: (Long, Int) -> Unit,
+    navigateToPopularTravelList: () -> Unit,
 ) {
     val state by viewModel.collectAsState()
 
@@ -43,12 +45,16 @@ internal fun HomeRoute(
         onTravelClick = { travelId ->
             viewModel.onIntent(HomeIntent.ClickTravel(travelId))
         },
+        onTravelMoreClick = {
+            viewModel.onIntent(HomeIntent.ClickTravelMore)
+        },
     )
 
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             HomeSideEffect.NavigateToSearchTravelTemplate -> navigateToTemplateSearch()
             is HomeSideEffect.NavigateToFollowTravel -> navigateToFollowTravel(sideEffect.travelId, sideEffect.days)
+            HomeSideEffect.NavigateToTravelMore -> navigateToPopularTravelList()
         }
     }
 }
@@ -59,6 +65,7 @@ private fun HomeScreen(
     onSearchClick: () -> Unit,
     onTabSelected: (Int) -> Unit,
     onTravelClick: (Long) -> Unit,
+    onTravelMoreClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -104,6 +111,7 @@ private fun HomeScreen(
                         travels = state.filteredPopularTravels,
                         onTabSelected = onTabSelected,
                         onTravelClick = onTravelClick,
+                        onTravelMoreClick = onTravelMoreClick,
                     )
                 }
             }
@@ -176,18 +184,18 @@ private fun HomeScreenPreview() {
                     ),
                 ),
                 travelProgramTabs = listOf(
-                    HomeState.TravelProgramTab.All,
-                    HomeState.TravelProgramTab.Custom(
+                    TravelProgramTab.All,
+                    TravelProgramTab.Custom(
                         programId = 1,
                         name = "빠니보틀",
                         type = ProgramType.YOUTUBE,
                     ),
-                    HomeState.TravelProgramTab.Custom(
+                    TravelProgramTab.Custom(
                         programId = 2,
                         name = "곽튜브",
                         type = ProgramType.YOUTUBE,
                     ),
-                    HomeState.TravelProgramTab.Custom(
+                    TravelProgramTab.Custom(
                         programId = 3,
                         name = "콩콩팡팡",
                         type = ProgramType.TV,
@@ -198,6 +206,7 @@ private fun HomeScreenPreview() {
             onSearchClick = {},
             onTabSelected = {},
             onTravelClick = {},
+            onTravelMoreClick = {},
         )
     }
 }

@@ -39,6 +39,9 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
             navigateToTravelPlace = { placeId ->
                 navigator.navigate(Route.PlaceDetail(placeId))
             },
+            navigateToPopularTravelList = {
+                navigator.navigate(Route.PopularTravelList)
+            },
         )
     }
     entry<Route.FollowTravel> { route ->
