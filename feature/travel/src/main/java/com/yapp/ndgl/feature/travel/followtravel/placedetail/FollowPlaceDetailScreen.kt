@@ -51,17 +51,20 @@ import com.yapp.ndgl.core.ui.util.launchBrowser
 import com.yapp.ndgl.feature.travel.component.PlaceDetailTabRow
 import com.yapp.ndgl.feature.travel.component.PlaceInfoTab
 import com.yapp.ndgl.feature.travel.component.PlacePhotoTab
+import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
 import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.Price
 import com.yapp.ndgl.feature.travel.model.PriceRange
+import com.yapp.ndgl.feature.travel.model.TipContent
 
 @Composable
 internal fun FollowPlaceDetailRoute(
     viewModel: FollowPlaceDetailViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
+    navigateToAlternativePlaceDetail: (String) -> Unit,
 ) {
     val state by viewModel.collectAsState()
     val context = LocalContext.current
@@ -69,6 +72,7 @@ internal fun FollowPlaceDetailRoute(
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             is FollowPlaceDetailSideEffect.NavigateToBrowser -> context.launchBrowser(sideEffect.url)
+            is FollowPlaceDetailSideEffect.NavigateToAlternativePlaceDetail -> navigateToAlternativePlaceDetail(sideEffect.googlePlaceId)
         }
     }
 
@@ -78,6 +82,7 @@ internal fun FollowPlaceDetailRoute(
         selectTab = { viewModel.onIntent(FollowPlaceDetailIntent.SelectTab(it)) },
         clickAddress = { viewModel.onIntent(FollowPlaceDetailIntent.ClickAddress) },
         clickMenu = { viewModel.onIntent(FollowPlaceDetailIntent.ClickMenu) },
+        clickAlternativePlace = { viewModel.onIntent(FollowPlaceDetailIntent.ClickAlternativePlace(it)) },
     )
 }
 
@@ -88,6 +93,7 @@ private fun FollowPlaceDetailScreen(
     selectTab: (PlaceDetailTab) -> Unit,
     clickAddress: () -> Unit,
     clickMenu: () -> Unit,
+    clickAlternativePlace: (String) -> Unit,
 ) {
     val placeInfo = state.placeInfo
     val listState = rememberLazyListState()
@@ -236,6 +242,7 @@ private fun FollowPlaceDetailScreen(
                                     placeInfo = state.placeInfo,
                                     onAddressClick = clickAddress,
                                     onMenuClick = clickMenu,
+                                    onAlternativePlaceClick = clickAlternativePlace,
                                 )
                             }
                         }
@@ -284,12 +291,35 @@ private fun FollowPlaceDetailScreenPreview() {
                         startPrice = Price(currencyCode = "EUR", units = "5", symbol = "€"),
                         endPrice = Price(currencyCode = "EUR", units = "15", symbol = "€"),
                     ),
+                    tipContent = TipContent(
+                        creatorName = "빠니보틀",
+                        tips = listOf(
+                            "젤라또는 오후 3시쯤 먹는 게 가장 맛있어요",
+                            "피스타치오와 헤이즐넛 맛을 꼭 드셔보세요",
+                            "웨이팅이 길 수 있으니 평일 방문을 추천해요",
+                        ),
+                    ),
+                    alternativePlaces = listOf(
+                        AlternativePlace(
+                            id = "",
+                            name = "젤라또 디 산 크리스피노",
+                            thumbnail = "",
+                            placeType = PlaceType.CAFE,
+                        ),
+                        AlternativePlace(
+                            id = "",
+                            name = "지올리티",
+                            thumbnail = "",
+                            placeType = PlaceType.CAFE,
+                        ),
+                    ),
                 ),
             ),
             clickBackButton = {},
             selectTab = {},
             clickAddress = {},
             clickMenu = {},
+            clickAlternativePlace = {},
         )
     }
 }

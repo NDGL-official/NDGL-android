@@ -33,6 +33,7 @@ import com.yapp.ndgl.feature.travel.model.PlaceType
 @Composable
 internal fun AlternativePlaceContent(
     alternativePlaces: List<AlternativePlace>,
+    onClick: (String) -> Unit,
     onChangePlaceClick: ((AlternativePlace) -> Unit)? = null,
 ) {
     Column(
@@ -46,6 +47,7 @@ internal fun AlternativePlaceContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
+                    .clickable { onClick(alternativePlace.id) }
                     .border(1.dp, NDGLTheme.colors.black50, RoundedCornerShape(16.dp))
                     .padding(horizontal = 20.dp, vertical = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -118,6 +120,6 @@ private fun AlternativePlaceContentPreview() {
     )
 
     NDGLTheme {
-        AlternativePlaceContent(alternativePlaces)
+        AlternativePlaceContent(alternativePlaces, onClick = {}, onChangePlaceClick = {})
     }
 }

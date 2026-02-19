@@ -90,7 +90,13 @@ class FollowPlaceDetailViewModel @AssistedInject constructor(
                     postSideEffect(FollowPlaceDetailSideEffect.NavigateToBrowser(it))
                 }
             }
+
+            is FollowPlaceDetailIntent.ClickAlternativePlace -> clickAlternativePlace(intent.googlePlaceId)
         }
+    }
+
+    private fun clickAlternativePlace(googlePlaceId: String) {
+        postSideEffect(FollowPlaceDetailSideEffect.NavigateToAlternativePlaceDetail(googlePlaceId))
     }
 
     @AssistedFactory

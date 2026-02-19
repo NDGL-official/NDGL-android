@@ -17,8 +17,10 @@ sealed interface FollowPlaceDetailIntent : UiIntent {
     data class SelectTab(val tab: PlaceDetailTab) : FollowPlaceDetailIntent
     data object ClickAddress : FollowPlaceDetailIntent
     data object ClickMenu : FollowPlaceDetailIntent
+    data class ClickAlternativePlace(val googlePlaceId: String) : FollowPlaceDetailIntent
 }
 
 sealed interface FollowPlaceDetailSideEffect : UiSideEffect {
     data class NavigateToBrowser(val url: String) : FollowPlaceDetailSideEffect
+    data class NavigateToAlternativePlaceDetail(val googlePlaceId: String) : FollowPlaceDetailSideEffect
 }

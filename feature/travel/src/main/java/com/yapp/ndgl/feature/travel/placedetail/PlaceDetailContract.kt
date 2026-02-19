@@ -23,8 +23,10 @@ sealed interface PlaceDetailIntent : UiIntent {
     data object DismissChangeModal : PlaceDetailIntent
     data object ClickAddress : PlaceDetailIntent
     data object ClickMenu : PlaceDetailIntent
+    data class ClickAlternativePlace(val googlePlaceId: String) : PlaceDetailIntent
 }
 
 sealed interface PlaceDetailSideEffect : UiSideEffect {
     data class NavigateToBrowser(val url: String) : PlaceDetailSideEffect
+    data class NavigateToAlternativePlaceDetail(val googlePlaceId: String) : PlaceDetailSideEffect
 }

@@ -81,16 +81,29 @@ class PlaceDetailViewModel @AssistedInject constructor(
     override suspend fun handleIntent(intent: PlaceDetailIntent) {
         when (intent) {
             is PlaceDetailIntent.SelectTab -> selectTab(intent.tab)
+            is PlaceDetailIntent.ClickAddress -> clickAddress()
+            is PlaceDetailIntent.ClickMenu -> clickMenu()
+            is PlaceDetailIntent.ClickAlternativePlace -> clickAlternativePlace(intent.googlePlaceId)
             is PlaceDetailIntent.ClickChangePlace -> clickChangePlace(intent.alternativePlace)
             is PlaceDetailIntent.ConfirmChangePlace -> confirmChangePlace()
             is PlaceDetailIntent.DismissChangeModal -> dismissChangeModal()
-            is PlaceDetailIntent.ClickAddress -> clickAddress()
-            is PlaceDetailIntent.ClickMenu -> clickMenu()
         }
     }
 
     private fun selectTab(tab: PlaceDetailTab) {
         reduce { copy(selectedTab = tab) }
+    }
+
+    private fun clickAddress() {
+        state.value.placeInfo.googleMapsUri?.let { postSideEffect(PlaceDetailSideEffect.NavigateToBrowser(it)) }
+    }
+
+    private fun clickMenu() {
+        state.value.placeInfo.websiteUrl?.let { postSideEffect(PlaceDetailSideEffect.NavigateToBrowser(it)) }
+    }
+
+    private fun clickAlternativePlace(googlePlaceId: String) {
+        postSideEffect(PlaceDetailSideEffect.NavigateToAlternativePlaceDetail(googlePlaceId))
     }
 
     private fun clickChangePlace(alternativePlace: AlternativePlace) {
@@ -108,14 +121,6 @@ class PlaceDetailViewModel @AssistedInject constructor(
 
     private fun dismissChangeModal() {
         reduce { copy(showChangeModal = false) }
-    }
-
-    private fun clickAddress() {
-        state.value.placeInfo.googleMapsUri?.let { postSideEffect(PlaceDetailSideEffect.NavigateToBrowser(it)) }
-    }
-
-    private fun clickMenu() {
-        state.value.placeInfo.websiteUrl?.let { postSideEffect(PlaceDetailSideEffect.NavigateToBrowser(it)) }
     }
 
     @AssistedFactory

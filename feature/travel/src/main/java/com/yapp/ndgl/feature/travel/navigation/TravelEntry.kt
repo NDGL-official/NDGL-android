@@ -106,6 +106,7 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
         FollowPlaceDetailRoute(
             viewModel = viewModel,
             navigateBack = { navigator.goBack() },
+            navigateToAlternativePlaceDetail = { googlePlaceId -> navigator.navigate(Route.PlaceDetail(googlePlaceId)) },
         )
     }
     entry<Route.PlaceDetail> { route ->
@@ -120,6 +121,7 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
         PlaceDetailRoute(
             viewModel = viewModel,
             navigateBack = { navigator.goBack() },
+            navigateToAlternativePlaceDetail = { googlePlaceId -> navigator.navigate(Route.PlaceDetail(googlePlaceId)) },
         )
     }
     entry<Route.DatePicker> { route ->

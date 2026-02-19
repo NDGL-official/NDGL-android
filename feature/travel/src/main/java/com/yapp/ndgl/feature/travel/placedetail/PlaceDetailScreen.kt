@@ -65,6 +65,7 @@ import com.yapp.ndgl.feature.travel.model.TipContent
 internal fun PlaceDetailRoute(
     viewModel: PlaceDetailViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
+    navigateToAlternativePlaceDetail: (String) -> Unit,
 ) {
     val state by viewModel.collectAsState()
     val context = LocalContext.current
@@ -72,6 +73,7 @@ internal fun PlaceDetailRoute(
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             is PlaceDetailSideEffect.NavigateToBrowser -> context.launchBrowser(sideEffect.url)
+            is PlaceDetailSideEffect.NavigateToAlternativePlaceDetail -> navigateToAlternativePlaceDetail(sideEffect.googlePlaceId)
         }
     }
 
@@ -79,11 +81,12 @@ internal fun PlaceDetailRoute(
         state = state,
         clickBackButton = navigateBack,
         selectTab = { viewModel.onIntent(PlaceDetailIntent.SelectTab(it)) },
+        clickAddress = { viewModel.onIntent(PlaceDetailIntent.ClickAddress) },
+        clickMenu = { viewModel.onIntent(PlaceDetailIntent.ClickMenu) },
+        clickAlternativePlace = { viewModel.onIntent(PlaceDetailIntent.ClickAlternativePlace(it)) },
         clickChangePlace = { viewModel.onIntent(PlaceDetailIntent.ClickChangePlace(it)) },
         confirmChangePlace = { viewModel.onIntent(PlaceDetailIntent.ConfirmChangePlace) },
         dismissChangeModal = { viewModel.onIntent(PlaceDetailIntent.DismissChangeModal) },
-        clickAddress = { viewModel.onIntent(PlaceDetailIntent.ClickAddress) },
-        clickMenu = { viewModel.onIntent(PlaceDetailIntent.ClickMenu) },
     )
 }
 
@@ -92,11 +95,12 @@ private fun PlaceDetailScreen(
     state: PlaceDetailState,
     clickBackButton: () -> Unit,
     selectTab: (PlaceDetailTab) -> Unit,
+    clickAddress: () -> Unit,
+    clickMenu: () -> Unit,
+    clickAlternativePlace: (String) -> Unit,
     clickChangePlace: (AlternativePlace) -> Unit,
     confirmChangePlace: () -> Unit,
     dismissChangeModal: () -> Unit,
-    clickAddress: () -> Unit,
-    clickMenu: () -> Unit,
 ) {
     val placeInfo = state.placeInfo
     val listState = rememberLazyListState()
@@ -245,6 +249,7 @@ private fun PlaceDetailScreen(
                                     placeInfo = state.placeInfo,
                                     onAddressClick = clickAddress,
                                     onMenuClick = clickMenu,
+                                    onAlternativePlaceClick = clickAlternativePlace,
                                     onChangePlaceClick = clickChangePlace,
                                 )
                             }
@@ -344,6 +349,7 @@ private fun PlaceDetailScreenPreview() {
             dismissChangeModal = {},
             clickAddress = {},
             clickMenu = {},
+            clickAlternativePlace = {},
         )
     }
 }

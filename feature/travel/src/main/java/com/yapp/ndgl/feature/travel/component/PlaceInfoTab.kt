@@ -38,6 +38,7 @@ internal fun PlaceInfoTab(
     placeInfo: PlaceInfo,
     onAddressClick: () -> Unit = {},
     onMenuClick: () -> Unit = {},
+    onAlternativePlaceClick: (String) -> Unit = {},
     onChangePlaceClick: (AlternativePlace) -> Unit = {},
 ) {
     Column(
@@ -113,7 +114,11 @@ internal fun PlaceInfoTab(
             Spacer(modifier = Modifier.height(32.dp))
             Text(stringResource(R.string.place_detail_plan_b_message), color = NDGLTheme.colors.black700, style = NDGLTheme.typography.bodyLgSemiBold)
             Spacer(modifier = Modifier.height(16.dp))
-            AlternativePlaceContent(alternativePlaces = placeInfo.alternativePlaces, onChangePlaceClick = onChangePlaceClick)
+            AlternativePlaceContent(
+                alternativePlaces = placeInfo.alternativePlaces,
+                onClick = onAlternativePlaceClick,
+                onChangePlaceClick = onChangePlaceClick,
+            )
         }
     }
 }
