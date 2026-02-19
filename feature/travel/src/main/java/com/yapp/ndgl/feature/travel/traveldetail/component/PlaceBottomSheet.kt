@@ -77,12 +77,12 @@ internal fun PlaceBottomSheet(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Text(
+                            modifier = Modifier.weight(1f, fill = false),
                             text = place.placeInfo.name,
                             style = NDGLTheme.typography.titleMdSemiBold,
                             color = NDGLTheme.colors.black800,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f),
                         )
                         Box(
                             modifier = Modifier
@@ -136,7 +136,7 @@ internal fun PlaceBottomSheet(
                     Spacer(modifier = Modifier.height(4.dp))
                     if (place.regularOpeningHours != null) {
                         Text(
-                            text = stringResource(R.string.opening_hours_format, place.regularOpeningHours.toString()),
+                            text = stringResource(R.string.opening_hours_format, place.regularOpeningHours),
                             style = NDGLTheme.typography.bodyMdMedium,
                             color = NDGLTheme.colors.black500,
                         )
@@ -256,7 +256,7 @@ private fun PlaceBottomSheetPreview() {
             thumbnail = "",
             latitude = 0.0,
             longitude = 0.0,
-            name = "콜로세움",
+            name = "콜로세움(콜로세움콜로세움콜로세움콜로세움콜로세움",
             googleMapsUri = "",
             placeType = PlaceType.CAFE,
         ),
