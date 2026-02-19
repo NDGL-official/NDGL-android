@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -40,6 +39,7 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.compose.AsyncImage
@@ -48,11 +48,15 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.launchBrowser
-import com.yapp.ndgl.feature.travel.followtravel.placedetail.component.FollowPlaceDetailTabRow
-import com.yapp.ndgl.feature.travel.followtravel.placedetail.component.FollowPlaceInfoTab
-import com.yapp.ndgl.feature.travel.followtravel.placedetail.component.FollowPlacePhotoTab
+import com.yapp.ndgl.feature.travel.component.PlaceDetailTabRow
+import com.yapp.ndgl.feature.travel.component.PlaceInfoTab
+import com.yapp.ndgl.feature.travel.component.PlacePhotoTab
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
+import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.Price
+import com.yapp.ndgl.feature.travel.model.PriceRange
 
 @Composable
 internal fun FollowPlaceDetailRoute(
@@ -215,13 +219,10 @@ private fun FollowPlaceDetailScreen(
                     )
                 }
 
-                Column(Modifier.background(NDGLTheme.colors.white)) {
-                    FollowPlaceDetailTabRow(
-                        selectedTab = state.selectedTab,
-                        onTabSelected = selectTab,
-                    )
-                    HorizontalDivider(thickness = 1.dp, color = NDGLTheme.colors.black200)
-                }
+                PlaceDetailTabRow(
+                    selectedTab = state.selectedTab,
+                    onTabSelected = selectTab,
+                )
 
                 LazyColumn(
                     modifier = Modifier.weight(1f),
@@ -231,10 +232,10 @@ private fun FollowPlaceDetailScreen(
                         PlaceDetailTab.INFO -> {
                             item {
                                 Spacer(Modifier.height(24.dp))
-                                FollowPlaceInfoTab(
+                                PlaceInfoTab(
                                     placeInfo = state.placeInfo,
-                                    clickAddress = clickAddress,
-                                    clickMenu = clickMenu,
+                                    onAddressClick = clickAddress,
+                                    onMenuClick = clickMenu,
                                 )
                             }
                         }
@@ -253,7 +254,7 @@ private fun FollowPlaceDetailScreen(
 
                             item {
                                 Spacer(Modifier.height(20.dp))
-                                FollowPlacePhotoTab(leftPhotos = leftPhotos, rightPhotos = rightPhotos)
+                                PlacePhotoTab(leftPhotos = leftPhotos, rightPhotos = rightPhotos)
                             }
                         }
                     }
@@ -262,5 +263,33 @@ private fun FollowPlaceDetailScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun FollowPlaceDetailScreenPreview() {
+    NDGLTheme {
+        FollowPlaceDetailScreen(
+            state = FollowPlaceDetailState(
+                placeInfo = PlaceInfo(
+                    name = "젤라테리아 파씨 (Gelateria Fassi)",
+                    placeType = PlaceType.RESTAURANT,
+                    address = "Via Principe Eugenio, 65, 00185 Roma RM, Italy",
+                    phoneNumber = "+39 06 446 4740",
+                    websiteUrl = "https://www.gelateriafassi.com",
+                    rating = 4.7,
+                    userRatingCount = 12450,
+                    priceRange = PriceRange(
+                        startPrice = Price(currencyCode = "EUR", units = "5", symbol = "€"),
+                        endPrice = Price(currencyCode = "EUR", units = "15", symbol = "€"),
+                    ),
+                ),
+            ),
+            clickBackButton = {},
+            selectTab = {},
+            clickAddress = {},
+            clickMenu = {},
+        )
     }
 }

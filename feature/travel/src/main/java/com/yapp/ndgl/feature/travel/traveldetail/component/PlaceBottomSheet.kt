@@ -134,11 +134,13 @@ internal fun PlaceBottomSheet(
                         )
                     }
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(R.string.opening_hours_format, place.regularOpeningHours.toString()),
-                        style = NDGLTheme.typography.bodyMdMedium,
-                        color = NDGLTheme.colors.black500,
-                    )
+                    if (place.regularOpeningHours != null) {
+                        Text(
+                            text = stringResource(R.string.opening_hours_format, place.regularOpeningHours.toString()),
+                            style = NDGLTheme.typography.bodyMdMedium,
+                            color = NDGLTheme.colors.black500,
+                        )
+                    }
                     Spacer(modifier = Modifier.height(24.dp))
                     Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Row(
@@ -267,7 +269,7 @@ private fun PlaceBottomSheetPreview() {
     )
 
     NDGLTheme {
-        Box(Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
             PlaceBottomSheet(
                 place = mockPlace,
                 onDismissRequest = {},

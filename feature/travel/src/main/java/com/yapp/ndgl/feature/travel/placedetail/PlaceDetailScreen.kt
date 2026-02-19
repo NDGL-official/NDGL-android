@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -50,6 +49,9 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.launchBrowser
+import com.yapp.ndgl.feature.travel.component.PlaceDetailTabRow
+import com.yapp.ndgl.feature.travel.component.PlaceInfoTab
+import com.yapp.ndgl.feature.travel.component.PlacePhotoTab
 import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
 import com.yapp.ndgl.feature.travel.model.PlaceInfo
@@ -58,9 +60,6 @@ import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.Price
 import com.yapp.ndgl.feature.travel.model.PriceRange
 import com.yapp.ndgl.feature.travel.model.TipContent
-import com.yapp.ndgl.feature.travel.placedetail.component.PlaceDetailTabRow
-import com.yapp.ndgl.feature.travel.placedetail.component.PlaceInfoTab
-import com.yapp.ndgl.feature.travel.placedetail.component.PlacePhotoTab
 
 @Composable
 internal fun PlaceDetailRoute(
@@ -229,13 +228,10 @@ private fun PlaceDetailScreen(
                     )
                 }
 
-                Column(Modifier.background(NDGLTheme.colors.white)) {
-                    PlaceDetailTabRow(
-                        selectedTab = state.selectedTab,
-                        onTabSelected = selectTab,
-                    )
-                    HorizontalDivider(thickness = 1.dp, color = NDGLTheme.colors.black200)
-                }
+                PlaceDetailTabRow(
+                    selectedTab = state.selectedTab,
+                    onTabSelected = selectTab,
+                )
 
                 LazyColumn(
                     modifier = Modifier.weight(1f),
@@ -247,8 +243,8 @@ private fun PlaceDetailScreen(
                                 Spacer(Modifier.height(24.dp))
                                 PlaceInfoTab(
                                     placeInfo = state.placeInfo,
-                                    clickAddress = clickAddress,
-                                    clickMenu = clickMenu,
+                                    onAddressClick = clickAddress,
+                                    onMenuClick = clickMenu,
                                     onChangePlaceClick = clickChangePlace,
                                 )
                             }

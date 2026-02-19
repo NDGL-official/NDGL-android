@@ -1,4 +1,4 @@
-package com.yapp.ndgl.feature.travel.addplace.component
+package com.yapp.ndgl.feature.travel.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -18,9 +20,10 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
+import kotlin.collections.forEach
 
 @Composable
-internal fun AddPlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: List<PlacePhoto>) {
+internal fun PlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: List<PlacePhoto>) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -37,7 +40,14 @@ internal fun AddPlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: List<Pl
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(photo.aspectRatio)
+                        .then(
+                            if (photo.height == 0) {
+                                Modifier.height(44.dp)
+                            } else {
+                                Modifier
+                                    .aspectRatio(photo.aspectRatio)
+                            },
+                        )
                         .clip(RoundedCornerShape(8.dp))
                         .background(Color.LightGray),
                     contentScale = ContentScale.Crop,
@@ -52,9 +62,13 @@ internal fun AddPlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: List<Pl
                 AsyncImage(
                     model = photo.url,
                     contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(photo.aspectRatio)
+                    modifier = if (photo.height == 0) {
+                        Modifier.size(44.dp)
+                    } else {
+                        Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(photo.aspectRatio)
+                    }
                         .clip(RoundedCornerShape(8.dp))
                         .background(Color.LightGray),
                     contentScale = ContentScale.Crop,
@@ -66,18 +80,19 @@ internal fun AddPlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: List<Pl
 
 @Preview(showBackground = true)
 @Composable
-private fun AddPlacePhotoTabPreview() {
+private fun PlacePhotoTabPreview() {
     val mockPhotos = listOf(
         PlacePhoto(url = "", width = 400, height = 400),
         PlacePhoto(url = "", width = 400, height = 600),
         PlacePhoto(url = "", width = 400, height = 300),
         PlacePhoto(url = "", width = 400, height = 700),
     )
+
     val leftPhotos = mockPhotos.filterIndexed { index, _ -> index % 2 == 0 }
     val rightPhotos = mockPhotos.filterIndexed { index, _ -> index % 2 != 0 }
 
     NDGLTheme {
-        AddPlacePhotoTab(
+        PlacePhotoTab(
             leftPhotos = leftPhotos,
             rightPhotos = rightPhotos,
         )
