@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -50,21 +49,23 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.launchBrowser
+import com.yapp.ndgl.feature.travel.component.PlaceDetailTabRow
+import com.yapp.ndgl.feature.travel.component.PlaceInfoTab
+import com.yapp.ndgl.feature.travel.component.PlacePhotoTab
 import com.yapp.ndgl.feature.travel.model.AlternativePlace
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.Price
 import com.yapp.ndgl.feature.travel.model.PriceRange
 import com.yapp.ndgl.feature.travel.model.TipContent
-import com.yapp.ndgl.feature.travel.placedetail.component.PlaceDetailTabRow
-import com.yapp.ndgl.feature.travel.placedetail.component.PlaceInfoTab
-import com.yapp.ndgl.feature.travel.placedetail.component.PlacePhotoTab
 
 @Composable
 internal fun PlaceDetailRoute(
     viewModel: PlaceDetailViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
+    navigateToAlternativePlaceDetail: (String) -> Unit,
 ) {
     val state by viewModel.collectAsState()
     val context = LocalContext.current
@@ -72,6 +73,7 @@ internal fun PlaceDetailRoute(
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             is PlaceDetailSideEffect.NavigateToBrowser -> context.launchBrowser(sideEffect.url)
+            is PlaceDetailSideEffect.NavigateToAlternativePlaceDetail -> navigateToAlternativePlaceDetail(sideEffect.googlePlaceId)
         }
     }
 
@@ -79,11 +81,12 @@ internal fun PlaceDetailRoute(
         state = state,
         clickBackButton = navigateBack,
         selectTab = { viewModel.onIntent(PlaceDetailIntent.SelectTab(it)) },
+        clickAddress = { viewModel.onIntent(PlaceDetailIntent.ClickAddress) },
+        clickMenu = { viewModel.onIntent(PlaceDetailIntent.ClickMenu) },
+        clickAlternativePlace = { viewModel.onIntent(PlaceDetailIntent.ClickAlternativePlace(it)) },
         clickChangePlace = { viewModel.onIntent(PlaceDetailIntent.ClickChangePlace(it)) },
         confirmChangePlace = { viewModel.onIntent(PlaceDetailIntent.ConfirmChangePlace) },
         dismissChangeModal = { viewModel.onIntent(PlaceDetailIntent.DismissChangeModal) },
-        clickAddress = { viewModel.onIntent(PlaceDetailIntent.ClickAddress) },
-        clickMenu = { viewModel.onIntent(PlaceDetailIntent.ClickMenu) },
     )
 }
 
@@ -92,11 +95,12 @@ private fun PlaceDetailScreen(
     state: PlaceDetailState,
     clickBackButton: () -> Unit,
     selectTab: (PlaceDetailTab) -> Unit,
+    clickAddress: () -> Unit,
+    clickMenu: () -> Unit,
+    clickAlternativePlace: (String) -> Unit,
     clickChangePlace: (AlternativePlace) -> Unit,
     confirmChangePlace: () -> Unit,
     dismissChangeModal: () -> Unit,
-    clickAddress: () -> Unit,
-    clickMenu: () -> Unit,
 ) {
     val placeInfo = state.placeInfo
     val listState = rememberLazyListState()
@@ -228,13 +232,10 @@ private fun PlaceDetailScreen(
                     )
                 }
 
-                Column(Modifier.background(NDGLTheme.colors.white)) {
-                    PlaceDetailTabRow(
-                        selectedTab = state.selectedTab,
-                        onTabSelected = selectTab,
-                    )
-                    HorizontalDivider(thickness = 1.dp, color = NDGLTheme.colors.black200)
-                }
+                PlaceDetailTabRow(
+                    selectedTab = state.selectedTab,
+                    onTabSelected = selectTab,
+                )
 
                 LazyColumn(
                     modifier = Modifier.weight(1f),
@@ -246,8 +247,9 @@ private fun PlaceDetailScreen(
                                 Spacer(Modifier.height(24.dp))
                                 PlaceInfoTab(
                                     placeInfo = state.placeInfo,
-                                    clickAddress = clickAddress,
-                                    clickMenu = clickMenu,
+                                    onAddressClick = clickAddress,
+                                    onMenuClick = clickMenu,
+                                    onAlternativePlaceClick = clickAlternativePlace,
                                     onChangePlaceClick = clickChangePlace,
                                 )
                             }
@@ -303,12 +305,11 @@ private fun PlaceDetailScreenPreview() {
         PlaceDetailScreen(
             state = PlaceDetailState(
                 placeInfo = PlaceInfo(
-                    id = "",
+                    googlePlaceId = "",
                     name = "젤라테리아 파씨",
                     placeType = PlaceType.RESTAURANT,
                     address = "로마 비아 프린시페",
                     phoneNumber = "+39 06 446 4740",
-                    openingHours = "매일 01:00~23:00",
                     websiteUrl = "https://example.com",
                     rating = 4.7,
                     userRatingCount = 3971,
@@ -348,6 +349,7 @@ private fun PlaceDetailScreenPreview() {
             dismissChangeModal = {},
             clickAddress = {},
             clickMenu = {},
+            clickAlternativePlace = {},
         )
     }
 }

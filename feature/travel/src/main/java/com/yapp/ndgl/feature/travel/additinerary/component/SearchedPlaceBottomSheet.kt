@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,11 +19,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.SecondaryTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -51,7 +45,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -65,11 +58,12 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLNonModalBottomSheet
 import com.yapp.ndgl.core.ui.designsystem.rememberNDGLNonModalBottomSheetState
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.dropShadow
-import com.yapp.ndgl.core.ui.util.noRippleClickable
-import com.yapp.ndgl.core.util.formatString
-import com.yapp.ndgl.feature.travel.additinerary.PlaceInfo
 import com.yapp.ndgl.feature.travel.additinerary.SelectedPlaceDetail
+import com.yapp.ndgl.feature.travel.component.PlaceDetailTabRow
+import com.yapp.ndgl.feature.travel.component.PlaceInfoTab
+import com.yapp.ndgl.feature.travel.component.PlacePhotoTab
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.Price
@@ -160,11 +154,14 @@ internal fun SearchedPlaceBottomSheet(
                     NDGLBottomSheetDragHandle()
                 }
             }
+
             Box(modifier = Modifier.weight(1f)) {
                 val density = LocalDensity.current
                 val thumbnailHeight = 230.dp
                 val navBarSectionHeight = 48.dp
-                val maxCollapseHeightPx = with(density) { (navBarSectionHeight + thumbnailHeight).toPx() }
+                val thumbnailHeightPx = with(density) { thumbnailHeight.toPx() }
+                val navBarSectionHeightPx = with(density) { navBarSectionHeight.toPx() }
+                val maxCollapseHeightPx = navBarSectionHeightPx + thumbnailHeightPx
 
                 var collapseOffset by remember { mutableFloatStateOf(0f) }
                 var selectedTab by remember { mutableStateOf(PlaceDetailTab.INFO) }
@@ -191,10 +188,7 @@ internal fun SearchedPlaceBottomSheet(
                     }
                 }
 
-                val thumbnailProgress = (
-                    1f - (collapseOffset - with(density) { navBarSectionHeight.toPx() })
-                        .coerceAtLeast(0f) / with(density) { thumbnailHeight.toPx() }
-                    ).coerceIn(0f, 1f)
+                val thumbnailProgress = (1f - (collapseOffset - navBarSectionHeightPx).coerceAtLeast(0f) / thumbnailHeightPx).coerceIn(0f, 1f)
 
                 Column(
                     modifier = Modifier
@@ -221,14 +215,13 @@ internal fun SearchedPlaceBottomSheet(
                         )
                     }
 
-                    SearchedPlaceDetailTabRow(selectedTab = selectedTab, onTabSelected = { selectedTab = it })
-                    HorizontalDivider(thickness = 1.dp, color = NDGLTheme.colors.black200)
+                    PlaceDetailTabRow(selectedTab = selectedTab, onTabSelected = { selectedTab = it })
 
                     LazyColumn(modifier = Modifier.weight(1f)) {
                         when (selectedTab) {
                             PlaceDetailTab.INFO -> item {
                                 Spacer(Modifier.height(24.dp))
-                                SearchedPlaceInfoTab(placeInfo, clickAddress, clickMenu)
+                                PlaceInfoTab(placeInfo, clickAddress, clickMenu)
                             }
 
                             PlaceDetailTab.PHOTO -> {
@@ -245,7 +238,7 @@ internal fun SearchedPlaceBottomSheet(
 
                                 item {
                                     Spacer(Modifier.height(20.dp))
-                                    SearchedPlacePhotoTab(leftPhotos = leftPhotos, rightPhotos = rightPhotos)
+                                    PlacePhotoTab(leftPhotos = leftPhotos, rightPhotos = rightPhotos)
                                 }
                             }
                         }
@@ -285,7 +278,7 @@ private fun SearchedPlaceInfoHeader(isExpanded: Boolean, placeInfo: PlaceInfo, b
                         .size(28.dp)
                         .clip(CircleShape)
                         .clickable {
-                            bookmarkPlace(placeInfo.id)
+                            bookmarkPlace(placeInfo.googlePlaceId)
                         },
                     imageVector = ImageVector.vectorResource(if (placeInfo.isBookMarked) R.drawable.ic_28_star_fill else R.drawable.ic_28_star),
                     contentDescription = null,
@@ -331,227 +324,26 @@ private fun SearchedPlaceInfoHeader(isExpanded: Boolean, placeInfo: PlaceInfo, b
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SearchedPlaceDetailTabRow(
-    selectedTab: PlaceDetailTab,
-    onTabSelected: (PlaceDetailTab) -> Unit,
-) {
-    val tabs = PlaceDetailTab.entries
-    val selectedIndex = tabs.indexOf(selectedTab)
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp),
-    ) {
-        SecondaryTabRow(
-            selectedTabIndex = selectedIndex,
-            modifier = Modifier.fillMaxWidth(),
-            containerColor = NDGLTheme.colors.white,
-            contentColor = NDGLTheme.colors.black900,
-            indicator = {},
-            divider = {},
-        ) {
-            tabs.forEachIndexed { index, tab ->
-                val isSelected = index == selectedIndex
-                Tab(
-                    selected = isSelected,
-                    onClick = { onTabSelected(tab) },
-                    modifier = Modifier.background(
-                        if (isSelected) NDGLTheme.colors.black100 else NDGLTheme.colors.white,
-                    ),
-                    text = {
-                        Text(
-                            stringResource(tab.titleRes),
-                            color = NDGLTheme.colors.black600,
-                            style = NDGLTheme.typography.bodyMdSemiBold,
-                            textAlign = TextAlign.Center,
-                        )
-                    },
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SearchedPlaceInfoTab(
-    placeInfo: PlaceInfo,
-    clickAddress: () -> Unit,
-    clickMenu: () -> Unit,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp)
-            .padding(top = 24.dp, bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        if (placeInfo.address != null) {
-            SearchedPlaceInfoRow(
-                iconRes = R.drawable.ic_24_pin,
-                onClick = clickAddress,
-            ) {
-                Text(
-                    text = placeInfo.address,
-                    style = NDGLTheme.typography.bodyMdMedium,
-                    color = NDGLTheme.colors.black700,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-
-        if (placeInfo.websiteUrl != null) {
-            SearchedPlaceInfoRow(
-                iconRes = R.drawable.ic_24_book,
-                onClick = clickMenu,
-            ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.place_detail_menu),
-                        style = NDGLTheme.typography.bodyMdMedium,
-                        color = NDGLTheme.colors.black700,
-                    )
-                    Text(
-                        text = placeInfo.websiteUrl,
-                        style = NDGLTheme.typography.bodyMdMedium,
-                        color = NDGLTheme.colors.black500,
-                        maxLines = 1,
-                    )
-                }
-            }
-        }
-
-        if (placeInfo.phoneNumber != null) {
-            SearchedPlaceInfoRow(iconRes = R.drawable.ic_24_phone) {
-                Text(
-                    text = placeInfo.phoneNumber,
-                    style = NDGLTheme.typography.bodyMdMedium,
-                    color = NDGLTheme.colors.black700,
-                    modifier = Modifier.weight(1f),
-                )
-            }
-        }
-
-        SearchedPlaceInfoRow(iconRes = R.drawable.ic_24_clock) {
-            Text(
-                text = stringResource(
-                    R.string.estimated_duration_format,
-                    placeInfo.estimatedDuration.formatString(),
-                ),
-                style = NDGLTheme.typography.bodyMdMedium,
-                color = NDGLTheme.colors.black700,
-                modifier = Modifier.weight(1f),
-            )
-        }
-    }
-}
-
-@Composable
-private fun SearchedPlaceInfoRow(
-    iconRes: Int,
-    onClick: (() -> Unit)? = null,
-    content: @Composable RowScope.() -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(if (onClick != null) Modifier.noRippleClickable { onClick() } else Modifier),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Icon(
-            imageVector = ImageVector.vectorResource(iconRes),
-            contentDescription = null,
-            tint = NDGLTheme.colors.green500,
-            modifier = Modifier.size(24.dp),
-        )
-        content()
-        if (onClick != null) {
-            Icon(
-                modifier = Modifier
-                    .size(24.dp)
-                    .clip(CircleShape)
-                    .clickable { onClick() },
-                imageVector = ImageVector.vectorResource(R.drawable.ic_24_chevron_right),
-                tint = NDGLTheme.colors.black600,
-                contentDescription = null,
-            )
-        }
-    }
-}
-
-@Composable
-private fun SearchedPlacePhotoTab(leftPhotos: List<PlacePhoto>, rightPhotos: List<PlacePhoto>) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            leftPhotos.forEach { photo ->
-                AsyncImage(
-                    model = photo.url,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(photo.aspectRatio)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.LightGray),
-                    contentScale = ContentScale.Crop,
-                )
-            }
-        }
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            rightPhotos.forEach { photo ->
-                AsyncImage(
-                    model = photo.url,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(photo.aspectRatio)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(Color.LightGray),
-                    contentScale = ContentScale.Crop,
-                )
-            }
-        }
-    }
-}
-
-private val previewPlaceDetail = SelectedPlaceDetail(
-    PlaceInfo(
-        id = "1",
-        name = "콜로세움",
-        placeType = PlaceType.ATTRACTION,
-        rating = 4.8,
-        userRatingCount = 12450,
-        address = "Piazza del Colosseo, 1, 00184 Roma RM, Italy",
-        phoneNumber = "+39 06 3996 7700",
-        openingHours = "매일 09:00~19:00",
-        websiteUrl = "https://www.colosseo.it",
-        estimatedDuration = 2.hours,
-        priceRange = PriceRange(
-            startPrice = Price(currencyCode = "EUR", units = "5", symbol = "€"),
-            endPrice = Price(currencyCode = "EUR", units = "15", symbol = "€"),
-        ),
-    ),
-)
-
 @Preview(name = "SearchedPlace - Expanded", showBackground = true)
 @Composable
 private fun SearchedPlaceBottomSheet_Expanded_Preview() {
+    val previewPlaceDetail = SelectedPlaceDetail(
+        PlaceInfo(
+            name = "콜로세움",
+            placeType = PlaceType.ATTRACTION,
+            rating = 4.8,
+            userRatingCount = 12450,
+            address = "Piazza del Colosseo, 1, 00184 Roma RM, Italy",
+            phoneNumber = "+39 06 3996 7700",
+            websiteUrl = "https://www.colosseo.it",
+            estimatedDuration = 2.hours,
+            priceRange = PriceRange(
+                startPrice = Price(currencyCode = "EUR", units = "5", symbol = "€"),
+                endPrice = Price(currencyCode = "EUR", units = "15", symbol = "€"),
+            ),
+        ),
+    )
+
     NDGLTheme {
         Box(modifier = Modifier.fillMaxSize()) {
             SearchedPlaceBottomSheet(
@@ -570,6 +362,23 @@ private fun SearchedPlaceBottomSheet_Expanded_Preview() {
 @Preview(name = "SearchedPlace - PartiallyExpanded", showBackground = true)
 @Composable
 private fun SearchedPlaceBottomSheet_PartiallyExpanded_Preview() {
+    val previewPlaceDetail = SelectedPlaceDetail(
+        PlaceInfo(
+            name = "콜로세움",
+            placeType = PlaceType.ATTRACTION,
+            rating = 4.8,
+            userRatingCount = 12450,
+            address = "Piazza del Colosseo, 1, 00184 Roma RM, Italy",
+            phoneNumber = "+39 06 3996 7700",
+            websiteUrl = "https://www.colosseo.it",
+            estimatedDuration = 2.hours,
+            priceRange = PriceRange(
+                startPrice = Price(currencyCode = "EUR", units = "5", symbol = "€"),
+                endPrice = Price(currencyCode = "EUR", units = "15", symbol = "€"),
+            ),
+        ),
+    )
+
     NDGLTheme {
         Box(modifier = Modifier.fillMaxSize()) {
             SearchedPlaceBottomSheet(

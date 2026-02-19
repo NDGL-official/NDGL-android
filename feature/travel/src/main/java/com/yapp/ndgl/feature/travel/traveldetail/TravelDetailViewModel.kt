@@ -1,10 +1,14 @@
 package com.yapp.ndgl.feature.travel.traveldetail
 
 import com.yapp.ndgl.core.base.BaseViewModel
+import com.yapp.ndgl.feature.travel.model.Budget
+import com.yapp.ndgl.feature.travel.model.ContentInfo
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.TipContent
 import com.yapp.ndgl.feature.travel.model.TransportSegment
 import com.yapp.ndgl.feature.travel.model.TransportType
+import com.yapp.ndgl.feature.travel.model.VideoInfo
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -16,8 +20,7 @@ import kotlin.time.Duration.Companion.minutes
 // TODO("테스트용으로 지워야함")
 private const val TEST_PROFILE_IMAGE_URL =
     "https://yt3.ggpht.com/Sr5y4IxegXCEZ0SYNvFB749crrAZmNpurZqfq2KvPEpiCYeakoMjBWMnW_56rMuYW_HipJOBRtU=s88-c-k-c0x00ffffff-no-rj"
-private const val TEST_THUMBNAIL_URL =
-    "https://picsum.photos/200"
+private const val TEST_THUMBNAIL_URL = "https://picsum.photos/200"
 
 @HiltViewModel(assistedFactory = TravelDetailViewModel.Factory::class)
 class TravelDetailViewModel @AssistedInject constructor(
@@ -51,67 +54,56 @@ class TravelDetailViewModel @AssistedInject constructor(
                 places = listOf(
                     TravelPlace(
                         id = 1,
-                        day = 1,
-                        sequence = 1,
-                        googlePlaceId = "ChIJKWGrTn8hQTUR7zeTLtzYJL4",
-                        thumbnail = TEST_THUMBNAIL_URL,
-                        latitude = 35.6585805,
-                        longitude = 139.7454329,
-                        name = "도쿄 타워",
-                        regularOpeningHours = "09:00~23:00",
-                        googleMapsUri = "",
-                        placeType = PlaceType.ATTRACTION,
+                        placeInfo = PlaceInfo(
+                            day = 1,
+                            sequence = 1,
+                            googlePlaceId = "ChIJKWGrTn8hQTUR7zeTLtzYJL4",
+                            thumbnail = TEST_THUMBNAIL_URL,
+                            latitude = 35.6585805,
+                            longitude = 139.7454329,
+                            name = "도쿄 타워",
+                            googleMapsUri = "",
+                            placeType = PlaceType.ATTRACTION,
+                        ),
+                        regularOpeningHours = "24시간 영업",
                         userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
                         transportToNext = TransportSegment(type = TransportType.CAR, duration = 25.minutes, distance = 3500),
                         startTime = 0.hours,
                     ),
                     TravelPlace(
                         id = 2,
-                        day = 1,
-                        sequence = 2,
-                        googlePlaceId = "ChIJSc8jdZORQTURu6BMwxrKbGg",
-                        thumbnail = TEST_THUMBNAIL_URL,
-                        latitude = 35.6654,
-                        longitude = 139.7707,
-                        name = "츠키지 스시 다이",
-                        regularOpeningHours = "11:00~22:00",
-                        googleMapsUri = "",
-                        placeType = PlaceType.RESTAURANT,
+                        placeInfo = PlaceInfo(
+                            day = 1,
+                            sequence = 2,
+                            googlePlaceId = "ChIJSc8jdZORQTURu6BMwxrKbGg",
+                            thumbnail = TEST_THUMBNAIL_URL,
+                            latitude = 35.6654,
+                            longitude = 139.7707,
+                            name = "츠키지 스시 다이",
+
+                            googleMapsUri = "",
+                            placeType = PlaceType.RESTAURANT,
+                        ),
                         userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
                         transportToNext = TransportSegment(type = TransportType.WALK, duration = 10.minutes, distance = 800),
                         startTime = 0.hours,
                     ),
                     TravelPlace(
                         id = 3,
-                        day = 1,
-                        sequence = 3,
-                        googlePlaceId = "ChIJSc8jdZORQTURu6BMwxrKbGg",
-                        thumbnail = TEST_THUMBNAIL_URL,
-                        latitude = 35.6812,
-                        longitude = 139.7671,
-                        name = "신주쿠 프린스 호텔",
-                        regularOpeningHours = "24시간",
-                        googleMapsUri = "",
-                        placeType = PlaceType.ACCOMMODATION,
+                        placeInfo = PlaceInfo(
+                            day = 1,
+                            sequence = 3,
+                            googlePlaceId = "ChIJSc8jdZORQTURu6BMwxrKbGg",
+                            thumbnail = TEST_THUMBNAIL_URL,
+                            latitude = 35.6812,
+                            longitude = 139.7671,
+                            name = "신주쿠 프린스 호텔",
+                            googleMapsUri = "",
+                            placeType = PlaceType.ACCOMMODATION,
+                        ),
                         userData = TravelPlace.UserData(estimatedDuration = 120.minutes),
                         startTime = 0.hours,
                         transportToNext = TransportSegment(type = TransportType.CAR, duration = 15.minutes, distance = 2100),
-                    ),
-                    TravelPlace(
-                        id = 4,
-                        day = 1,
-                        sequence = 4,
-                        googlePlaceId = "ChIJSc8jdZORQTURu6BMwxrKbGg",
-                        thumbnail = TEST_THUMBNAIL_URL,
-                        latitude = 35.6944,
-                        longitude = 139.7006,
-                        name = "오모이데 요코초",
-                        regularOpeningHours = "17:00~24:00",
-                        googleMapsUri = "",
-                        placeType = PlaceType.RESTAURANT,
-                        userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
-                        startTime = 0.hours,
-                        transportToNext = null,
                     ),
                 ),
             ),
@@ -119,35 +111,39 @@ class TravelDetailViewModel @AssistedInject constructor(
                 places = listOf(
                     TravelPlace(
                         id = 8,
-                        day = 2,
-                        sequence = 1,
-                        googlePlaceId = "ChIJSc8jdZORQTURu6BMwxrKbGg",
-                        thumbnail = TEST_THUMBNAIL_URL,
-                        latitude = 35.7148,
-                        longitude = 139.7967,
-                        name = "센소지 절",
-                        regularOpeningHours = "06:00~17:00",
-                        googleMapsUri = "",
-                        placeType = PlaceType.ATTRACTION,
+                        placeInfo = PlaceInfo(
+                            day = 1,
+                            sequence = 3,
+                            googlePlaceId = "ChIJSc8jdZORQTURu6BMwxrKbGg",
+                            thumbnail = TEST_THUMBNAIL_URL,
+                            latitude = 35.6812,
+                            longitude = 139.7671,
+                            name = "신주쿠 프린스 호텔",
+
+                            googleMapsUri = "",
+                            placeType = PlaceType.ACCOMMODATION,
+                        ),
                         userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
                         startTime = 0.hours,
                         transportToNext = TransportSegment(type = TransportType.WALK, duration = 8.minutes, distance = 600),
                     ),
                     TravelPlace(
                         id = 9,
-                        day = 2,
-                        sequence = 2,
-                        googlePlaceId = "ChIJU8SvORUCNTERtCYCUqP64OY",
-                        thumbnail = TEST_THUMBNAIL_URL,
-                        latitude = 35.7120,
-                        longitude = 139.7960,
-                        name = "아사쿠사 카페",
-                        regularOpeningHours = "08:00~20:00",
-                        googleMapsUri = "",
-                        placeType = PlaceType.CAFE,
+                        placeInfo = PlaceInfo(
+                            day = 1,
+                            sequence = 3,
+                            googlePlaceId = "ChIJSc8jdZORQTURu6BMwxrKbGg",
+                            thumbnail = TEST_THUMBNAIL_URL,
+                            latitude = 35.6812,
+                            longitude = 139.7671,
+                            name = "신주쿠 프린스 호텔",
+                            googleMapsUri = "",
+                            placeType = PlaceType.ACCOMMODATION,
+                        ),
                         userData = TravelPlace.UserData(estimatedDuration = 45.minutes),
                         startTime = 0.hours,
                         transportToNext = null,
+
                     ),
                 ),
             ),
@@ -156,7 +152,6 @@ class TravelDetailViewModel @AssistedInject constructor(
         reduce {
             copy(
                 contentInfo = ContentInfo(
-                    travelId = "TRAVEL_001",
                     country = "태국",
                     city = "방콕",
                     budgetPerPerson = Budget(1200000),
@@ -244,7 +239,7 @@ class TravelDetailViewModel @AssistedInject constructor(
         )
     }
 
-    private fun checkPlaceItem(placeId: Int) {
+    private fun checkPlaceItem(placeId: Long) {
         reduce {
             copy(
                 selectedPlaceIds = if (selectedPlaceIds.contains(placeId)) {
@@ -258,8 +253,7 @@ class TravelDetailViewModel @AssistedInject constructor(
 
     private fun checkSelectAll() {
         reduce {
-            val currentDayPlaceIds = tempItineraries.getOrNull(selectedDay - 1)
-                ?.places?.map { it.id }?.toSet() ?: emptySet()
+            val currentDayPlaceIds = tempItineraries.getOrNull(selectedDay - 1)?.places?.map { it.id }?.toSet() ?: emptySet()
 
             copy(
                 selectedPlaceIds = if (selectedPlaceIds.size == currentDayPlaceIds.size) {
@@ -286,9 +280,8 @@ class TravelDetailViewModel @AssistedInject constructor(
     private fun confirmDeleteSelectedPlaces() {
         reduce {
             val updatedItineraries = tempItineraries.map { itinerary ->
-                val remainingPlaces = itinerary.places
-                    .filter { it.id !in selectedPlaceIds }
-                    .mapIndexed { newIndex, place -> place.copy(sequence = newIndex + 1) }
+                val remainingPlaces = itinerary.places.filter { it.id !in selectedPlaceIds }
+                    .mapIndexed { newIndex, place -> place.copy(placeInfo = place.placeInfo.copy(sequence = newIndex + 1)) }
                 itinerary.copy(places = recalculateTransportSegments(remainingPlaces))
             }
 
@@ -375,7 +368,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                 if (fromIndex !in mutablePlaces.indices || toIndex !in mutablePlaces.indices) return@mapIndexed itinerary
                 val movedItem = mutablePlaces.removeAt(fromIndex)
                 mutablePlaces.add(toIndex, movedItem)
-                val resequenced = mutablePlaces.mapIndexed { i, place -> place.copy(sequence = i + 1) }
+                val resequenced = mutablePlaces.mapIndexed { i, place -> place.copy(placeInfo = place.placeInfo.copy(sequence = i + 1)) }
                 itinerary.copy(places = recalculateTransportSegments(resequenced))
             }
             copy(tempItineraries = updatedItineraries)
@@ -448,17 +441,15 @@ class TravelDetailViewModel @AssistedInject constructor(
         }
     }
 
-    private fun navigateToPlaceDetail(placeId: String) {
+    private fun navigateToPlaceDetail(googlePlaceId: String) {
         val place = state.value.selectedPlace ?: return
-        val tipContent = place.travelerTips.takeIf { it.isNotEmpty() }?.let {
-            TipContent(creatorName = state.value.contentInfo.videoInfo.creatorName, tips = it)
-        }
-        val alternativePlaces = place.alternativePlaces.takeIf { it.isNotEmpty() }
         postSideEffect(
             TravelDetailSideEffect.NavigateToTravelPlaceDetail(
-                placeId = placeId,
-                tipContent = tipContent,
-                alternativePlaces = alternativePlaces,
+                googlePlaceId = googlePlaceId,
+                tipContent = place.placeInfo.tipContent?.let {
+                    TipContent(creatorName = it.creatorName, tips = it.tips)
+                },
+                alternativePlaces = place.placeInfo.alternativePlaces,
             ),
         )
         reduce {

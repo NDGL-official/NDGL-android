@@ -38,7 +38,7 @@ import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.formatString
 import com.yapp.ndgl.feature.travel.followtravel.TravelPlace
-import com.yapp.ndgl.feature.travel.model.OpeningHours
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.getColor
 import kotlin.time.Duration.Companion.minutes
@@ -61,7 +61,7 @@ internal fun PlaceItem(
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        PlaceNumber(number = place.sequence, placeType = place.placeType)
+        PlaceNumber(number = place.placeInfo.sequence, placeType = place.placeInfo.placeType)
         Spacer(Modifier.width(8.dp))
         PlaceCard(place = place, interactionSource = interactionSource)
     }
@@ -113,16 +113,16 @@ fun PlaceCard(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = ImageVector.vectorResource(place.placeType.iconRes),
+                        imageVector = ImageVector.vectorResource(place.placeInfo.placeType.iconRes),
                         contentDescription = null,
                         tint = Color.Unspecified,
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${stringResource(place.placeType.labelRes)} • ${
+                        text = "${stringResource(place.placeInfo.placeType.labelRes)} • ${
                             stringResource(
                                 R.string.estimated_duration_format,
-                                place.estimatedDuration.formatString(),
+                                place.placeInfo.estimatedDuration.formatString(),
                             )
                         }",
                         color = NDGLTheme.colors.black400,
@@ -131,14 +131,14 @@ fun PlaceCard(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = place.name,
+                    text = place.placeInfo.name,
                     color = NDGLTheme.colors.black900,
                     style = NDGLTheme.typography.bodyLgSemiBold,
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
             AsyncImage(
-                model = place.thumbnail,
+                model = place.placeInfo.thumbnail,
                 contentDescription = "Place Thumbnail",
                 modifier = Modifier
                     .size(56.dp)
@@ -157,17 +157,18 @@ private fun PlaceItemPreview() {
         PlaceItem(
             place = TravelPlace(
                 id = 1,
-                day = 1,
-                sequence = 1,
-                estimatedDuration = 60.minutes,
-                googlePlaceId = "",
-                thumbnail = "",
-                latitude = 35.6585805,
-                longitude = 139.7454329,
-                name = "도쿄 타워",
-                openingHours = OpeningHours(periods = listOf(OpeningHours.Period("09:00", "21:00"))),
-                googleMapsUri = "",
-                placeType = PlaceType.ATTRACTION,
+                placeInfo = PlaceInfo(
+                    day = 1,
+                    sequence = 1,
+                    estimatedDuration = 60.minutes,
+                    googlePlaceId = "",
+                    thumbnail = "",
+                    latitude = 35.6585805,
+                    longitude = 139.7454329,
+                    name = "도쿄 타워",
+                    googleMapsUri = "",
+                    placeType = PlaceType.ATTRACTION,
+                ),
             ),
             onClick = {},
         )

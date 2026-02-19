@@ -6,9 +6,7 @@ import com.yapp.ndgl.core.util.suspendRunCatching
 import com.yapp.ndgl.data.travel.repository.PlaceRepository
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
-import com.yapp.ndgl.feature.travel.model.Price
-import com.yapp.ndgl.feature.travel.model.PriceRange
-import com.yapp.ndgl.feature.travel.model.toPlaceType
+import com.yapp.ndgl.feature.travel.model.toPlaceInfo
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -32,36 +30,8 @@ class AddPlaceViewModel @AssistedInject constructor(
             placeRepository.getPlace(placeId)
         }.onSuccess { response ->
             loadPlacePhotos()
-
-            val place = response.place
             reduce {
-                copy(
-                    placeInfo = AddPlaceInfo(
-                        id = place.id,
-                        name = place.name,
-                        placeType = place.category.toPlaceType(),
-                        priceRange = place.priceRange?.let {
-                            PriceRange(
-                                startPrice = Price(
-                                    currencyCode = it.startPrice.currencyCode,
-                                    units = it.startPrice.units,
-                                    symbol = it.startPrice.symbol,
-                                ),
-                                endPrice = Price(currencyCode = it.endPrice.currencyCode, units = it.endPrice.units, symbol = it.endPrice.symbol),
-                            )
-                        },
-                        rating = place.rating,
-                        userRatingCount = place.userRatingCount,
-                        address = place.formattedAddress,
-                        phoneNumber = place.nationalPhoneNumber ?: place.internationalPhoneNumber,
-                        openingHours = place.regularOpeningHours?.joinToString("\n"),
-                        googleMapsUri = place.googleMapsUri,
-                        websiteUrl = place.websiteUri,
-                        thumbnail = place.thumbnail,
-                        latitude = place.location.latitude,
-                        longitude = place.location.longitude,
-                    ),
-                )
+                copy(placeInfo = response.toPlaceInfo())
             }
         }.onFailure {
             // TODO: 에러 뷰

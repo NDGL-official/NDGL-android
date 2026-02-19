@@ -28,6 +28,7 @@ import com.yapp.ndgl.feature.travel.additinerary.component.SearchEmptyContent
 import com.yapp.ndgl.feature.travel.additinerary.component.SearchPlaceMap
 import com.yapp.ndgl.feature.travel.additinerary.component.SearchResultItem
 import com.yapp.ndgl.feature.travel.additinerary.component.SearchedPlaceBottomSheet
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import kotlin.time.Duration.Companion.hours
 
@@ -200,7 +201,7 @@ private val previewRecommendedPlaces = listOf(
 
 private val previewSelectedPlaceDetail = SelectedPlaceDetail(
     placeInfo = PlaceInfo(
-        id = "1",
+        googlePlaceId = "1",
         name = "콜로세움",
         placeType = PlaceType.ATTRACTION,
         rating = 4.8,

@@ -7,9 +7,7 @@ import com.yapp.ndgl.core.util.suspendRunCatching
 import com.yapp.ndgl.data.travel.repository.PlaceRepository
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.PlaceType
-import com.yapp.ndgl.feature.travel.model.Price
-import com.yapp.ndgl.feature.travel.model.PriceRange
-import com.yapp.ndgl.feature.travel.model.toPlaceType
+import com.yapp.ndgl.feature.travel.model.toPlaceInfo
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -219,38 +217,11 @@ class AddItineraryViewModel @AssistedInject constructor(
             placeRepository.getPlace(placeId)
         }.onSuccess { response ->
             loadPlacePhotos(placeId)
-            val place = response.place
             reduce {
                 val currentDetail = selectedPlaceDetail ?: SelectedPlaceDetail()
-
                 copy(
                     selectedPlaceDetail = currentDetail.copy(
-                        placeInfo = PlaceInfo(
-                            id = place.id,
-                            name = place.name,
-                            placeType = place.category.toPlaceType(),
-                            rating = place.rating,
-                            userRatingCount = place.userRatingCount,
-                            priceRange = place.priceRange?.let {
-                                PriceRange(
-                                    startPrice = Price(
-                                        currencyCode = it.startPrice.currencyCode,
-                                        units = it.startPrice.units,
-                                        symbol = it.startPrice.symbol,
-                                    ),
-                                    endPrice = Price(currencyCode = it.endPrice.currencyCode, units = it.endPrice.units, symbol = it.endPrice.symbol),
-                                )
-                            },
-                            address = place.formattedAddress,
-                            phoneNumber = place.nationalPhoneNumber ?: place.internationalPhoneNumber,
-                            openingHours = place.regularOpeningHours?.joinToString("\n"),
-                            googleMapsUri = place.googleMapsUri,
-                            websiteUrl = place.websiteUri,
-                            thumbnail = place.thumbnail,
-                            latitude = place.location.latitude,
-                            longitude = place.location.longitude,
-                            isBookMarked = false,
-                        ),
+                        placeInfo = response.toPlaceInfo(),
                     ),
                 )
             }
@@ -264,7 +235,6 @@ class AddItineraryViewModel @AssistedInject constructor(
             delay(1000)
             val result = suspendRunCatching { placeRepository.getPlacePhotos(placeId) }
             val photos = result.getOrNull()?.photos
-
             if (!photos.isNullOrEmpty()) {
                 reduce {
                     val currentDetail = selectedPlaceDetail ?: SelectedPlaceDetail()

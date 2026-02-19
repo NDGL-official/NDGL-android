@@ -45,9 +45,9 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
-import com.yapp.ndgl.feature.travel.followtravel.Budget
-import com.yapp.ndgl.feature.travel.followtravel.ContentInfo
-import com.yapp.ndgl.feature.travel.followtravel.VideoInfo
+import com.yapp.ndgl.feature.travel.model.Budget
+import com.yapp.ndgl.feature.travel.model.ContentInfo
+import com.yapp.ndgl.feature.travel.model.VideoInfo
 
 @Composable
 fun ContentCard(contentInfo: ContentInfo) {

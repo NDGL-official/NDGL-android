@@ -5,7 +5,8 @@ import com.yapp.ndgl.core.base.UiIntent
 import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
 import com.yapp.ndgl.feature.travel.model.AlternativePlace
-import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.ContentInfo
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.TipContent
 import com.yapp.ndgl.feature.travel.model.TransportSegment
 import kotlin.time.Duration
@@ -18,7 +19,7 @@ data class TravelDetailState(
     val itineraries: List<Itinerary> = emptyList(),
     val tempItineraries: List<Itinerary> = emptyList(),
     val isEditMode: Boolean = false,
-    val selectedPlaceIds: Set<Int> = emptySet(),
+    val selectedPlaceIds: Set<Long> = emptySet(),
     val showDeleteModal: Boolean = false,
     val showCancelEditModal: Boolean = false,
     val showTimelineBottomSheet: Boolean = false,
@@ -35,46 +36,14 @@ data class TravelDetailState(
             val firstPlaceInSelectedDay = currentDayPlaces?.firstOrNull()
 
             if (firstPlaceInSelectedDay != null) {
-                return LatLng(firstPlaceInSelectedDay.latitude, firstPlaceInSelectedDay.longitude)
+                return LatLng(firstPlaceInSelectedDay.placeInfo.latitude, firstPlaceInSelectedDay.placeInfo.longitude)
             }
 
             return itineraries
                 .flatMap { it.places }
                 .firstOrNull()
-                ?.let { LatLng(it.latitude, it.longitude) } ?: LatLng(37.5665, 126.9780) // 모든 일차가 비어 있다면 '서울' 좌표 반환
+                ?.let { LatLng(it.placeInfo.latitude, it.placeInfo.longitude) } ?: LatLng(37.5665, 126.9780) // 모든 일차가 비어 있다면 '서울' 좌표 반환
         }
-}
-
-data class ContentInfo(
-    val travelId: String = "",
-    val country: String = "",
-    val city: String = "",
-    val budgetPerPerson: Budget = Budget(0),
-    val nights: Int = 0,
-    val days: Int = 0,
-    val videoInfo: VideoInfo = VideoInfo(),
-)
-
-data class VideoInfo(
-    val title: String = "",
-    val creatorName: String = "",
-    val profileImage: String = "",
-    val thumbnail: String = "",
-    val link: String = "",
-    val summary: String = "",
-)
-
-data class Budget(
-    val amount: Int,
-) {
-    fun formatString(): String {
-        return when {
-            amount < 10000 -> "만원"
-            amount % 10000 == 0 -> "${amount / 10000}만원"
-            amount % 1000 == 0 -> "${amount / 10000}만 ${(amount % 10000) / 1000}천원"
-            else -> "${amount}원"
-        }
-    }
 }
 
 data class Itinerary(
@@ -89,22 +58,12 @@ data class Itinerary(
 }
 
 data class TravelPlace(
-    val id: Int,
-    val day: Int,
-    val sequence: Int,
-    val googlePlaceId: String,
-    val thumbnail: String,
-    val latitude: Double,
-    val longitude: Double,
-    val name: String,
-    val regularOpeningHours: String,
-    val googleMapsUri: String,
-    val placeType: PlaceType,
+    val id: Long,
+    val placeInfo: PlaceInfo,
+    val regularOpeningHours: String? = null,
     val userData: UserData = UserData(),
     val startTime: Duration,
     val transportToNext: TransportSegment? = null,
-    val travelerTips: List<String> = emptyList(),
-    val alternativePlaces: List<AlternativePlace> = emptyList(),
 ) {
     val duration: Duration
         get() = userData.estimatedDuration
@@ -121,7 +80,7 @@ sealed interface TravelDetailIntent : UiIntent {
     data object ClickStartTimeSetting : TravelDetailIntent
     data object ClickEditTravel : TravelDetailIntent
     data object ClickAddScheduleButton : TravelDetailIntent
-    data class CheckPlaceItem(val placeId: Int) : TravelDetailIntent
+    data class CheckPlaceItem(val placeId: Long) : TravelDetailIntent
     data object CheckSelectAll : TravelDetailIntent
     data object ClickDeleteSelectedPlaces : TravelDetailIntent
     data object ConfirmDeleteSelectedPlaces : TravelDetailIntent
@@ -138,9 +97,9 @@ sealed interface TravelDetailIntent : UiIntent {
     data class ConfirmChangeTransportSegment(val segment: TransportSegment) : TravelDetailIntent
     data object DismissTransportBottomSheet : TravelDetailIntent
     data class ClickPlaceItem(val place: TravelPlace) : TravelDetailIntent
-    data class ClickAddTime(val placeId: Int) : TravelDetailIntent
-    data class ClickAddCost(val placeId: Int) : TravelDetailIntent
-    data class ClickAddMemo(val placeId: Int) : TravelDetailIntent
+    data class ClickAddTime(val placeId: Long) : TravelDetailIntent
+    data class ClickAddCost(val placeId: Long) : TravelDetailIntent
+    data class ClickAddMemo(val placeId: Long) : TravelDetailIntent
     data class ClickFindRoute(val googleMapsUri: String) : TravelDetailIntent
     data object DismissPlaceBottomSheet : TravelDetailIntent
     data class NavigateToTravelPlaceDetail(val placeId: String) : TravelDetailIntent
@@ -155,7 +114,7 @@ sealed interface TravelDetailIntent : UiIntent {
 sealed interface TravelDetailSideEffect : UiSideEffect {
     data object NavigateBack : TravelDetailSideEffect
     data class NavigateToTravelPlaceDetail(
-        val placeId: String,
+        val googlePlaceId: String,
         val tipContent: TipContent?,
         val alternativePlaces: List<AlternativePlace>?,
     ) : TravelDetailSideEffect

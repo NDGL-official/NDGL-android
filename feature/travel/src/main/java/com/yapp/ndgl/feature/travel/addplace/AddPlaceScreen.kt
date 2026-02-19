@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -52,10 +51,11 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.launchBrowser
-import com.yapp.ndgl.feature.travel.addplace.component.AddPlaceInfoTab
-import com.yapp.ndgl.feature.travel.addplace.component.AddPlacePhotoTab
-import com.yapp.ndgl.feature.travel.addplace.component.AddPlaceTabRow
+import com.yapp.ndgl.feature.travel.component.PlaceDetailTabRow
+import com.yapp.ndgl.feature.travel.component.PlaceInfoTab
+import com.yapp.ndgl.feature.travel.component.PlacePhotoTab
 import com.yapp.ndgl.feature.travel.model.PlaceDetailTab
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.Price
@@ -259,13 +259,10 @@ private fun AddPlaceContent(
                 )
             }
 
-            Column(Modifier.background(NDGLTheme.colors.white)) {
-                AddPlaceTabRow(
-                    selectedTab = state.selectedTab,
-                    onTabSelected = selectTab,
-                )
-                HorizontalDivider(thickness = 1.dp, color = NDGLTheme.colors.black200)
-            }
+            PlaceDetailTabRow(
+                selectedTab = state.selectedTab,
+                onTabSelected = selectTab,
+            )
 
             LazyColumn(
                 modifier = Modifier.weight(1f),
@@ -275,10 +272,10 @@ private fun AddPlaceContent(
                     PlaceDetailTab.INFO -> {
                         item {
                             Spacer(Modifier.height(24.dp))
-                            AddPlaceInfoTab(
+                            PlaceInfoTab(
                                 placeInfo = placeInfo,
-                                clickAddress = clickAddress,
-                                clickMenu = clickMenu,
+                                onAddressClick = clickAddress,
+                                onMenuClick = clickMenu,
                             )
                         }
                     }
@@ -297,7 +294,7 @@ private fun AddPlaceContent(
 
                         item {
                             Spacer(Modifier.height(20.dp))
-                            AddPlacePhotoTab(leftPhotos = leftPhotos, rightPhotos = rightPhotos)
+                            PlacePhotoTab(leftPhotos = leftPhotos, rightPhotos = rightPhotos)
                         }
                     }
                 }
@@ -314,13 +311,11 @@ private fun AddPlaceScreenPreview() {
     NDGLTheme {
         AddPlaceScreen(
             state = AddPlaceState(
-                placeInfo = AddPlaceInfo(
-                    id = "",
+                placeInfo = PlaceInfo(
                     name = "젤라테리아 파씨 (Gelateria Fassi)",
                     placeType = PlaceType.RESTAURANT,
                     address = "Via Principe Eugenio, 65, 00185 Roma RM, Italy",
                     phoneNumber = "+39 06 446 4740",
-                    openingHours = "매일 12:00 ~ 24:00",
                     websiteUrl = "https://www.gelateriafassi.com",
                     rating = 4.7,
                     userRatingCount = 12450,

@@ -41,6 +41,7 @@ import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.designsystem.NDGLCheckbox
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.util.formatString
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.getColor
 import com.yapp.ndgl.feature.travel.traveldetail.TravelPlace
@@ -69,7 +70,7 @@ internal fun PlaceItem(
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        PlaceNumber(number = place.sequence, startTime = place.startTime, placeType = place.placeType)
+        PlaceNumber(number = place.placeInfo.sequence, startTime = place.startTime, placeType = place.placeInfo.placeType)
         Spacer(Modifier.width(8.dp))
         PlaceCard(place = place, interactionSource = interactionSource)
     }
@@ -80,7 +81,7 @@ internal fun EditablePlaceItem(
     modifier: Modifier = Modifier,
     place: TravelPlace,
     checked: Boolean,
-    onCheck: () -> Unit,
+    onCheck: (String) -> Unit,
 ) {
     Box(
         modifier = Modifier
@@ -98,13 +99,13 @@ internal fun EditablePlaceItem(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            NDGLCheckbox(checked = checked, onClick = onCheck)
+            NDGLCheckbox(checked = checked, onClick = { onCheck(place.placeInfo.googlePlaceId) })
             PlaceCard(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(16.dp))
                     .clickable {
-                        onCheck()
+                        onCheck(place.placeInfo.googlePlaceId)
                     },
                 place = place,
             )
@@ -179,13 +180,13 @@ private fun PlaceCard(
             Column(modifier = Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = ImageVector.vectorResource(place.placeType.iconRes),
+                        imageVector = ImageVector.vectorResource(place.placeInfo.placeType.iconRes),
                         contentDescription = null,
                         tint = Color.Unspecified,
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "${stringResource(place.placeType.labelRes)} • ${
+                        text = "${stringResource(place.placeInfo.placeType.labelRes)} • ${
                             stringResource(
                                 R.string.estimated_duration_format,
                                 place.duration.formatString(),
@@ -197,14 +198,14 @@ private fun PlaceCard(
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
-                    text = place.name,
+                    text = place.placeInfo.name,
                     color = NDGLTheme.colors.black900,
                     style = NDGLTheme.typography.bodyLgSemiBold,
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
             AsyncImage(
-                model = place.thumbnail,
+                model = place.placeInfo.thumbnail,
                 contentDescription = "Place Thumbnail",
                 modifier = Modifier
                     .size(56.dp)
@@ -223,16 +224,17 @@ private fun PlaceItemPreview() {
         PlaceItem(
             place = TravelPlace(
                 id = 1,
-                day = 1,
-                sequence = 1,
-                googlePlaceId = "",
-                thumbnail = "",
-                latitude = 35.6585805,
-                longitude = 139.7454329,
-                name = "도쿄 타워",
-                regularOpeningHours = "09:00~23:00",
-                googleMapsUri = "",
-                placeType = PlaceType.ATTRACTION,
+                placeInfo = PlaceInfo(
+                    day = 1,
+                    sequence = 1,
+                    googlePlaceId = "",
+                    thumbnail = "",
+                    latitude = 35.6585805,
+                    longitude = 139.7454329,
+                    name = "도쿄 타워",
+                    googleMapsUri = "",
+                    placeType = PlaceType.ATTRACTION,
+                ),
                 userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
                 startTime = 10.hours,
             ),
@@ -249,16 +251,17 @@ private fun EditablePlaceItemUncheckedPreview() {
         EditablePlaceItem(
             place = TravelPlace(
                 id = 1,
-                day = 1,
-                sequence = 1,
-                googlePlaceId = "",
-                thumbnail = "",
-                latitude = 35.6585805,
-                longitude = 139.7454329,
-                name = "도쿄 타워",
-                regularOpeningHours = "09:00~23:00",
-                googleMapsUri = "",
-                placeType = PlaceType.ATTRACTION,
+                placeInfo = PlaceInfo(
+                    day = 1,
+                    sequence = 1,
+                    googlePlaceId = "",
+                    thumbnail = "",
+                    latitude = 35.6585805,
+                    longitude = 139.7454329,
+                    name = "도쿄 타워",
+                    googleMapsUri = "",
+                    placeType = PlaceType.ATTRACTION,
+                ),
                 userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
                 startTime = 12.hours,
             ),
@@ -275,16 +278,17 @@ private fun EditablePlaceItemCheckedPreview() {
         EditablePlaceItem(
             place = TravelPlace(
                 id = 1,
-                day = 1,
-                sequence = 1,
-                googlePlaceId = "",
-                thumbnail = "",
-                latitude = 35.6585805,
-                longitude = 139.7454329,
-                name = "도쿄 타워",
-                regularOpeningHours = "09:00~23:00",
-                googleMapsUri = "",
-                placeType = PlaceType.ATTRACTION,
+                placeInfo = PlaceInfo(
+                    day = 1,
+                    sequence = 1,
+                    googlePlaceId = "",
+                    thumbnail = "",
+                    latitude = 35.6585805,
+                    longitude = 139.7454329,
+                    name = "도쿄 타워",
+                    googleMapsUri = "",
+                    placeType = PlaceType.ATTRACTION,
+                ),
                 userData = TravelPlace.UserData(estimatedDuration = 60.minutes),
                 startTime = 12.hours,
             ),

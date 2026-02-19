@@ -8,9 +8,12 @@ import com.yapp.ndgl.data.travel.model.TravelTemplateContentInfo
 import com.yapp.ndgl.data.travel.model.TravelTemplateItinerary
 import com.yapp.ndgl.data.travel.repository.TravelTemplateRepository
 import com.yapp.ndgl.feature.travel.model.AlternativePlace
+import com.yapp.ndgl.feature.travel.model.Budget
+import com.yapp.ndgl.feature.travel.model.ContentInfo
+import com.yapp.ndgl.feature.travel.model.PlaceInfo
 import com.yapp.ndgl.feature.travel.model.TipContent
 import com.yapp.ndgl.feature.travel.model.TransportSegment
-import com.yapp.ndgl.feature.travel.model.toOpeningHours
+import com.yapp.ndgl.feature.travel.model.VideoInfo
 import com.yapp.ndgl.feature.travel.model.toPlaceType
 import com.yapp.ndgl.feature.travel.model.toTransportType
 import dagger.assisted.Assisted
@@ -60,6 +63,19 @@ class FollowTravelViewModel @AssistedInject constructor(
                 copy(
                     countryCode = info.countryCode,
                     contentInfo = info.toContentInfo(),
+                    itineraries = itineraries.map { itinerary ->
+                        itinerary.copy(
+                            places = itinerary.places.map { place ->
+                                place.copy(
+                                    placeInfo = place.placeInfo.copy(
+                                        tipContent = place.placeInfo.tipContent?.copy(
+                                            creatorName = info.program.creatorName,
+                                        ),
+                                    ),
+                                )
+                            },
+                        )
+                    },
                 )
             }
         }.onFailure {
@@ -80,11 +96,11 @@ class FollowTravelViewModel @AssistedInject constructor(
             is FollowTravelIntent.ClickPlaceItem -> {
                 postSideEffect(
                     FollowTravelSideEffect.NavigateToFollowPlaceDetail(
-                        placeId = intent.place.googlePlaceId,
-                        tipContent = intent.place.travelerTips.takeIf { it.isNotEmpty() }?.let {
-                            TipContent(creatorName = state.value.contentInfo.videoInfo.creatorName, tips = it)
+                        placeId = intent.place.placeInfo.googlePlaceId,
+                        tipContent = intent.place.placeInfo.tipContent?.let {
+                            TipContent(creatorName = it.creatorName, tips = it.tips)
                         },
-                        alternativePlaces = intent.place.alternativePlaces.takeIf { it.isNotEmpty() },
+                        alternativePlaces = intent.place.placeInfo.alternativePlaces,
                     ),
                 )
             }
@@ -96,31 +112,37 @@ class FollowTravelViewModel @AssistedInject constructor(
             val nextItem = itineraries.getOrNull(index + 1)
             TravelPlace(
                 id = item.id,
-                day = item.day,
-                sequence = item.sequence,
-                estimatedDuration = (item.estimatedDuration).minutes,
-                googlePlaceId = item.place.googlePlaceId,
-                thumbnail = item.place.thumbnail,
-                latitude = item.place.latitude,
-                longitude = item.place.longitude,
-                name = item.place.name,
-                openingHours = item.place.regularOpeningHours.toOpeningHours(),
-                googleMapsUri = item.place.googleMapsUri,
-                placeType = item.place.category.toPlaceType(),
+                placeInfo = PlaceInfo(
+                    googlePlaceId = item.place.googlePlaceId,
+                    name = item.place.name,
+                    day = item.day,
+                    sequence = item.sequence,
+                    estimatedDuration = (item.estimatedDuration).minutes,
+                    thumbnail = item.place.thumbnail,
+                    latitude = item.place.latitude,
+                    longitude = item.place.longitude,
+                    googleMapsUri = item.place.googleMapsUri,
+                    placeType = item.place.category.toPlaceType(),
+                    tipContent = TipContent(
+                        tips = item.travelerTips,
+                    ),
+                    // FIXME: API 응답 미완료
+                    alternativePlaces = item.planB.orEmpty().map { planB ->
+                        AlternativePlace(
+                            id = "",
+                            name = planB.name,
+                            thumbnail = planB.feature ?: "",
+                            placeType = item.place.category.toPlaceType(),
+                        )
+                    },
+
+                ),
+                regularOpeningHours = item.place.regularOpeningHours,
                 transportToNext = nextItem?.transportation?.firstOrNull()?.let { transport ->
                     TransportSegment(
                         type = transport.mode.toTransportType(),
                         duration = transport.timeMin.minutes,
                         distance = ((nextItem.distanceKm ?: 0.0) * 1000).toInt(),
-                    )
-                },
-                travelerTips = item.travelerTips.orEmpty(),
-                alternativePlaces = item.planB.orEmpty().map { planB ->
-                    AlternativePlace(
-                        id = "",
-                        name = planB.name,
-                        thumbnail = planB.feature ?: "",
-                        placeType = item.place.category.toPlaceType(),
                     )
                 },
             )
