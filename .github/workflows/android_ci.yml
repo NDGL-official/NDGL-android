@@ -30,8 +30,20 @@ jobs:
     - name: Set up local.properties
       run: echo "${{ secrets.LOCAL_PROPERTIES }}" > local.properties
 
+    - name: Set up keystore
+      run: |
+        echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > app/ndgl.keystore
+        echo "KEYSTORE_PATH=../app/ndgl.keystore" >> local.properties
+        echo "KEYSTORE_STORE_PASSWORD=${{ secrets.KEYSTORE_STORE_PASSWORD }}" >> local.properties
+        echo "KEYSTORE_ALIAS=${{ secrets.KEYSTORE_ALIAS }}" >> local.properties
+        echo "KEYSTORE_KEY_PASSWORD=${{ secrets.KEYSTORE_KEY_PASSWORD }}" >> local.properties
+        echo "NDGL_BASE_URL_DEBUG=${{ secrets.NDGL_BASE_URL_DEBUG }}" >> local.properties
+        echo "NDGL_BASE_URL_RELEASE=${{ secrets.NDGL_BASE_URL_RELEASE }}" >> local.properties
+
     - name: Set up google-services.json
-      run: echo '${{ secrets.GOOGLE_SERVICES }}' | base64 -d > app/google-services.json
+      run: |
+        echo '${{ secrets.GOOGLE_SERVICES_DEBUG }}' | base64 -d > app/src/debug/google-services.json
+        echo '${{ secrets.GOOGLE_SERVICES_RELEASE }}' | base64 -d > app/src/release/google-services.json
 
     - name: Code style checks
       run: ./gradlew ktlintCheck detekt
