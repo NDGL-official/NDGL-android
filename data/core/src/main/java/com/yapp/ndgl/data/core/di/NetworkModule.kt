@@ -4,6 +4,7 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import com.yapp.ndgl.data.core.BuildConfig
 import com.yapp.ndgl.data.core.adapter.NDGLCallAdapterFactory
 import com.yapp.ndgl.data.core.authenticator.NDGLAuthenticator
+import com.yapp.ndgl.data.core.interceptor.ApiKeyInterceptor
 import com.yapp.ndgl.data.core.interceptor.NDGLInterceptor
 import dagger.Module
 import dagger.Provides
@@ -56,11 +57,13 @@ object NetworkModule {
     @Singleton
     @Provides
     fun provideDefaultOkHttpClient(
+        apiKeyInterceptor: ApiKeyInterceptor,
         interceptor: NDGLInterceptor,
         authenticator: NDGLAuthenticator,
         httpLoggingInterceptor: HttpLoggingInterceptor,
     ): OkHttpClient {
         val builder = OkHttpClient.Builder()
+            .addInterceptor(apiKeyInterceptor)
             .addInterceptor(interceptor)
             .authenticator(authenticator)
             .addInterceptor(httpLoggingInterceptor)
@@ -87,10 +90,13 @@ object NetworkModule {
     @Singleton
     @Provides
     fun provideAuthOkHttpClient(
+        apiKeyInterceptor: ApiKeyInterceptor,
         httpLoggingInterceptor: HttpLoggingInterceptor,
     ): OkHttpClient {
         val builder = OkHttpClient.Builder()
+            .addInterceptor(apiKeyInterceptor)
             .addInterceptor(httpLoggingInterceptor)
+
         return builder.build()
     }
 }
@@ -102,3 +108,7 @@ annotation class AuthClient
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class BaseUrl
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ApiKey

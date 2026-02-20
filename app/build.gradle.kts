@@ -37,6 +37,7 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
             buildConfigField("String", "NDGL_BASE_URL", "\"${localProperties.getProperty("NDGL_BASE_URL_DEBUG")}\"")
+            buildConfigField("String", "NDGL_API_KEY", "\"${localProperties.getProperty("NDGL_API_KEY", "")}\"")
         }
         release {
             signingConfig = signingConfigs.getByName("release")
@@ -44,6 +45,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             buildConfigField("String", "NDGL_BASE_URL", "\"${localProperties.getProperty("NDGL_BASE_URL_RELEASE")}\"")
+            buildConfigField("String", "NDGL_API_KEY", "\"${localProperties.getProperty("NDGL_API_KEY", "")}\"")
         }
     }
 }
