@@ -32,10 +32,6 @@ object NetworkModule {
 
     @Singleton
     @Provides
-    fun provideBaseUrl(): String = BuildConfig.NDGL_BASE_URL
-
-    @Singleton
-    @Provides
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor { message ->
             if (message.startsWith("{").not() && message.startsWith("[").not()) {
@@ -75,7 +71,7 @@ object NetworkModule {
     @Provides
     fun provideRetrofit(
         json: Json,
-        baseUrl: String,
+        @BaseUrl baseUrl: String,
         okHttpClient: OkHttpClient,
         callAdapterFactory: NDGLCallAdapterFactory,
     ): Retrofit {
@@ -102,3 +98,7 @@ object NetworkModule {
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class AuthClient
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class BaseUrl
