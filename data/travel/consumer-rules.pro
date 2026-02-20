@@ -1,0 +1,2 @@
+-keep class com.yapp.ndgl.data.travel.model.** { *; }
+-keep interface com.yapp.ndgl.data.travel.api.** { *; }

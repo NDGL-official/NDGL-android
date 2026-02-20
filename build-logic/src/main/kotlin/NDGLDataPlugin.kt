@@ -5,6 +5,7 @@ import convention.configureTimber
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
+import util.libraryExtension
 import util.libs
 
 class NDGLDataPlugin : Plugin<Project> {
@@ -18,6 +19,10 @@ class NDGLDataPlugin : Plugin<Project> {
         configureHiltAndroid()
         configureCoroutineAndroid()
         configureTimber()
+
+        libraryExtension.defaultConfig {
+            consumerProguardFiles("consumer-rules.pro")
+        }
 
         if (path != ":data:core") {
             dependencies.add("implementation", project(":data:core"))

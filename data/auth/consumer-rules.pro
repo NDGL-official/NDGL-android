@@ -1,0 +1,2 @@
+-keep class com.yapp.ndgl.data.auth.model.** { *; }
+-keep interface com.yapp.ndgl.data.auth.api.** { *; }
