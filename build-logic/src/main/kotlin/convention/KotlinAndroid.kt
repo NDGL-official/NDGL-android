@@ -20,15 +20,6 @@ internal fun Project.configureKotlinAndroid() {
         defaultConfig {
             minSdk = Configuration.MIN_SDK
         }
-        buildTypes {
-            getByName("release") {
-                isMinifyEnabled = false
-                proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro",
-                )
-            }
-        }
         compileOptions {
             sourceCompatibility = Configuration.JAVA_VERSION
             targetCompatibility = Configuration.JAVA_VERSION

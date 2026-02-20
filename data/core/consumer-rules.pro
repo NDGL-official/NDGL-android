@@ -1,0 +1,2 @@
+-keep class com.yapp.ndgl.data.core.model.** { *; }
+-keep class com.yapp.ndgl.data.core.serializer.** { *; }

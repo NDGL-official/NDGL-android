@@ -4,6 +4,7 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import com.yapp.ndgl.data.auth.api.AuthApi
 import com.yapp.ndgl.data.core.adapter.NDGLCallAdapterFactory
 import com.yapp.ndgl.data.core.di.AuthClient
+import com.yapp.ndgl.data.core.di.BaseUrl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,7 +22,7 @@ object AuthNetworkModule {
     @Singleton
     fun provideAuthApi(
         json: Json,
-        baseUrl: String,
+        @BaseUrl baseUrl: String,
         @AuthClient okHttpClient: OkHttpClient,
         callAdapterFactory: NDGLCallAdapterFactory,
     ): AuthApi = Retrofit.Builder()

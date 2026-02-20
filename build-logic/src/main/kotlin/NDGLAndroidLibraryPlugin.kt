@@ -5,6 +5,7 @@ import convention.configureTimber
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.dependencies
+import util.libraryExtension
 import util.libs
 
 class NDGLAndroidLibraryPlugin : Plugin<Project> {
@@ -18,6 +19,10 @@ class NDGLAndroidLibraryPlugin : Plugin<Project> {
         configureFirebase()
         configureComposeAndroid()
         configureTimber()
+
+        libraryExtension.defaultConfig {
+            consumerProguardFiles("consumer-rules.pro")
+        }
 
         dependencies {
             "implementation"(libs.findLibrary("kotlinx-immutable").get())
