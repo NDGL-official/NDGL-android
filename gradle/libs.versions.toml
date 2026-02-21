@@ -2,11 +2,12 @@
 agp = "8.13.2"
 kotlin = "2.0.21"
 ksp = "2.0.21-1.0.28"
+jetbrainsKotlinJvm = "2.0.21"
 coreKtx = "1.17.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.12.2"
 composeBom = "2026.01.00"
-jetbrainsKotlinJvm = "2.0.21"
+androidxSplashscreen = "1.2.0"
 
 # Hilt
 hilt = "2.57.2"
@@ -67,6 +68,7 @@ ktlint-source = "0.50.0" #https://github.com/pinterest/ktlint/releases
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "androidxSplashscreen" }
 
 # Compose
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }

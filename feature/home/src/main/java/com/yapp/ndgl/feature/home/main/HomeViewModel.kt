@@ -3,7 +3,6 @@ package com.yapp.ndgl.feature.home.main
 import androidx.lifecycle.viewModelScope
 import com.yapp.ndgl.core.base.BaseViewModel
 import com.yapp.ndgl.core.util.suspendRunCatching
-import com.yapp.ndgl.data.auth.repository.AuthRepository
 import com.yapp.ndgl.data.travel.model.TravelProgram
 import com.yapp.ndgl.data.travel.model.TravelTemplateSummary
 import com.yapp.ndgl.data.travel.repository.TravelProgramRepository
@@ -22,7 +21,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
     private val travelProgramRepository: TravelProgramRepository,
     private val travelTemplateRepository: TravelTemplateRepository,
     private val userTravelRepository: UserTravelRepository,
@@ -30,17 +28,7 @@ class HomeViewModel @Inject constructor(
     initialState = HomeState(),
 ) {
     init {
-        initSession()
-    }
-
-    private fun initSession() = viewModelScope.launch {
-        suspendRunCatching {
-            authRepository.initSession()
-        }.onSuccess {
-            loadHomeContents()
-        }.onFailure {
-            // FIXME: 에러 뷰
-        }
+        loadHomeContents()
     }
 
     private fun loadHomeContents() {

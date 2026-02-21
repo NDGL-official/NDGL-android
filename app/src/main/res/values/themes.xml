@@ -2,4 +2,9 @@
 <resources>
 
     <style name="Theme.NDGL" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.NDGL.Splash" parent="Theme.SplashScreen">
+        <item name="postSplashScreenTheme">@style/Theme.NDGL</item>
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
 </resources>
