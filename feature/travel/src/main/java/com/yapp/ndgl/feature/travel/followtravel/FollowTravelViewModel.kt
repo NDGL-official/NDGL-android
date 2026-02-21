@@ -62,20 +62,8 @@ class FollowTravelViewModel @AssistedInject constructor(
             reduce {
                 copy(
                     countryCode = info.countryCode,
+                    creatorName = info.program.creatorName,
                     contentInfo = info.toContentInfo(),
-                    itineraries = itineraries.map { itinerary ->
-                        itinerary.copy(
-                            places = itinerary.places.map { place ->
-                                place.copy(
-                                    placeInfo = place.placeInfo.copy(
-                                        tipContent = place.placeInfo.tipContent?.copy(
-                                            creatorName = info.program.creatorName,
-                                        ),
-                                    ),
-                                )
-                            },
-                        )
-                    },
                 )
             }
         }.onFailure {
@@ -98,7 +86,7 @@ class FollowTravelViewModel @AssistedInject constructor(
                     FollowTravelSideEffect.NavigateToFollowPlaceDetail(
                         placeId = intent.place.placeInfo.googlePlaceId,
                         tipContent = intent.place.placeInfo.tipContent?.let {
-                            TipContent(creatorName = it.creatorName, tips = it.tips)
+                            TipContent(creatorName = state.value.creatorName, tips = it.tips)
                         },
                         alternativePlaces = intent.place.placeInfo.alternativePlaces,
                     ),
