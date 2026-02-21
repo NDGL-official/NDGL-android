@@ -177,7 +177,8 @@ class HomeViewModel @Inject constructor(
             is HomeIntent.SelectPopularTravelTab -> {
                 reduce { copy(popularTravelSelectedTabIndex = intent.index) }
             }
-            is HomeIntent.ClickTravel -> postNavigateToTravelTemplate(travelId = intent.travelId)
+
+            is HomeIntent.ClickTravel -> postNavigateToTravelTemplate(travelId = intent.travelId, days = intent.days)
             HomeIntent.ClickTravelMore -> postNavigateToTravelMore()
         }
     }
@@ -190,8 +191,8 @@ class HomeViewModel @Inject constructor(
         postSideEffect(HomeSideEffect.NavigateToSettings)
     }
 
-    private fun postNavigateToTravelTemplate(travelId: Long) {
-        postSideEffect(HomeSideEffect.NavigateToFollowTravel(travelId = travelId, days = 1))
+    private fun postNavigateToTravelTemplate(travelId: Long, days: Int) {
+        postSideEffect(HomeSideEffect.NavigateToFollowTravel(travelId = travelId, days = days))
     }
 
     private fun postNavigateToTravelMore() {

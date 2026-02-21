@@ -40,7 +40,7 @@ import com.yapp.ndgl.core.ui.R as CoreR
 @Composable
 internal fun UpcomingTravelListSection(
     upcomingTravels: ImmutableList<UpcomingTravelItem>,
-    onUserTravelClick: (Long) -> Unit,
+    onUserTravelClick: (Long, Int) -> Unit,
     onNewTravelFindClick: () -> Unit,
 ) {
     Column(
@@ -76,17 +76,21 @@ private fun Header() {
 @Composable
 private fun UpcomingTravel(
     travel: UpcomingTravelItem,
-    onUserTravelClick: (Long) -> Unit,
+    onUserTravelClick: (Long, Int) -> Unit,
 ) {
     val dateFormat = stringResource(R.string.my_travel_upcoming_list_date_format)
     val dateFormatter = remember(dateFormat) {
         DateTimeFormatter.ofPattern(dateFormat)
     }
+    val days = java.time.temporal.ChronoUnit.DAYS.between(
+        travel.startDate,
+        travel.endDate,
+    ).toInt() + 1
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = { onUserTravelClick(travel.travelId) })
+            .clickable(onClick = { onUserTravelClick(travel.travelId, days) })
             .padding(horizontal = 24.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -239,7 +243,7 @@ private fun UpcomingTravelListSectionPreview() {
                     dDay = -47,
                 ),
             ),
-            onUserTravelClick = {},
+            onUserTravelClick = { _, _ -> },
             onNewTravelFindClick = {},
         )
     }
@@ -251,7 +255,7 @@ private fun UpcomingTravelListSectionEmptyPreview() {
     NDGLTheme {
         UpcomingTravelListSection(
             upcomingTravels = persistentListOf(),
-            onUserTravelClick = {},
+            onUserTravelClick = { _, _ -> },
             onNewTravelFindClick = {},
         )
     }
@@ -270,7 +274,7 @@ private fun UpcomingTravelPreview() {
                 imageUrl = "",
                 dDay = -7,
             ),
-            onUserTravelClick = {},
+            onUserTravelClick = { _, _ -> },
         )
     }
 }

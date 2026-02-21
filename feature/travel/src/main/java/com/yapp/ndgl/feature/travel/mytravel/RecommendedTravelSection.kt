@@ -43,7 +43,7 @@ import com.yapp.ndgl.core.ui.R as CoreR
 @Composable
 internal fun RecommendedTravelSection(
     recommendedTravels: ImmutableList<RecommendedTravel>,
-    onTravelTemplateClick: (Long) -> Unit,
+    onTravelTemplateClick: (Long, Int) -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -80,13 +80,13 @@ internal fun RecommendedTravelSection(
 @Composable
 private fun RecommendedTravelItem(
     travel: RecommendedTravel,
-    onTravelTemplateClick: (Long) -> Unit,
+    onTravelTemplateClick: (Long, Int) -> Unit,
 ) {
     Column(
         modifier = Modifier
             .width(240.dp)
             .clip(RoundedCornerShape(8.dp))
-            .clickable(onClick = { onTravelTemplateClick(travel.travelId) }),
+            .clickable(onClick = { onTravelTemplateClick(travel.travelId, travel.days) }),
     ) {
         AsyncImage(
             model = travel.thumbnailUrl,
@@ -202,7 +202,7 @@ private fun RecommendedContentSectionPreview() {
                     thumbnailUrl = "",
                 ),
             ),
-            onTravelTemplateClick = {},
+            onTravelTemplateClick = { _, _ -> },
         )
     }
 }

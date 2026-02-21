@@ -46,8 +46,8 @@ internal fun HomeRoute(
         onTabSelected = { index ->
             viewModel.onIntent(HomeIntent.SelectPopularTravelTab(index))
         },
-        onTravelClick = { travelId ->
-            viewModel.onIntent(HomeIntent.ClickTravel(travelId))
+        onTravelClick = { travelId, days ->
+            viewModel.onIntent(HomeIntent.ClickTravel(travelId, days))
         },
         onTravelMoreClick = {
             viewModel.onIntent(HomeIntent.ClickTravelMore)
@@ -70,7 +70,7 @@ private fun HomeScreen(
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onTabSelected: (Int) -> Unit,
-    onTravelClick: (Long) -> Unit,
+    onTravelClick: (Long, Int) -> Unit,
     onTravelMoreClick: () -> Unit,
 ) {
     Scaffold(
@@ -127,6 +127,7 @@ private fun HomeScreen(
                     RecommendedContentSection(
                         userName = state.userName,
                         contents = state.recommendedContents,
+                        onTravelClick = onTravelClick,
                     )
                 }
             }
@@ -212,7 +213,7 @@ private fun HomeScreenPreview() {
             onSearchClick = {},
             onSettingsClick = {},
             onTabSelected = {},
-            onTravelClick = {},
+            onTravelClick = { _, _ -> },
             onTravelMoreClick = {},
         )
     }

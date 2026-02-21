@@ -66,7 +66,7 @@ sealed interface HomeIntent : UiIntent {
     data object ClickSearchTravelTemplate : HomeIntent
     data object ClickSettings : HomeIntent
     data class SelectPopularTravelTab(val index: Int) : HomeIntent
-    data class ClickTravel(val travelId: Long) : HomeIntent
+    data class ClickTravel(val travelId: Long, val days: Int) : HomeIntent
     data object ClickTravelMore : HomeIntent
 }
 
