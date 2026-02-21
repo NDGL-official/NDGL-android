@@ -8,5 +8,4 @@ android {
 
 dependencies {
     implementation(project(":data:travel"))
-    implementation(project(":data:auth"))
 }

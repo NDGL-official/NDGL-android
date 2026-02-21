@@ -31,8 +31,8 @@ android {
 dependencies {
     implementation(project(":navigation"))
 
+    implementation(project(":feature:splash"))
     implementation(project(":feature:home"))
-    implementation(project(":feature:auth"))
     implementation(project(":feature:travel"))
     implementation(project(":feature:travel-helper"))
 
@@ -41,4 +41,5 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.core.splashscreen)
 }
