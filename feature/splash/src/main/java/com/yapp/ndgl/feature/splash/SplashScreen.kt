@@ -25,7 +25,7 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 @Composable
 fun SplashRoute(
     viewmodel: SplashViewModel = hiltViewModel(),
-    navigateToHome: () -> Unit,
+    navigateToHome: (Boolean) -> Unit,
 ) {
     val context = LocalContext.current
     val activity = context as? ComponentActivity
@@ -53,7 +53,7 @@ fun SplashRoute(
     viewmodel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             is SplashSideEffect.NavigateToHome -> {
-                navigateToHome()
+                navigateToHome(sideEffect.isFirstUser)
             }
         }
     }

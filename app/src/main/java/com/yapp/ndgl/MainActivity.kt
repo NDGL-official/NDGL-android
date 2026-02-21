@@ -10,7 +10,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.yapp.ndgl.core.ui.designsystem.UserGuideModal
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
+import com.yapp.ndgl.core.ui.util.launchBrowser
 import com.yapp.ndgl.feature.splash.SplashRoute
 import com.yapp.ndgl.navigation.AppScreen
 import com.yapp.ndgl.ui.NDGLApp
@@ -25,6 +27,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             NDGLTheme {
                 var currentScreen by rememberSaveable { mutableStateOf(AppScreen.Splash) }
+                var showUserGuideModal by rememberSaveable { mutableStateOf(false) }
 
                 AnimatedContent(
                     targetState = currentScreen,
@@ -32,7 +35,10 @@ class MainActivity : ComponentActivity() {
                     when (screen) {
                         AppScreen.Splash -> {
                             SplashRoute(
-                                navigateToHome = { currentScreen = AppScreen.Main },
+                                navigateToHome = { isFirstUser ->
+                                    showUserGuideModal = isFirstUser
+                                    currentScreen = AppScreen.Main
+                                },
                             )
                         }
 
@@ -40,6 +46,17 @@ class MainActivity : ComponentActivity() {
                             NDGLApp()
                         }
                     }
+                }
+
+                if (showUserGuideModal) {
+                    UserGuideModal(
+                        onConfirmClick = {
+                            showUserGuideModal = false
+                        },
+                        onTermsClick = {
+                            launchBrowser(BuildConfig.NDGL_TERMS_URL)
+                        },
+                    )
                 }
             }
         }

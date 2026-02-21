@@ -22,8 +22,8 @@ class SplashViewModel @Inject constructor(
     private fun initSession() = viewModelScope.launch {
         suspendRunCatching {
             authRepository.initSession()
-        }.onSuccess {
-            postSideEffect(SplashSideEffect.NavigateToHome)
+        }.onSuccess { isFirstUser ->
+            postSideEffect(SplashSideEffect.NavigateToHome(isFirstUser = isFirstUser))
         }.onFailure {
             // FIXME: 에러 뷰
         }

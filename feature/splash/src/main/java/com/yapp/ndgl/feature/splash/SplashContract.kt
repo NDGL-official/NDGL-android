@@ -6,5 +6,5 @@ import com.yapp.ndgl.core.base.UiState
 class SplashState : UiState
 
 sealed interface SplashSideEffect : UiSideEffect {
-    data object NavigateToHome : SplashSideEffect
+    data class NavigateToHome(val isFirstUser: Boolean) : SplashSideEffect
 }

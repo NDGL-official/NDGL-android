@@ -15,6 +15,7 @@ android {
         }
 
         manifestPlaceholders["MAPS_API_KEY"] = localProperties.getProperty("MAPS_API_KEY", "")
+        buildConfigField("String", "NDGL_TERMS_URL", "\"${localProperties.getProperty("NDGL_TERMS_URL", "")}\"")
     }
 
     buildFeatures {

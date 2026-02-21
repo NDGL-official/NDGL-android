@@ -21,21 +21,25 @@ class AuthRepository @Inject constructor(
     private val api: AuthApi,
     private val localAuthDataSource: LocalAuthDataSource,
 ) {
-    suspend fun initSession() {
+    suspend fun initSession(): Boolean {
         val uuid = localAuthDataSource.getUuid()
+        var isFirstUser = false
         val response = if (uuid.isNotEmpty()) {
             suspendRunCatching {
                 login(uuid)
             }.getOrElse {
                 localAuthDataSource.clearSession()
+                isFirstUser = true
                 createUser()
             }
         } else {
+            isFirstUser = true
             createUser()
         }
 
         localAuthDataSource.setAccessToken(response.accessToken)
         localAuthDataSource.setUuid(response.uuid)
+        return isFirstUser
     }
 
     private suspend fun createUser(): AuthResponse {
