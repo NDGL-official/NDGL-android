@@ -32,6 +32,7 @@ internal fun HomeRoute(
     navigateToSettings: () -> Unit,
     navigateToFollowTravel: (Long, Int) -> Unit,
     navigateToPopularTravelList: () -> Unit,
+    navigateToTravelDetail: (Long, Int) -> Unit,
 ) {
     val state by viewModel.collectAsState()
 
@@ -52,6 +53,13 @@ internal fun HomeRoute(
         onTravelMoreClick = {
             viewModel.onIntent(HomeIntent.ClickTravelMore)
         },
+        onMyTravelCardClick = {
+            when (val myTravel = state.myTravel) {
+                is HomeState.MyTravel.Upcoming -> viewModel.onIntent(HomeIntent.ClickMyTravel(myTravel.travelId, myTravel.days))
+                is HomeState.MyTravel.InProgress -> viewModel.onIntent(HomeIntent.ClickMyTravel(myTravel.travelId, myTravel.days))
+                HomeState.MyTravel.None -> {} // Do nothing
+            }
+        },
     )
 
     viewModel.collectSideEffect { sideEffect ->
@@ -60,6 +68,7 @@ internal fun HomeRoute(
             HomeSideEffect.NavigateToSettings -> navigateToSettings()
             is HomeSideEffect.NavigateToFollowTravel -> navigateToFollowTravel(sideEffect.travelId, sideEffect.days)
             HomeSideEffect.NavigateToTravelMore -> navigateToPopularTravelList()
+            is HomeSideEffect.NavigateToTravelDetail -> navigateToTravelDetail(sideEffect.travelId, sideEffect.days)
         }
     }
 }
@@ -72,6 +81,7 @@ private fun HomeScreen(
     onTabSelected: (Int) -> Unit,
     onTravelClick: (Long, Int) -> Unit,
     onTravelMoreClick: () -> Unit,
+    onMyTravelCardClick: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -106,6 +116,7 @@ private fun HomeScreen(
                 UpcomingTravelCardSection(
                     modifier = Modifier.fillMaxWidth(),
                     myTravel = state.myTravel,
+                    onCardClick = onMyTravelCardClick,
                 )
             }
 
@@ -179,6 +190,8 @@ private fun HomeScreenPreview() {
             state = HomeState(
                 userName = "유저123",
                 myTravel = HomeState.MyTravel.InProgress(
+                    travelId = 1,
+                    days = 4,
                     title = "인도 여행",
                     dayCount = 1,
                     startDate = LocalDate.of(2024, 12, 23),
@@ -215,6 +228,7 @@ private fun HomeScreenPreview() {
             onTabSelected = {},
             onTravelClick = { _, _ -> },
             onTravelMoreClick = {},
+            onMyTravelCardClick = {},
         )
     }
 }

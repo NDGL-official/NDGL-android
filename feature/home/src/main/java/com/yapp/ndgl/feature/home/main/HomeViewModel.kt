@@ -51,6 +51,8 @@ class HomeViewModel @Inject constructor(
                         today < travel.startDate -> {
                             val dDay = ChronoUnit.DAYS.between(today, travel.startDate).toInt()
                             HomeState.MyTravel.Upcoming(
+                                travelId = travel.userTravelId,
+                                days = travel.days,
                                 title = travel.title,
                                 imageUrl = travel.upcomingUserTravelPlace?.place?.thumbnail ?: "",
                                 dDay = dDay,
@@ -64,6 +66,8 @@ class HomeViewModel @Inject constructor(
                                 ChronoUnit.DAYS.between(travel.startDate, today).toInt() + 1
                             val upcomingPlace = travel.upcomingUserTravelPlace
                             HomeState.MyTravel.InProgress(
+                                travelId = travel.userTravelId,
+                                days = travel.days,
                                 title = travel.title,
                                 dayCount = dayCount,
                                 startDate = travel.startDate,
@@ -180,6 +184,7 @@ class HomeViewModel @Inject constructor(
 
             is HomeIntent.ClickTravel -> postNavigateToTravelTemplate(travelId = intent.travelId, days = intent.days)
             HomeIntent.ClickTravelMore -> postNavigateToTravelMore()
+            is HomeIntent.ClickMyTravel -> postNavigateToTravelDetail(travelId = intent.travelId, days = intent.days)
         }
     }
 
@@ -197,6 +202,10 @@ class HomeViewModel @Inject constructor(
 
     private fun postNavigateToTravelMore() {
         postSideEffect(HomeSideEffect.NavigateToTravelMore)
+    }
+
+    private fun postNavigateToTravelDetail(travelId: Long, days: Int) {
+        postSideEffect(HomeSideEffect.NavigateToTravelDetail(travelId = travelId, days = days))
     }
 
     companion object {

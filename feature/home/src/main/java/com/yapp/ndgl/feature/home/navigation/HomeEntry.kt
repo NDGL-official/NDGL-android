@@ -26,6 +26,9 @@ fun EntryProviderScope<NavKey>.homeEntry(
             navigateToPopularTravelList = {
                 navigator.navigate(Route.PopularTravelList)
             },
+            navigateToTravelDetail = { travelId, days ->
+                navigator.navigate(Route.TravelDetail(travelId = travelId, days = days))
+            },
         )
     }
     entry<Route.TemplateSearch> {

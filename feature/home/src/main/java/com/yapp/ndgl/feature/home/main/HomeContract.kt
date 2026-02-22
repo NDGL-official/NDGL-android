@@ -27,6 +27,8 @@ data class HomeState(
 
         @Immutable
         data class Upcoming(
+            val travelId: Long,
+            val days: Int,
             val title: String,
             val imageUrl: String,
             val dDay: Int,
@@ -36,6 +38,8 @@ data class HomeState(
 
         @Immutable
         data class InProgress(
+            val travelId: Long,
+            val days: Int,
             val title: String,
             val dayCount: Int,
             val startDate: LocalDate,
@@ -68,6 +72,7 @@ sealed interface HomeIntent : UiIntent {
     data class SelectPopularTravelTab(val index: Int) : HomeIntent
     data class ClickTravel(val travelId: Long, val days: Int) : HomeIntent
     data object ClickTravelMore : HomeIntent
+    data class ClickMyTravel(val travelId: Long, val days: Int) : HomeIntent
 }
 
 sealed interface HomeSideEffect : UiSideEffect {
@@ -75,4 +80,5 @@ sealed interface HomeSideEffect : UiSideEffect {
     data object NavigateToSettings : HomeSideEffect
     data class NavigateToFollowTravel(val travelId: Long, val days: Int) : HomeSideEffect
     data object NavigateToTravelMore : HomeSideEffect
+    data class NavigateToTravelDetail(val travelId: Long, val days: Int) : HomeSideEffect
 }
