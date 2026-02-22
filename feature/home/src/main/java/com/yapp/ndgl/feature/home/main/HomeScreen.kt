@@ -29,6 +29,7 @@ import java.time.LocalDate
 internal fun HomeRoute(
     viewModel: HomeViewModel = hiltViewModel(),
     navigateToTemplateSearch: () -> Unit,
+    navigateToSettings: () -> Unit,
     navigateToFollowTravel: (Long, Int) -> Unit,
     navigateToPopularTravelList: () -> Unit,
 ) {
@@ -38,6 +39,9 @@ internal fun HomeRoute(
         state = state,
         onSearchClick = {
             viewModel.onIntent(HomeIntent.ClickSearchTravelTemplate)
+        },
+        onSettingsClick = {
+            viewModel.onIntent(HomeIntent.ClickSettings)
         },
         onTabSelected = { index ->
             viewModel.onIntent(HomeIntent.SelectPopularTravelTab(index))
@@ -53,6 +57,7 @@ internal fun HomeRoute(
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             HomeSideEffect.NavigateToSearchTravelTemplate -> navigateToTemplateSearch()
+            HomeSideEffect.NavigateToSettings -> navigateToSettings()
             is HomeSideEffect.NavigateToFollowTravel -> navigateToFollowTravel(sideEffect.travelId, sideEffect.days)
             HomeSideEffect.NavigateToTravelMore -> navigateToPopularTravelList()
         }
@@ -63,6 +68,7 @@ internal fun HomeRoute(
 private fun HomeScreen(
     state: HomeState,
     onSearchClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     onTabSelected: (Int) -> Unit,
     onTravelClick: (Long) -> Unit,
     onTravelMoreClick: () -> Unit,
@@ -82,7 +88,7 @@ private fun HomeScreen(
                     )
                     NDGLNavigationIcon(
                         icon = R.drawable.ic_28_settings,
-                        onClick = { /* FIXME: 설정 */ },
+                        onClick = onSettingsClick,
                     )
                 },
             )
@@ -204,6 +210,7 @@ private fun HomeScreenPreview() {
                 allPopularTravels = sampleTravels,
             ),
             onSearchClick = {},
+            onSettingsClick = {},
             onTabSelected = {},
             onTravelClick = {},
             onTravelMoreClick = {},

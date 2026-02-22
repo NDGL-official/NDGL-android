@@ -26,6 +26,7 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 internal fun MyTravelRoute(
     viewModel: MyTravelViewModel = hiltViewModel(),
     navigateToTemplateSearch: () -> Unit,
+    navigateToSettings: () -> Unit,
     navigateToFollowTravel: (Long, Int) -> Unit,
     navigateToTravelDetail: (Long) -> Unit,
     navigateToTravelPlace: (String) -> Unit,
@@ -37,6 +38,9 @@ internal fun MyTravelRoute(
         state = state,
         onSearchClick = {
             viewModel.onIntent(MyTravelIntent.ClickSearchTravelTemplate)
+        },
+        onSettingsClick = {
+            viewModel.onIntent(MyTravelIntent.ClickSettings)
         },
         onTravelClick = { travelId ->
             viewModel.onIntent(MyTravelIntent.ClickTravelDetail(travelId = travelId))
@@ -55,6 +59,8 @@ internal fun MyTravelRoute(
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             MyTravelSideEffect.NavigateToSearchTravelTemplate -> navigateToTemplateSearch()
+
+            MyTravelSideEffect.NavigateToSettings -> navigateToSettings()
 
             is MyTravelSideEffect.NavigateToFollowTravel -> navigateToFollowTravel(
                 sideEffect.travelId,
@@ -78,6 +84,7 @@ internal fun MyTravelRoute(
 private fun MyTravelScreen(
     state: MyTravelState,
     onSearchClick: () -> Unit,
+    onSettingsClick: () -> Unit,
     onTravelClick: (Long) -> Unit,
     onPlaceClick: (String) -> Unit,
     onNewTravelFindClick: () -> Unit,
@@ -99,7 +106,7 @@ private fun MyTravelScreen(
                     )
                     NDGLNavigationIcon(
                         icon = R.drawable.ic_28_settings,
-                        onClick = { /* FIXME: 설정 */ },
+                        onClick = onSettingsClick,
                     )
                 },
             )
@@ -152,6 +159,7 @@ private fun MyTravelScreenPreview() {
         MyTravelScreen(
             state = MyTravelState(),
             onSearchClick = {},
+            onSettingsClick = {},
             onTravelClick = {},
             onPlaceClick = {},
             onNewTravelFindClick = {},

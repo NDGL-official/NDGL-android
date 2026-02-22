@@ -30,6 +30,9 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
             navigateToTemplateSearch = {
                 navigator.navigate(Route.TemplateSearch)
             },
+            navigateToSettings = {
+                navigator.navigate(Route.Settings)
+            },
             navigateToFollowTravel = { travelId, days ->
                 navigator.navigate(Route.FollowTravel(travelId, days))
             },

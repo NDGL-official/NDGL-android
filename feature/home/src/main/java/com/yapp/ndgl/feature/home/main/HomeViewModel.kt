@@ -173,11 +173,10 @@ class HomeViewModel @Inject constructor(
     override suspend fun handleIntent(intent: HomeIntent) {
         when (intent) {
             HomeIntent.ClickSearchTravelTemplate -> postNavigateToSearchTravelTemplate()
-
+            HomeIntent.ClickSettings -> postNavigateToSettings()
             is HomeIntent.SelectPopularTravelTab -> {
                 reduce { copy(popularTravelSelectedTabIndex = intent.index) }
             }
-
             is HomeIntent.ClickTravel -> postNavigateToTravelTemplate(travelId = intent.travelId)
             HomeIntent.ClickTravelMore -> postNavigateToTravelMore()
         }
@@ -185,6 +184,10 @@ class HomeViewModel @Inject constructor(
 
     private fun postNavigateToSearchTravelTemplate() {
         postSideEffect(HomeSideEffect.NavigateToSearchTravelTemplate)
+    }
+
+    private fun postNavigateToSettings() {
+        postSideEffect(HomeSideEffect.NavigateToSettings)
     }
 
     private fun postNavigateToTravelTemplate(travelId: Long) {
