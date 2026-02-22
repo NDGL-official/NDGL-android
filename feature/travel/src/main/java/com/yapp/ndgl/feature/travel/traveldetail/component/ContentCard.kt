@@ -164,7 +164,7 @@ fun ContentCard(contentInfo: ContentInfo) {
                             Icon(
                                 imageVector = ImageVector.vectorResource(R.drawable.ic_20_piggybank),
                                 contentDescription = null,
-                                tint = NDGLTheme.colors.etcBlue,
+                                tint = NDGLTheme.colors.green500,
                                 modifier = Modifier.size(20.dp),
                             )
                             Text(
