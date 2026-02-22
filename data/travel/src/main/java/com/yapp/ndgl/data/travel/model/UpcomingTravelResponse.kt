@@ -1,3 +1,5 @@
+@file:OptIn(kotlinx.serialization.InternalSerializationApi::class)
+
 package com.yapp.ndgl.data.travel.model
 
 import com.yapp.ndgl.data.core.serializer.LocalDateSerializer
@@ -16,5 +18,6 @@ data class UpcomingTravelResponse(
     val endDate: LocalDate,
     val nights: Int,
     val days: Int,
+    val thumbnail: String?,
     val upcomingUserTravelPlace: UserTravelPlace? = null,
 )

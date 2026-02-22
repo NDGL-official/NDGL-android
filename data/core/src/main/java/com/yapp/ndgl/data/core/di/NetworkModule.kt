@@ -4,7 +4,9 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import com.yapp.ndgl.data.core.BuildConfig
 import com.yapp.ndgl.data.core.adapter.NDGLCallAdapterFactory
 import com.yapp.ndgl.data.core.authenticator.NDGLAuthenticator
+import com.yapp.ndgl.data.core.interceptor.AndroidCredentialInterceptor
 import com.yapp.ndgl.data.core.interceptor.ApiKeyInterceptor
+import com.yapp.ndgl.data.core.interceptor.ApiKeyQueryInterceptor
 import com.yapp.ndgl.data.core.interceptor.NDGLInterceptor
 import com.yapp.ndgl.data.core.interceptor.RouteInterceptor
 import dagger.Module
@@ -121,6 +123,19 @@ object NetworkModule {
             .addInterceptor(httpLoggingInterceptor)
             .build()
     }
+
+    @WeatherClient
+    @Singleton
+    @Provides
+    fun provideWeatherOkHttpClient(
+        @WeatherApiKey apiKey: String,
+        androidCredentialInterceptor: AndroidCredentialInterceptor,
+        httpLoggingInterceptor: HttpLoggingInterceptor,
+    ): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(ApiKeyQueryInterceptor(apiKey))
+        .addInterceptor(androidCredentialInterceptor)
+        .addInterceptor(httpLoggingInterceptor)
+        .build()
 }
 
 @Qualifier
@@ -146,3 +161,15 @@ annotation class RouteBaseUrl
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class RouteClient
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class WeatherApiKey
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class WeatherClient
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class GeocodingClient
