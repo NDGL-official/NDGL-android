@@ -1,6 +1,7 @@
 package com.yapp.ndgl.navigation
 
 import androidx.navigation3.runtime.NavKey
+import kotlin.reflect.KClass
 
 class Navigator(val state: NavigationState) {
 
@@ -10,6 +11,19 @@ class Navigator(val state: NavigationState) {
             in state.topLevelKeys -> goToTopLevel(key)
             else -> goToKey(key)
         }
+    }
+
+    fun navigateAndPopUpTo(destination: NavKey, vararg popRoutes: KClass<out NavKey>) {
+        popRoutes.forEach { routeClass ->
+            val toRemove = state.currentSubStack.filter { stackItem ->
+                routeClass.isInstance(stackItem)
+            }
+            toRemove.forEach { route ->
+                state.currentSubStack.remove(route)
+            }
+        }
+
+        navigate(destination)
     }
 
     fun goBack() {
