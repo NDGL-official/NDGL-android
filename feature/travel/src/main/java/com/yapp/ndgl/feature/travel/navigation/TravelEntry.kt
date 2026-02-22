@@ -36,8 +36,8 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
             navigateToFollowTravel = { travelId, days ->
                 navigator.navigate(Route.FollowTravel(travelId, days))
             },
-            navigateToTravelDetail = { travelId ->
-                navigator.navigate(Route.TravelDetail(travelId))
+            navigateToTravelDetail = { travelId, days ->
+                navigator.navigate(Route.TravelDetail(travelId, days))
             },
             navigateToTravelPlace = { placeId ->
                 navigator.navigate(Route.PlaceDetail(placeId))
@@ -55,8 +55,8 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
         FollowTravelRoute(
             viewModel = viewModel,
             navigateBack = { navigator.goBack() },
-            navigateToDatePicker = { tripDays ->
-                navigator.navigate(Route.DatePicker(tripDays))
+            navigateToDatePicker = { templateId, tripDays ->
+                navigator.navigate(Route.DatePicker(templateId, tripDays))
             },
             navigateToFollowPlaceDetail = { googlePlaceId, tipContent, alternativePlaces ->
                 navigator.navigate(
@@ -78,7 +78,7 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
     entry<Route.TravelDetail> { route ->
         val viewModel =
             hiltViewModel<TravelDetailViewModel, TravelDetailViewModel.Factory> { factory ->
-                factory.create(travelId = route.travelId)
+                factory.create(travelId = route.travelId, days = route.days)
             }
         TravelDetailRoute(
             viewModel = viewModel,
@@ -136,11 +136,20 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
     entry<Route.DatePicker> { route ->
         val viewModel =
             hiltViewModel<DatePickerViewModel, DatePickerViewModel.Factory> { factory ->
-                factory.create(tripDays = route.tripDays)
+                factory.create(templateId = route.templateId, tripDays = route.tripDays)
             }
         DatePickerRoute(
             viewModel = viewModel,
             navigateBack = { navigator.goBack() },
+            navigateToTravelDetail = { travelId, days ->
+                timber.log.Timber.d("TravelEntry navigateToTravelDetail called: travelId=$travelId, days=$days")
+                timber.log.Timber.d("TravelEntry calling navigateAndPopUpTo with Route.TravelDetail($travelId, $days)")
+                navigator.navigateAndPopUpTo(
+                    destination = Route.TravelDetail(travelId, days),
+                    popRoutes = arrayOf(Route.DatePicker::class, Route.FollowTravel::class),
+                )
+                timber.log.Timber.d("TravelEntry navigateAndPopUpTo completed")
+            },
         )
     }
     entry<Route.AddItinerary> { route ->

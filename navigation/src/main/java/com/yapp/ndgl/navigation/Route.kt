@@ -29,10 +29,10 @@ sealed interface Route : NavKey {
     data class FollowTravel(val travelId: Long, val days: Int) : Route
 
     @Serializable
-    data class DatePicker(val tripDays: Int) : Route
+    data class DatePicker(val templateId: Long, val tripDays: Int) : Route
 
     @Serializable
-    data class TravelDetail(val travelId: Long) : Route
+    data class TravelDetail(val travelId: Long, val days: Int) : Route
 
     @Serializable
     data class PlaceDetail(
