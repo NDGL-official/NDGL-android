@@ -131,6 +131,7 @@ class MyTravelViewModel @Inject constructor(
     override suspend fun handleIntent(intent: MyTravelIntent) {
         when (intent) {
             MyTravelIntent.ClickSearchTravelTemplate -> postNavigateToSearchTravelTemplate()
+            MyTravelIntent.ClickSettings -> postNavigateToSettings()
             is MyTravelIntent.ClickTravel -> postNavigateToFollowTravel(travelId = intent.travelId)
             is MyTravelIntent.ClickTravelDetail -> postNavigateToTravelDetail(travelId = intent.travelId)
             is MyTravelIntent.ClickPlaceDetail -> postNavigateToPlaceDetail(placeId = intent.placeId)
@@ -140,6 +141,10 @@ class MyTravelViewModel @Inject constructor(
 
     private fun postNavigateToSearchTravelTemplate() {
         postSideEffect(MyTravelSideEffect.NavigateToSearchTravelTemplate)
+    }
+
+    private fun postNavigateToSettings() {
+        postSideEffect(MyTravelSideEffect.NavigateToSettings)
     }
 
     private fun postNavigateToFollowTravel(travelId: Long, days: Int = 1) {

@@ -64,6 +64,7 @@ data class HomeState(
 
 sealed interface HomeIntent : UiIntent {
     data object ClickSearchTravelTemplate : HomeIntent
+    data object ClickSettings : HomeIntent
     data class SelectPopularTravelTab(val index: Int) : HomeIntent
     data class ClickTravel(val travelId: Long) : HomeIntent
     data object ClickTravelMore : HomeIntent
@@ -71,6 +72,7 @@ sealed interface HomeIntent : UiIntent {
 
 sealed interface HomeSideEffect : UiSideEffect {
     data object NavigateToSearchTravelTemplate : HomeSideEffect
+    data object NavigateToSettings : HomeSideEffect
     data class NavigateToFollowTravel(val travelId: Long, val days: Int) : HomeSideEffect
     data object NavigateToTravelMore : HomeSideEffect
 }

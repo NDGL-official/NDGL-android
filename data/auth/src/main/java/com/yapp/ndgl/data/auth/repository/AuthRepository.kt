@@ -22,7 +22,7 @@ class AuthRepository @Inject constructor(
     private val localAuthDataSource: LocalAuthDataSource,
 ) {
     suspend fun initSession(): Boolean {
-        val uuid = localAuthDataSource.getUuid()
+        val uuid = getIdentifierCode()
         var isFirstUser = false
         val response = if (uuid.isNotEmpty()) {
             suspendRunCatching {
@@ -65,4 +65,6 @@ class AuthRepository @Inject constructor(
             throw IllegalStateException("Failed to get FCM token", e)
         }
     }
+
+    suspend fun getIdentifierCode(): String = localAuthDataSource.getUuid()
 }

@@ -7,5 +7,6 @@ android {
 }
 
 dependencies {
+    implementation(project(":data:auth"))
     implementation(project(":data:travel"))
 }

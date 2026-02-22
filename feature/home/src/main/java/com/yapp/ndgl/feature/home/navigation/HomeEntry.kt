@@ -5,6 +5,7 @@ import androidx.navigation3.runtime.NavKey
 import com.yapp.ndgl.feature.home.main.HomeRoute
 import com.yapp.ndgl.feature.home.popular.PopularTravelListRoute
 import com.yapp.ndgl.feature.home.search.TemplateSearchRoute
+import com.yapp.ndgl.feature.home.settings.SettingsRoute
 import com.yapp.ndgl.navigation.Navigator
 import com.yapp.ndgl.navigation.Route
 
@@ -15,6 +16,9 @@ fun EntryProviderScope<NavKey>.homeEntry(
         HomeRoute(
             navigateToTemplateSearch = {
                 navigator.navigate(Route.TemplateSearch)
+            },
+            navigateToSettings = {
+                navigator.navigate(Route.Settings)
             },
             navigateToFollowTravel = { travelId, days ->
                 navigator.navigate(Route.FollowTravel(travelId = travelId, days = days))
@@ -44,6 +48,13 @@ fun EntryProviderScope<NavKey>.homeEntry(
             },
             navigateToFollowTravel = { travelId, days ->
                 navigator.navigate(Route.FollowTravel(travelId = travelId, days = days))
+            },
+        )
+    }
+    entry<Route.Settings> {
+        SettingsRoute(
+            goBack = {
+                navigator.goBack()
             },
         )
     }
