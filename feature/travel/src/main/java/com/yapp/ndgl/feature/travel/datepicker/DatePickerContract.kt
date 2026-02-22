@@ -10,6 +10,7 @@ import kotlinx.datetime.TimeZone.Companion.currentSystemDefault
 import kotlinx.datetime.toLocalDateTime
 
 data class DatePickerState(
+    val templateId: Long,
     val tripDays: Int,
     private val initialDateTime: LocalDateTime = now().toLocalDateTime(currentSystemDefault()),
     val currentYear: Int = initialDateTime.year,
@@ -17,7 +18,10 @@ data class DatePickerState(
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
     val isSelectingRange: Boolean = false,
-    val showDialog: Boolean = false,
+    val showDatePickerModal: Boolean = false,
+    val createdTravelId: Long? = null,
+    // TODO : 로딩 인디케이터 UI 표시
+    val isLoading: Boolean = false,
 ) : UiState {
     val isDateSelected: Boolean
         get() = startDate != null && endDate != null
@@ -36,11 +40,12 @@ sealed interface DatePickerIntent : UiIntent {
     data object SelectNextMonth : DatePickerIntent
     data class SelectYearMonth(val year: Int, val month: Int) : DatePickerIntent
     data object ClickCompleteButton : DatePickerIntent
-    data object DismissDialog : DatePickerIntent
-    data object ClickViewTravelButton : DatePickerIntent
+    data object ClickDatePickerModalNegativeButton : DatePickerIntent
+    data object ConfirmDatePickerModal : DatePickerIntent
+    data object DismissDatePickerModal : DatePickerIntent
 }
 
 sealed interface DatePickerSideEffect : UiSideEffect {
-    // TODO 실제 로직으로 변경
-    data object NavigateToTravelDetail : DatePickerSideEffect
+    data class NavigateToTravelDetail(val travelId: Long, val days: Int) : DatePickerSideEffect
+    data object NavigateBack : DatePickerSideEffect
 }

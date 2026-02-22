@@ -13,6 +13,7 @@ data class FollowTravelState(
     val travelId: Long = 0,
     val days: Int = 1,
     val countryCode: String = "",
+    val creatorName: String = "",
     val itineraries: List<Itinerary> = emptyList(),
     val contentInfo: ContentInfo = ContentInfo(),
     val selectedDay: Int = 1,

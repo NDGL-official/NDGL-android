@@ -114,12 +114,11 @@ class FollowTravelViewModel @AssistedInject constructor(
                     tipContent = TipContent(
                         tips = item.travelerTips,
                     ),
-                    // FIXME: API 응답 미완료
                     alternativePlaces = item.planB.orEmpty().map { planB ->
                         AlternativePlace(
-                            id = "",
+                            id = planB.googlePlaceId,
                             name = planB.name,
-                            thumbnail = planB.feature ?: "",
+                            thumbnail = planB.thumbnail,
                             placeType = item.place.category.toPlaceType(),
                         )
                     },

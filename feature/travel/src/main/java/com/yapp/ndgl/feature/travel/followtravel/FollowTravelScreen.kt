@@ -49,7 +49,7 @@ import kotlinx.collections.immutable.toPersistentList
 internal fun FollowTravelRoute(
     viewModel: FollowTravelViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
-    navigateToDatePicker: (Int) -> Unit,
+    navigateToDatePicker: (templateId: Long, tripDays: Int) -> Unit,
     navigateToFollowPlaceDetail:
     (placeId: String, tipContent: TipContent?, alternativePlaces: List<AlternativePlace>?) -> Unit,
 ) {
@@ -66,7 +66,7 @@ internal fun FollowTravelRoute(
         state = state,
         clickBackButton = navigateBack,
         selectDay = { viewModel.onIntent(FollowTravelIntent.SelectDay(it)) },
-        clickFollowTravel = { navigateToDatePicker(state.days) },
+        clickFollowTravel = { navigateToDatePicker(state.travelId, state.days) },
         clickPlaceItem = { place -> viewModel.onIntent(FollowTravelIntent.ClickPlaceItem(place)) },
     )
 }

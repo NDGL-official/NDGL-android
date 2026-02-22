@@ -27,8 +27,10 @@ data class TravelTemplateItinerary(
 
     @Serializable
     data class PlanBPlace(
+        val googlePlaceId: String,
         val name: String,
-        val feature: String? = null,
+        val thumbnail: String? = null,
+        val category: PlaceCategory,
     )
 
     @Serializable
