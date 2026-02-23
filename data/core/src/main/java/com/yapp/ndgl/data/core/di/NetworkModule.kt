@@ -6,6 +6,7 @@ import com.yapp.ndgl.data.core.adapter.NDGLCallAdapterFactory
 import com.yapp.ndgl.data.core.authenticator.NDGLAuthenticator
 import com.yapp.ndgl.data.core.interceptor.ApiKeyInterceptor
 import com.yapp.ndgl.data.core.interceptor.NDGLInterceptor
+import com.yapp.ndgl.data.core.interceptor.RouteInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -99,6 +100,27 @@ object NetworkModule {
 
         return builder.build()
     }
+
+    @Singleton
+    @Provides
+    fun provideRouteInterceptor(
+        @RouteApiKey apiKey: String,
+    ): RouteInterceptor {
+        return RouteInterceptor(apiKey)
+    }
+
+    @RouteClient
+    @Singleton
+    @Provides
+    fun provideRouteOkHttpClient(
+        routeInterceptor: RouteInterceptor,
+        httpLoggingInterceptor: HttpLoggingInterceptor,
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(routeInterceptor)
+            .addInterceptor(httpLoggingInterceptor)
+            .build()
+    }
 }
 
 @Qualifier
@@ -112,3 +134,15 @@ annotation class BaseUrl
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class ApiKey
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RouteApiKey
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RouteBaseUrl
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RouteClient
