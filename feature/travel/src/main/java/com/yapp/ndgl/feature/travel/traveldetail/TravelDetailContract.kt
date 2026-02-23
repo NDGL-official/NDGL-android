@@ -14,7 +14,8 @@ import kotlin.time.Duration.Companion.hours
 
 data class TravelDetailState(
     val contentInfo: ContentInfo = ContentInfo(),
-    val country: String = "",
+    val countryCode: String = "",
+    val days: Int = 1,
     val selectedDay: Int = 1,
     val itineraries: List<Itinerary> = emptyList(),
     val tempItineraries: List<Itinerary> = emptyList(),
@@ -22,14 +23,25 @@ data class TravelDetailState(
     val selectedPlaceIds: Set<Long> = emptySet(),
     val showDeleteModal: Boolean = false,
     val showCancelEditModal: Boolean = false,
-    val showTimelineBottomSheet: Boolean = false,
+    val showStartTimeSettingBottomSheet: Boolean = false,
     val selectedPlace: TravelPlace? = null,
     val showPlaceBottomSheet: Boolean = false,
     val showTimeBottomSheet: Boolean = false,
     val showTransportBottomSheet: Boolean = false,
     val showCostModal: Boolean = false,
     val showMemoModal: Boolean = false,
+    val availableTransports: List<TransportSegment> = emptyList(),
+    val isLoadingTransports: Boolean = false,
 ) : UiState {
+    val currentItineraries: List<Itinerary>
+        get() = if (isEditMode) tempItineraries else itineraries
+
+    val currentItinerary: Itinerary?
+        get() = currentItineraries.getOrNull(selectedDay - 1)
+
+    val currentPlaces: List<TravelPlace>
+        get() = currentItinerary?.places.orEmpty()
+
     val representativeLatLng: LatLng
         get() {
             val currentDayPlaces = itineraries.getOrNull(selectedDay - 1)?.places
@@ -44,17 +56,26 @@ data class TravelDetailState(
                 .firstOrNull()
                 ?.let { LatLng(it.placeInfo.latitude, it.placeInfo.longitude) } ?: LatLng(37.5665, 126.9780) // 모든 일차가 비어 있다면 '서울' 좌표 반환
         }
+
+    // 헤더(0) + stickyHeader(1) + 맵 아이템(2) = 3개가 장소 아이템 앞에 위치
+    val placesOffset: Int
+        get() = 3
 }
 
 data class Itinerary(
-    val startTime: Duration? = null,
-    val endTime: Duration? = null,
+    val isStartTimeSet: Boolean = false,
     val places: List<TravelPlace> = emptyList(),
 ) {
+    val startTime = places.firstOrNull()?.startTime ?: DEFAULT_START_TIME.hours
+
     val totalDuration: Duration
         get() = places.fold(0.hours) { acc, place ->
             acc + place.duration + (place.transportToNext?.duration ?: 0.hours)
         }
+
+    companion object {
+        const val DEFAULT_START_TIME = 8
+    }
 }
 
 data class TravelPlace(
@@ -89,8 +110,8 @@ sealed interface TravelDetailIntent : UiIntent {
     data object ConfirmCancelEditMode : TravelDetailIntent
     data object DismissCancelEditModal : TravelDetailIntent
     data object LongClickPlaceItem : TravelDetailIntent
-    data object DismissTimelineBottomSheet : TravelDetailIntent
-    data class ConfirmTimelineSetting(val startTime: Duration) : TravelDetailIntent
+    data object DismissStartTimeSettingBottomSheet : TravelDetailIntent
+    data class ConfirmStartTimeSetting(val startTime: Duration) : TravelDetailIntent
     data class ReorderPlaces(val dayIndex: Int, val fromIndex: Int, val toIndex: Int) : TravelDetailIntent
     data object ConfirmEditMode : TravelDetailIntent
     data class ClickTransportSegment(val place: TravelPlace) : TravelDetailIntent
@@ -123,7 +144,10 @@ sealed interface TravelDetailSideEffect : UiSideEffect {
     data class NavigateToAddItinerary(
         val travelId: Long,
         val day: Int,
-        val country: String,
+        val countryCode: String,
         val representativeLatLng: LatLng,
     ) : TravelDetailSideEffect
+
+    data object NavigateToMyTravel : TravelDetailSideEffect
+    data class ScrollToPlace(val placeId: Long) : TravelDetailSideEffect
 }

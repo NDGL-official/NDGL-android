@@ -3,7 +3,6 @@ package com.yapp.ndgl.feature.travel.followtravel
 import androidx.lifecycle.viewModelScope
 import com.yapp.ndgl.core.base.BaseViewModel
 import com.yapp.ndgl.core.util.suspendRunCatching
-import com.yapp.ndgl.core.util.toCountryName
 import com.yapp.ndgl.data.travel.model.TravelTemplateContentInfo
 import com.yapp.ndgl.data.travel.model.TravelTemplateItinerary
 import com.yapp.ndgl.data.travel.repository.TravelTemplateRepository
@@ -62,20 +61,8 @@ class FollowTravelViewModel @AssistedInject constructor(
             reduce {
                 copy(
                     countryCode = info.countryCode,
+                    creatorName = info.program.creatorName,
                     contentInfo = info.toContentInfo(),
-                    itineraries = itineraries.map { itinerary ->
-                        itinerary.copy(
-                            places = itinerary.places.map { place ->
-                                place.copy(
-                                    placeInfo = place.placeInfo.copy(
-                                        tipContent = place.placeInfo.tipContent?.copy(
-                                            creatorName = info.program.creatorName,
-                                        ),
-                                    ),
-                                )
-                            },
-                        )
-                    },
                 )
             }
         }.onFailure {
@@ -98,7 +85,7 @@ class FollowTravelViewModel @AssistedInject constructor(
                     FollowTravelSideEffect.NavigateToFollowPlaceDetail(
                         placeId = intent.place.placeInfo.googlePlaceId,
                         tipContent = intent.place.placeInfo.tipContent?.let {
-                            TipContent(creatorName = it.creatorName, tips = it.tips)
+                            TipContent(creatorName = state.value.creatorName, tips = it.tips)
                         },
                         alternativePlaces = intent.place.placeInfo.alternativePlaces,
                     ),
@@ -126,12 +113,11 @@ class FollowTravelViewModel @AssistedInject constructor(
                     tipContent = TipContent(
                         tips = item.travelerTips,
                     ),
-                    // FIXME: API 응답 미완료
                     alternativePlaces = item.planB.orEmpty().map { planB ->
                         AlternativePlace(
-                            id = "",
+                            id = planB.googlePlaceId,
                             name = planB.name,
-                            thumbnail = planB.feature ?: "",
+                            thumbnail = planB.thumbnail,
                             placeType = item.place.category.toPlaceType(),
                         )
                     },
@@ -140,6 +126,7 @@ class FollowTravelViewModel @AssistedInject constructor(
                 regularOpeningHours = item.place.regularOpeningHours,
                 transportToNext = nextItem?.transportation?.firstOrNull()?.let { transport ->
                     TransportSegment(
+                        googlePlaceId = nextItem.place.googlePlaceId,
                         type = transport.mode.toTransportType(),
                         duration = transport.timeMin.minutes,
                         distance = ((nextItem.distanceKm ?: 0.0) * 1000).toInt(),
@@ -150,7 +137,8 @@ class FollowTravelViewModel @AssistedInject constructor(
     )
 
     private fun TravelTemplateContentInfo.toContentInfo(): ContentInfo = ContentInfo(
-        country = countryCode.toCountryName(),
+        countryCode = countryCode,
+        country = countryName,
         city = city,
         budgetPerPerson = Budget(budgetPerPerson ?: 0),
         nights = nights,

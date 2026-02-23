@@ -44,21 +44,33 @@ import com.yapp.ndgl.core.ui.R as CoreR
 internal fun UpcomingTravelCardSection(
     modifier: Modifier,
     upcomingTravel: UpcomingTravel,
-    onTravelClick: (Long) -> Unit,
+    onTravelClick: (Long, Int) -> Unit,
     onPlaceClick: (String) -> Unit,
 ) {
     when (upcomingTravel) {
-        is UpcomingTravel.Upcoming -> UpcomingTravelCard(
-            modifier = modifier,
-            travel = upcomingTravel,
-            onCardClick = { onTravelClick(upcomingTravel.travelId) },
-        )
+        is UpcomingTravel.Upcoming -> {
+            val days = java.time.temporal.ChronoUnit.DAYS.between(
+                upcomingTravel.startDate,
+                upcomingTravel.endDate,
+            ).toInt() + 1
+            UpcomingTravelCard(
+                modifier = modifier,
+                travel = upcomingTravel,
+                onCardClick = { onTravelClick(upcomingTravel.travelId, days) },
+            )
+        }
 
-        is UpcomingTravel.InProgress -> InProgressTravelCard(
-            travel = upcomingTravel,
-            onTravelClick = onTravelClick,
-            onPlaceClick = onPlaceClick,
-        )
+        is UpcomingTravel.InProgress -> {
+            val days = java.time.temporal.ChronoUnit.DAYS.between(
+                upcomingTravel.startDate,
+                upcomingTravel.endDate,
+            ).toInt() + 1
+            InProgressTravelCard(
+                travel = upcomingTravel,
+                onTravelClick = { travelId -> onTravelClick(travelId, days) },
+                onPlaceClick = onPlaceClick,
+            )
+        }
     }
 }
 
@@ -298,7 +310,7 @@ private fun UpcomingTravelCardPreview() {
                 dDay = -7,
                 imageUrl = "",
             ),
-            onTravelClick = {},
+            onTravelClick = { _, _ -> },
             onPlaceClick = {},
         )
     }
@@ -324,7 +336,7 @@ private fun InProgressTravelCardPreview() {
                     thumbnailUrl = "",
                 ),
             ),
-            onTravelClick = {},
+            onTravelClick = { _, _ -> },
             onPlaceClick = {},
         )
     }

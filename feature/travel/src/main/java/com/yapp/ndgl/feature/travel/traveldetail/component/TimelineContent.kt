@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
@@ -115,7 +114,7 @@ internal fun TimelineContent(
                 type = NDGLCTAButtonAttr.Type.PRIMARY,
                 size = NDGLCTAButtonAttr.Size.LARGE,
                 status = NDGLCTAButtonAttr.Status.ACTIVE,
-                label = stringResource(R.string.schedule_save_time),
+                label = stringResource(R.string.start_time_setting_save_time),
                 onClick = {
                     val totalMinutes = (selectedHour * 60) + selectedMinute
                     selectedStartTime = totalMinutes.minutes
@@ -128,7 +127,7 @@ internal fun TimelineContent(
             val isTimeSet = selectedStartTime.inWholeHours > 0 && previewEndTime.inWholeHours > 0
 
             Text(
-                text = stringResource(R.string.schedule_start_time),
+                text = stringResource(R.string.start_time_setting_start_time),
                 color = NDGLTheme.colors.black700,
                 style = NDGLTheme.typography.bodyMdMedium,
             )
@@ -156,7 +155,7 @@ internal fun TimelineContent(
             }
             Spacer(Modifier.height(20.dp))
             Text(
-                text = stringResource(R.string.schedule_end_time),
+                text = stringResource(R.string.start_time_setting_end_time),
                 color = NDGLTheme.colors.black700,
                 style = NDGLTheme.typography.bodyMdMedium,
             )
@@ -179,7 +178,7 @@ internal fun TimelineContent(
             if (isEndTimeExceeds24Hours) {
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = stringResource(R.string.schedule_time_exceeds_warning),
+                    text = stringResource(R.string.start_time_setting_time_exceeds_warning),
                     color = NDGLTheme.colors.red500,
                     style = NDGLTheme.typography.bodySmMedium,
                 )
@@ -194,7 +193,7 @@ internal fun TimelineContent(
                 } else {
                     NDGLCTAButtonAttr.Status.DISABLED
                 },
-                label = stringResource(R.string.schedule_set_time),
+                label = stringResource(R.string.start_time_setting_set_time),
                 onClick = {
                     onConfirm(selectedStartTime)
                 },

@@ -4,6 +4,7 @@ import java.util.Locale.getDefault
 import kotlin.time.Duration
 
 data class TransportSegment(
+    val googlePlaceId: String,
     val type: TransportType,
     val duration: Duration,
     val distance: Int,

@@ -44,6 +44,7 @@ import com.yapp.ndgl.core.ui.R as CoreR
 internal fun UpcomingTravelCardSection(
     myTravel: MyTravel,
     modifier: Modifier = Modifier,
+    onCardClick: () -> Unit = {},
 ) {
     when (myTravel) {
         MyTravel.None -> EmptyTravelCard(
@@ -54,12 +55,12 @@ internal fun UpcomingTravelCardSection(
         is MyTravel.Upcoming -> UpcomingTravelCard(
             modifier = modifier,
             travel = myTravel,
-            onCardClick = { /* FIXME: 내 여행 페이지 이동 */ },
+            onCardClick = onCardClick,
         )
 
         is MyTravel.InProgress -> InProgressTravelCard(
             travel = myTravel,
-            onCardClick = { /* FIXME: 내 여행 페이지 이동 */ },
+            onCardClick = onCardClick,
             onPlaceClick = { /* FIXME: 장소 상세 보기 페이지 이동 */ },
         )
     }
@@ -342,6 +343,8 @@ private fun UpcomingTravelCardPreview() {
         UpcomingTravelCardSection(
             modifier = Modifier,
             myTravel = MyTravel.Upcoming(
+                travelId = 1,
+                days = 6,
                 title = "도쿄 여행",
                 dDay = -7,
                 startDate = LocalDate.of(2025, 2, 15),
@@ -359,6 +362,8 @@ private fun InProgressTravelCardPreview() {
         UpcomingTravelCardSection(
             modifier = Modifier,
             myTravel = MyTravel.InProgress(
+                travelId = 1,
+                days = 10,
                 title = "인도 여행",
                 dayCount = 3,
                 startDate = LocalDate.of(2025, 2, 1),

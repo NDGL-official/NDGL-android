@@ -8,6 +8,7 @@ data class TravelTemplateContentInfo(
     val travelId: Long,
     @SerialName("country")
     val countryCode: String,
+    val countryName: String? = null,
     val city: String,
     val budgetPerPerson: Int? = null,
     val nights: Int,

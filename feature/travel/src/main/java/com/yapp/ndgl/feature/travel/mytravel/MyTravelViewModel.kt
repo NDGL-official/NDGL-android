@@ -132,8 +132,8 @@ class MyTravelViewModel @Inject constructor(
         when (intent) {
             MyTravelIntent.ClickSearchTravelTemplate -> postNavigateToSearchTravelTemplate()
             MyTravelIntent.ClickSettings -> postNavigateToSettings()
-            is MyTravelIntent.ClickTravel -> postNavigateToFollowTravel(travelId = intent.travelId)
-            is MyTravelIntent.ClickTravelDetail -> postNavigateToTravelDetail(travelId = intent.travelId)
+            is MyTravelIntent.ClickTravel -> postNavigateToFollowTravel(travelId = intent.travelId, days = intent.days)
+            is MyTravelIntent.ClickTravelDetail -> postNavigateToTravelDetail(travelId = intent.travelId, days = intent.days)
             is MyTravelIntent.ClickPlaceDetail -> postNavigateToPlaceDetail(placeId = intent.placeId)
             MyTravelIntent.ClickFindNewTravel -> postNavigateToPopularTravelList()
         }
@@ -147,12 +147,12 @@ class MyTravelViewModel @Inject constructor(
         postSideEffect(MyTravelSideEffect.NavigateToSettings)
     }
 
-    private fun postNavigateToFollowTravel(travelId: Long, days: Int = 1) {
+    private fun postNavigateToFollowTravel(travelId: Long, days: Int) {
         postSideEffect(MyTravelSideEffect.NavigateToFollowTravel(travelId = travelId, days = days))
     }
 
-    private fun postNavigateToTravelDetail(travelId: Long) {
-        postSideEffect(MyTravelSideEffect.NavigateToTravelDetail(travelId = travelId))
+    private fun postNavigateToTravelDetail(travelId: Long, days: Int) {
+        postSideEffect(MyTravelSideEffect.NavigateToTravelDetail(travelId = travelId, days = days))
     }
 
     private fun postNavigateToPlaceDetail(placeId: String) {

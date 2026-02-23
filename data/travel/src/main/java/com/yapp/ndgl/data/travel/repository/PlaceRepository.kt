@@ -22,7 +22,7 @@ class PlaceRepository @Inject constructor(
 ) {
     private var sessionToken: AutocompleteSessionToken? = null
 
-    suspend fun searchKeyword(keyword: String, country: String): SearchKeywordResponse {
+    suspend fun searchKeyword(keyword: String, countryCode: String): SearchKeywordResponse {
         if (sessionToken == null) {
             sessionToken = AutocompleteSessionToken.newInstance()
         }
@@ -30,7 +30,7 @@ class PlaceRepository @Inject constructor(
         val requestBuilder = FindAutocompletePredictionsRequest.builder()
             .setQuery(keyword)
             .setSessionToken(sessionToken)
-            .setCountries(country)
+            .setCountries(countryCode)
 
         val response = placesClient.findAutocompletePredictions(requestBuilder.build()).await()
 

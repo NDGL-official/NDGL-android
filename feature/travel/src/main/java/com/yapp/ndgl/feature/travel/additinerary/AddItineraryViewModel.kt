@@ -4,9 +4,12 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import com.yapp.ndgl.core.base.BaseViewModel
 import com.yapp.ndgl.core.util.suspendRunCatching
+import com.yapp.ndgl.data.travel.model.AddPlaceEvent
 import com.yapp.ndgl.data.travel.repository.PlaceRepository
+import com.yapp.ndgl.data.travel.repository.UserTravelRepository
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.toPlaceCategory
 import com.yapp.ndgl.feature.travel.model.toPlaceInfo
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -23,11 +26,12 @@ private const val TEST_THUMBNAIL_URL = "https://picsum.photos/200"
 class AddItineraryViewModel @AssistedInject constructor(
     @Assisted("travelId") private val travelId: Long,
     @Assisted("day") private val day: Int,
-    @Assisted("country") private val country: String,
+    @Assisted("countryCode") private val countryCode: String,
     @Assisted("representativeLatLng") private val representativeLatLng: LatLng,
     private val placeRepository: PlaceRepository,
+    private val userTravelRepository: UserTravelRepository,
 ) : BaseViewModel<AddItineraryState, AddItineraryIntent, AddItinerarySideEffect>(
-    initialState = AddItineraryState(travelId = travelId, day = day, country = country, representativeLatLng = representativeLatLng),
+    initialState = AddItineraryState(travelId = travelId, day = day, countryCode = countryCode, representativeLatLng = representativeLatLng),
 ) {
     private var searchJob: Job? = null
 
@@ -97,7 +101,6 @@ class AddItineraryViewModel @AssistedInject constructor(
         )
         reduce {
             copy(
-                country = state.value.country,
                 recommendedPlaces = stubRecommendedPlaces,
                 bookmarkedPlaces = stubBookmarkedPlaces,
             )
@@ -150,7 +153,7 @@ class AddItineraryViewModel @AssistedInject constructor(
             suspendRunCatching {
                 placeRepository.searchKeyword(
                     keyword = keyword,
-                    country = state.value.country,
+                    countryCode = state.value.countryCode,
                 )
             }.onSuccess { response ->
                 val results = response.results.map { result ->
@@ -160,7 +163,7 @@ class AddItineraryViewModel @AssistedInject constructor(
                     )
                 }
                 reduce { copy(isSearched = true, searchResults = results) }
-            }.onFailure {
+            }.onFailure { error ->
                 // FIXME: 임시 조치
                 reduce { copy(isSearched = true, searchResults = emptyList()) }
             }
@@ -170,12 +173,14 @@ class AddItineraryViewModel @AssistedInject constructor(
     private suspend fun searchKeyword() {
         reduce { copy(selectedPlaceDetail = null, isSearchFocused = true) }
         val keyword = state.value.keyword
-        if (keyword.isBlank()) return
+        if (keyword.isBlank()) {
+            return
+        }
 
         suspendRunCatching {
             placeRepository.searchKeyword(
                 keyword = keyword,
-                country = state.value.country,
+                countryCode = state.value.countryCode,
             )
         }.onSuccess { response ->
             val results = response.results.map { result ->
@@ -185,7 +190,7 @@ class AddItineraryViewModel @AssistedInject constructor(
                 )
             }
             reduce { copy(isSearched = true, searchResults = results) }
-        }.onFailure {
+        }.onFailure { error ->
             reduce { copy(isSearched = true, searchResults = emptyList()) }
         }
     }
@@ -271,8 +276,35 @@ class AddItineraryViewModel @AssistedInject constructor(
         postSideEffect(AddItinerarySideEffect.NavigateToAddPlace(googlePlaceId))
     }
 
-    private fun clickAddItinerary() {
-        // FIXME: 선택된 장소를 해당 travelId, day 일정에 추가 API 연동
+    private fun clickAddItinerary() = viewModelScope.launch {
+        val selectedDetail = state.value.selectedPlaceDetail
+
+        if (selectedDetail == null) {
+            postSideEffect(AddItinerarySideEffect.NavigateBack)
+            return@launch
+        }
+
+        val placeInfo = selectedDetail.placeInfo
+        userTravelRepository.emitAddPlaceEvent(
+            AddPlaceEvent(
+                travelId = travelId,
+                day = day,
+                googlePlaceId = placeInfo.googlePlaceId,
+                name = placeInfo.name,
+                latitude = placeInfo.latitude,
+                longitude = placeInfo.longitude,
+                thumbnail = placeInfo.thumbnail,
+                placeType = placeInfo.placeType.toPlaceCategory(),
+                address = placeInfo.address,
+                phoneNumber = placeInfo.phoneNumber,
+                googleMapsUri = placeInfo.googleMapsUri,
+                websiteUrl = placeInfo.websiteUrl,
+                rating = placeInfo.rating,
+                userRatingCount = placeInfo.userRatingCount,
+                estimatedDuration = placeInfo.estimatedDuration.inWholeMinutes.toInt(),
+            ),
+        )
+
         postSideEffect(AddItinerarySideEffect.NavigateBack)
     }
 
@@ -297,7 +329,7 @@ class AddItineraryViewModel @AssistedInject constructor(
         fun create(
             @Assisted("travelId") travelId: Long,
             @Assisted("day") day: Int,
-            @Assisted("country") country: String,
+            @Assisted("countryCode") countryCode: String,
             @Assisted("representativeLatLng") representativeLatLng: LatLng,
         ): AddItineraryViewModel
     }

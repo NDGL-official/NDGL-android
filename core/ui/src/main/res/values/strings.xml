@@ -36,10 +36,14 @@
     <string name="place_type_transport">교통수단</string>
 
     <!-- Transport Type -->
-    <string name="transport_type_walk">도보</string>
-    <string name="transport_type_car">자동차</string>
-    <string name="transport_type_bus">버스</string>
-    <string name="transport_type_train">기차</string>
+    <string name="transport_type_walking">도보</string>
+    <string name="transport_type_driving">자동차</string>
+    <string name="transport_type_transit">대중교통</string>
+    <string name="transport_type_bicycling">자전거</string>
+    <string name="transport_type_taxi">택시</string>
+    <string name="transport_type_two_wheeler">오토바이</string>
+    <string name="transport_type_ferry">페리</string>
+    <string name="transport_type_flight">비행기</string>
 
     <!-- Follow Travel -->
     <string name="follow_travel_button">내 여행에 저장</string>
@@ -75,13 +79,13 @@
     <string name="delete_place_dialog_cancel">취소</string>
     <string name="delete_place_dialog_confirm">삭제하기</string>
 
-    <!-- schedule Setting -->
-    <string name="schedule_setting_title">여행 시작 시간 설정</string>
-    <string name="schedule_start_time">여행 시작 시간</string>
-    <string name="schedule_end_time">여행 마무리 시간</string>
-    <string name="schedule_set_time">시간 설정하기</string>
-    <string name="schedule_save_time">시간 저장하기</string>
-    <string name="schedule_time_exceeds_warning">* 일정 마무리 시간은 24:00를 넘깁니다\n소요시간, 대중교통 수정을 권장합니다.</string>
+    <!-- Start Time Setting -->
+    <string name="start_time_setting_title">여행 시작 시간 설정</string>
+    <string name="start_time_setting_start_time">여행 시작 시간</string>
+    <string name="start_time_setting_end_time">여행 마무리 시간</string>
+    <string name="start_time_setting_set_time">시간 설정하기</string>
+    <string name="start_time_setting_save_time">시간 저장하기</string>
+    <string name="start_time_setting_time_exceeds_warning">* 일정 마무리 시간은 24:00를 넘깁니다\n소요시간, 대중교통 수정을 권장합니다.</string>
     <string name="schedule_start">일정 시작</string>
 
     <!-- Duration Picker -->

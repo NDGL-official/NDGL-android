@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -88,7 +89,7 @@ internal fun TransportBottomSheet(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(itemHeight * 4)
+                    .heightIn(min = itemHeight * 4)
                     .nestedScroll(nestedScrollConnection),
             ) {
                 itemsIndexed(availableTransports) { index, transport ->
@@ -159,13 +160,11 @@ internal fun TransportBottomSheet(
 @Preview(showBackground = true)
 @Composable
 private fun TransportBottomSheetPreview() {
-    // 1. Mock Data 준비
     val mockAvailableTransports = listOf(
-        TransportSegment(TransportType.WALK, 15.minutes, 1200),
-        TransportSegment(TransportType.CAR, 10.minutes, 5400),
-        TransportSegment(TransportType.BUS, 25.minutes, 4800),
-        TransportSegment(TransportType.TRAIN, 40.minutes, 12000),
-        TransportSegment(TransportType.CAR, 5.minutes, 2000), // 스크롤 확인용 추가
+        TransportSegment("1", TransportType.WALKING, 15.minutes, 1200),
+        TransportSegment("2", TransportType.DRIVING, 10.minutes, 5400),
+        TransportSegment("3", TransportType.TRANSIT, 25.minutes, 4800),
+        TransportSegment("4", TransportType.BICYCLING, 40.minutes, 12000),
     )
 
     NDGLTheme {

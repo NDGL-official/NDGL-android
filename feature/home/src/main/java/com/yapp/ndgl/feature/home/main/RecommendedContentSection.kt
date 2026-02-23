@@ -1,6 +1,7 @@
 package com.yapp.ndgl.feature.home.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ import com.yapp.ndgl.feature.home.util.toIconRes
 internal fun RecommendedContentSection(
     userName: String,
     contents: List<TravelContent>,
+    onTravelClick: (Long, Int) -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth(),
@@ -63,7 +65,10 @@ internal fun RecommendedContentSection(
                 items = contents,
                 key = { it.travelId },
             ) { travel ->
-                RecommendedContentCard(travel = travel)
+                RecommendedContentCard(
+                    travel = travel,
+                    onTravelClick = onTravelClick,
+                )
             }
         }
     }
@@ -72,11 +77,13 @@ internal fun RecommendedContentSection(
 @Composable
 private fun RecommendedContentCard(
     travel: TravelContent,
+    onTravelClick: (Long, Int) -> Unit,
 ) {
     Column(
         modifier = Modifier
             .width(240.dp)
-            .clip(RoundedCornerShape(8.dp)),
+            .clip(RoundedCornerShape(8.dp))
+            .clickable { onTravelClick(travel.travelId, travel.days) },
     ) {
         AsyncImage(
             model = travel.thumbnail,
@@ -169,6 +176,7 @@ private fun RecommendedContentSectionPreview() {
     NDGLTheme {
         RecommendedContentSection(
             userName = "유저123",
+            onTravelClick = { _, _ -> },
             contents = listOf(
                 TravelContent(
                     travelId = 1,

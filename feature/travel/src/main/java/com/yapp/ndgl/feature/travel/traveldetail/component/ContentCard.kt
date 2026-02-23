@@ -103,7 +103,7 @@ fun ContentCard(contentInfo: ContentInfo) {
                             text = stringResource(
                                 R.string.content_card_info_format,
                                 contentInfo.videoInfo.creatorName,
-                                contentInfo.country,
+                                contentInfo.country ?: contentInfo.city,
                                 contentInfo.nights,
                                 contentInfo.days,
                             ),
@@ -164,7 +164,7 @@ fun ContentCard(contentInfo: ContentInfo) {
                             Icon(
                                 imageVector = ImageVector.vectorResource(R.drawable.ic_20_piggybank),
                                 contentDescription = null,
-                                tint = NDGLTheme.colors.etcBlue,
+                                tint = NDGLTheme.colors.green500,
                                 modifier = Modifier.size(20.dp),
                             )
                             Text(
@@ -172,7 +172,7 @@ fun ContentCard(contentInfo: ContentInfo) {
                                     R.string.content_card_budget_format,
                                     contentInfo.budgetPerPerson.formatString(),
                                 ),
-                                color = NDGLTheme.colors.etcBlue,
+                                color = NDGLTheme.colors.green500,
                                 style = NDGLTheme.typography.bodyMdSemiBold,
                             )
                         }

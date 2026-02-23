@@ -1,12 +1,16 @@
 package com.yapp.ndgl.data.travel.api
 
 import com.yapp.ndgl.data.core.model.BaseResponse
+import com.yapp.ndgl.data.travel.model.CreateTravelFromTemplateRequest
+import com.yapp.ndgl.data.travel.model.CreateTravelFromTemplateResponse
 import com.yapp.ndgl.data.travel.model.PopularTravelTemplates
 import com.yapp.ndgl.data.travel.model.RecommendTravelTemplates
 import com.yapp.ndgl.data.travel.model.SearchTravelTemplates
 import com.yapp.ndgl.data.travel.model.TravelTemplateContentInfo
 import com.yapp.ndgl.data.travel.model.TravelTemplateItinerary
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -24,7 +28,7 @@ interface TravelTemplateApi {
     @GET("/api/v1/travel-templates/{id}/itinerary")
     suspend fun getTravelTemplateItinerary(
         @Path("id") id: Long,
-        @Query("day") day: Int? = null,
+        @Query("day") day: Int,
     ): BaseResponse<TravelTemplateItinerary>
 
     @GET("/api/v1/travel-templates/{id}/content-card")
@@ -38,4 +42,9 @@ interface TravelTemplateApi {
         @Query("page") page: Int? = null,
         @Query("size") size: Int? = null,
     ): BaseResponse<SearchTravelTemplates>
+
+    @POST("/api/v1/travels")
+    suspend fun createTravelFromTemplate(
+        @Body request: CreateTravelFromTemplateRequest,
+    ): BaseResponse<CreateTravelFromTemplateResponse>
 }

@@ -52,7 +52,8 @@ private fun TransportSegmentPreview() {
     NDGLTheme {
         TransportSegment(
             segment = TransportSegment(
-                type = TransportType.WALK,
+                googlePlaceId = "1",
+                type = TransportType.WALKING,
                 duration = 15.minutes,
                 distance = 1200,
             ),

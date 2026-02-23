@@ -37,7 +37,7 @@ internal fun PopularTravelSection(
     selectedTabIndex: Int,
     travels: List<TravelContent>,
     onTabSelected: (Int) -> Unit,
-    onTravelClick: (Long) -> Unit,
+    onTravelClick: (Long, Int) -> Unit,
     onTravelMoreClick: () -> Unit,
 ) {
     Column(
@@ -78,7 +78,7 @@ private fun HorizontalCardSection(
     selectedTabIndex: Int,
     travels: List<TravelContent>,
     onTabSelected: (Int) -> Unit,
-    onTravelClick: (Long) -> Unit,
+    onTravelClick: (Long, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val columns = travels.chunked(COLUMN_ITEM_COUNT)
@@ -139,11 +139,11 @@ private fun HorizontalCardSection(
 @Composable
 private fun PopularTravelItem(
     travel: TravelContent,
-    onTravelClick: (Long) -> Unit,
+    onTravelClick: (Long, Int) -> Unit,
 ) {
     TravelTemplate(
         travel = travel,
-        onTravelTemplateClick = onTravelClick,
+        onTravelTemplateClick = { travelId -> onTravelClick(travelId, travel.days) },
     )
 }
 
@@ -204,7 +204,7 @@ private fun PopularTravelSectionPreview() {
             selectedTabIndex = 0,
             travels = sampleTravels,
             onTabSelected = {},
-            onTravelClick = {},
+            onTravelClick = { _, _ -> },
             onTravelMoreClick = {},
         )
     }

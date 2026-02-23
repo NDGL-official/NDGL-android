@@ -12,6 +12,7 @@ android {
             load(rootProject.file("local.properties").bufferedReader())
         }
         buildConfigField("String", "PLACE_API_KEY", "\"${localProperties.getProperty("PLACE_API_KEY", "")}\"")
+        buildConfigField("String", "ROUTE_API_KEY", "\"${localProperties.getProperty("ROUTE_API_KEY", "")}\"")
     }
 
     buildFeatures {

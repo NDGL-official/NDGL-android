@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.yapp.ndgl.core.ui.R
 import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButton
 import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButtonAttr
@@ -30,65 +29,47 @@ import kotlinx.datetime.LocalDate
 
 @Composable
 internal fun DatePickerRoute(
-    viewModel: DatePickerViewModel = hiltViewModel(),
-    navigateBack: () -> Unit = {},
+    viewModel: DatePickerViewModel,
+    navigateBack: () -> Unit,
+    navigateToTravelDetail: (Long, Int) -> Unit,
 ) {
     val state by viewModel.collectAsState()
-
-    fun selectDate(date: LocalDate) {
-        viewModel.onIntent(DatePickerIntent.SelectDate(date))
-    }
-
-    fun selectPreviousMonth() {
-        viewModel.onIntent(DatePickerIntent.SelectPreviousMonth)
-    }
-
-    fun selectNextMonth() {
-        viewModel.onIntent(DatePickerIntent.SelectNextMonth)
-    }
-
-    fun clickCompleteButton() {
-        viewModel.onIntent(DatePickerIntent.ClickCompleteButton)
-    }
-
-    fun dismissDialog() {
-        viewModel.onIntent(DatePickerIntent.DismissDialog)
-    }
-
-    fun clickTravelButton() {
-        viewModel.onIntent(DatePickerIntent.ClickViewTravelButton)
-    }
-
-    DatePickerScreen(
-        state = state,
-        selectDate = ::selectDate,
-        selectPreviousMonth = ::selectPreviousMonth,
-        selectNextMonth = ::selectNextMonth,
-        clickCompleteButton = ::clickCompleteButton,
-        clickBackButton = navigateBack,
-        dismissDialog = ::dismissDialog,
-        clickTravelButton = ::clickTravelButton,
-    )
 
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             is DatePickerSideEffect.NavigateToTravelDetail -> {
-                // TODO
+                navigateToTravelDetail(sideEffect.travelId, sideEffect.days)
+            }
+            is DatePickerSideEffect.NavigateBack -> {
+                navigateBack()
             }
         }
     }
+
+    DatePickerScreen(
+        state = state,
+        onBackClick = navigateBack,
+        onDateSelected = { date -> viewModel.onIntent(DatePickerIntent.SelectDate(date)) },
+        onPreviousMonthClick = { viewModel.onIntent(DatePickerIntent.SelectPreviousMonth) },
+        onNextMonthClick = { viewModel.onIntent(DatePickerIntent.SelectNextMonth) },
+        onCompleteClick = { viewModel.onIntent(DatePickerIntent.ClickCompleteButton) },
+        onDatePickerModalNegativeButtonClick = { viewModel.onIntent(DatePickerIntent.ClickDatePickerModalNegativeButton) },
+        onConfirmDatePickerModal = { viewModel.onIntent(DatePickerIntent.ConfirmDatePickerModal) },
+        onDismissDatePickerModal = { viewModel.onIntent(DatePickerIntent.DismissDatePickerModal) },
+    )
 }
 
 @Composable
 private fun DatePickerScreen(
     state: DatePickerState,
-    selectDate: (LocalDate) -> Unit,
-    selectPreviousMonth: () -> Unit,
-    selectNextMonth: () -> Unit,
-    clickCompleteButton: () -> Unit,
-    clickBackButton: () -> Unit,
-    dismissDialog: () -> Unit,
-    clickTravelButton: () -> Unit,
+    onBackClick: () -> Unit,
+    onDateSelected: (LocalDate) -> Unit,
+    onPreviousMonthClick: () -> Unit,
+    onNextMonthClick: () -> Unit,
+    onCompleteClick: () -> Unit,
+    onDatePickerModalNegativeButtonClick: () -> Unit,
+    onConfirmDatePickerModal: () -> Unit,
+    onDismissDatePickerModal: () -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -100,7 +81,7 @@ private fun DatePickerScreen(
                 headline = stringResource(R.string.date_picker_title),
                 textAlignType = NDGLNavigationBarAttr.TextAlignType.CENTER,
                 leadingIcon = R.drawable.ic_28_chevron_left,
-                onLeadingIconClick = clickBackButton,
+                onLeadingIconClick = onBackClick,
             )
         },
     ) { innerPadding ->
@@ -125,9 +106,9 @@ private fun DatePickerScreen(
                         month = state.currentMonth,
                         startDate = state.startDate,
                         endDate = state.endDate,
-                        onDateSelected = selectDate,
-                        onPreviousMonth = selectPreviousMonth,
-                        onNextMonth = selectNextMonth,
+                        onDateSelected = onDateSelected,
+                        onPreviousMonth = onPreviousMonthClick,
+                        onNextMonth = onNextMonthClick,
                     )
 
                     if (state.isInsufficientDuration) {
@@ -152,19 +133,22 @@ private fun DatePickerScreen(
                             NDGLCTAButtonAttr.Status.DISABLED
                         },
                         label = stringResource(R.string.date_picker_complete),
-                        onClick = clickCompleteButton,
+                        onClick = onCompleteClick,
                     )
                 }
             }
 
-            if (state.showDialog) {
+            if (state.showDatePickerModal) {
                 NDGLModal(
-                    onDismissRequest = dismissDialog,
+                    onDismissRequest = onDismissDatePickerModal,
                     title = stringResource(R.string.date_picker_modal_title),
                     body = stringResource(R.string.date_picker_modal_body),
+                    dismissOnBackPress = false,
+                    dismissOnClickOutside = false,
                     negativeButtonText = stringResource(R.string.date_picker_modal_negative),
+                    onNegativeButtonClick = onDatePickerModalNegativeButtonClick,
                     positiveButtonText = stringResource(R.string.date_picker_modal_positive),
-                    onPositiveButtonClick = clickTravelButton,
+                    onPositiveButtonClick = onConfirmDatePickerModal,
                 )
             }
         }
@@ -177,15 +161,17 @@ private fun DatePickerScreenPreview() {
     NDGLTheme {
         DatePickerScreen(
             state = DatePickerState(
+                templateId = 1L,
                 tripDays = 3,
             ),
-            selectDate = {},
-            selectPreviousMonth = {},
-            selectNextMonth = {},
-            clickCompleteButton = {},
-            clickBackButton = {},
-            dismissDialog = {},
-            clickTravelButton = {},
+            onBackClick = {},
+            onDateSelected = {},
+            onPreviousMonthClick = {},
+            onNextMonthClick = {},
+            onCompleteClick = {},
+            onConfirmDatePickerModal = {},
+            onDismissDatePickerModal = {},
+            onDatePickerModalNegativeButtonClick = {},
         )
     }
 }
@@ -196,20 +182,22 @@ private fun DatePickerScreenWithDialogPreview() {
     NDGLTheme {
         DatePickerScreen(
             state = DatePickerState(
+                templateId = 1L,
                 currentYear = 2026,
                 currentMonth = 4,
                 tripDays = 3,
                 startDate = LocalDate(2026, 4, 23),
                 endDate = LocalDate(2026, 4, 27),
-                showDialog = true,
+                showDatePickerModal = true,
             ),
-            selectDate = {},
-            selectPreviousMonth = {},
-            selectNextMonth = {},
-            clickCompleteButton = {},
-            clickBackButton = {},
-            dismissDialog = {},
-            clickTravelButton = {},
+            onBackClick = {},
+            onDateSelected = {},
+            onPreviousMonthClick = {},
+            onNextMonthClick = {},
+            onCompleteClick = {},
+            onConfirmDatePickerModal = {},
+            onDismissDatePickerModal = {},
+            onDatePickerModalNegativeButtonClick = {},
         )
     }
 }

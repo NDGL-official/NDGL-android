@@ -2,6 +2,8 @@ package com.yapp.ndgl.core.util
 
 import java.util.Locale.getDefault
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 
 fun Duration.formatString(): String {
     return toComponents { hours, minutes, _, _ ->
@@ -33,4 +35,22 @@ fun Duration.toAmPmTimeString(): String {
     } else {
         "$amPm $displayHour:${String.format(getDefault(), "%02d", minutes)}"
     }
+}
+
+fun parseTimeStringToDuration(timeString: String?): Duration? {
+    if (timeString.isNullOrBlank()) return null
+
+    val regex = """^(\d+):([0-5]?\d):([0-5]?\d)$""".toRegex()
+    val matchResult = regex.find(timeString) ?: return null
+
+    val (hours, minutes) = matchResult.destructured
+
+    return hours.toInt().hours + minutes.toInt().minutes
+}
+
+fun Duration.parseDurationToTimeString(): String {
+    val totalMinutes = this.inWholeMinutes
+    val hours = totalMinutes / 60
+    val minutes = totalMinutes % 60
+    return String.format(getDefault(), "%02d:%02d:00", hours, minutes)
 }

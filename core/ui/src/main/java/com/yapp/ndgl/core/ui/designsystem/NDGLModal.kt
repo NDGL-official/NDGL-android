@@ -16,21 +16,30 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 
 @Composable
 fun NDGLModal(
+    modifier: Modifier = Modifier,
     onDismissRequest: () -> Unit,
     title: String,
     body: String,
+    description: String? = null,
+    dismissOnBackPress: Boolean = true,
+    dismissOnClickOutside: Boolean = true,
     positiveButtonText: String,
     onPositiveButtonClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    description: String? = null,
     negativeButtonText: String? = null,
     onNegativeButtonClick: (() -> Unit) = {},
 ) {
-    Dialog(onDismissRequest = onDismissRequest) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(
+            dismissOnBackPress = dismissOnBackPress,
+            dismissOnClickOutside = dismissOnClickOutside,
+        ),
+    ) {
         Surface(
             modifier = modifier.wrapContentHeight(),
             shape = RoundedCornerShape(8.dp),

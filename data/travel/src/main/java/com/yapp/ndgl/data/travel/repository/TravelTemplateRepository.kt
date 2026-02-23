@@ -1,7 +1,11 @@
 package com.yapp.ndgl.data.travel.repository
 
+import com.yapp.ndgl.data.core.model.error.HttpResponseException
 import com.yapp.ndgl.data.core.model.getData
 import com.yapp.ndgl.data.travel.api.TravelTemplateApi
+import com.yapp.ndgl.data.travel.exception.DuplicateTravelPeriodException
+import com.yapp.ndgl.data.travel.model.CreateTravelFromTemplateRequest
+import com.yapp.ndgl.data.travel.model.CreateTravelFromTemplateResponse
 import com.yapp.ndgl.data.travel.model.PopularTravelTemplates
 import com.yapp.ndgl.data.travel.model.RecommendTravelTemplates
 import com.yapp.ndgl.data.travel.model.SearchTravelTemplates
@@ -38,5 +42,27 @@ class TravelTemplateRepository @Inject constructor(
 
     suspend fun searchTravelTemplates(keyword: String): SearchTravelTemplates {
         return travelTemplateApi.searchTravelTemplates(keyword = keyword).getData()
+    }
+
+    suspend fun createTravelFromTemplate(
+        templateId: Long,
+        startDate: String,
+        endDate: String,
+    ): CreateTravelFromTemplateResponse {
+        return try {
+            travelTemplateApi.createTravelFromTemplate(
+                request = CreateTravelFromTemplateRequest(
+                    templateId = templateId,
+                    startDate = startDate,
+                    endDate = endDate,
+                ),
+            ).getData()
+        } catch (e: HttpResponseException) {
+            if (e.code == "TRAVEL-04-003") {
+                throw DuplicateTravelPeriodException(e)
+            }
+
+            throw e
+        }
     }
 }

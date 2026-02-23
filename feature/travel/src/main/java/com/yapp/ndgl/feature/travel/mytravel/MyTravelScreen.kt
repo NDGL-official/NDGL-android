@@ -28,7 +28,7 @@ internal fun MyTravelRoute(
     navigateToTemplateSearch: () -> Unit,
     navigateToSettings: () -> Unit,
     navigateToFollowTravel: (Long, Int) -> Unit,
-    navigateToTravelDetail: (Long) -> Unit,
+    navigateToTravelDetail: (Long, Int) -> Unit,
     navigateToTravelPlace: (String) -> Unit,
     navigateToPopularTravelList: () -> Unit,
 ) {
@@ -42,8 +42,8 @@ internal fun MyTravelRoute(
         onSettingsClick = {
             viewModel.onIntent(MyTravelIntent.ClickSettings)
         },
-        onTravelClick = { travelId ->
-            viewModel.onIntent(MyTravelIntent.ClickTravelDetail(travelId = travelId))
+        onTravelClick = { travelId, days ->
+            viewModel.onIntent(MyTravelIntent.ClickTravelDetail(travelId = travelId, days = days))
         },
         onPlaceClick = { placeId ->
             viewModel.onIntent(MyTravelIntent.ClickPlaceDetail(placeId = placeId))
@@ -51,8 +51,8 @@ internal fun MyTravelRoute(
         onNewTravelFindClick = {
             viewModel.onIntent(MyTravelIntent.ClickFindNewTravel)
         },
-        onTravelTemplateClick = { travelId ->
-            viewModel.onIntent((MyTravelIntent.ClickTravel(travelId = travelId)))
+        onTravelTemplateClick = { travelId, days ->
+            viewModel.onIntent((MyTravelIntent.ClickTravel(travelId = travelId, days = days)))
         },
     )
 
@@ -69,6 +69,7 @@ internal fun MyTravelRoute(
 
             is MyTravelSideEffect.NavigateToTravelDetail -> navigateToTravelDetail(
                 sideEffect.travelId,
+                sideEffect.days,
             )
 
             is MyTravelSideEffect.NavigateToTravelPlace -> navigateToTravelPlace(
@@ -85,10 +86,10 @@ private fun MyTravelScreen(
     state: MyTravelState,
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onTravelClick: (Long) -> Unit,
+    onTravelClick: (Long, Int) -> Unit,
     onPlaceClick: (String) -> Unit,
     onNewTravelFindClick: () -> Unit,
-    onTravelTemplateClick: (Long) -> Unit,
+    onTravelTemplateClick: (Long, Int) -> Unit,
 ) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -160,10 +161,10 @@ private fun MyTravelScreenPreview() {
             state = MyTravelState(),
             onSearchClick = {},
             onSettingsClick = {},
-            onTravelClick = {},
+            onTravelClick = { _, _ -> },
             onPlaceClick = {},
             onNewTravelFindClick = {},
-            onTravelTemplateClick = {},
+            onTravelTemplateClick = { _, _ -> },
         )
     }
 }
