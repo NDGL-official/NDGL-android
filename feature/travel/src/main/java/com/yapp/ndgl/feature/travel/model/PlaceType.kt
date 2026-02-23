@@ -12,6 +12,7 @@ enum class PlaceType(@get:StringRes val labelRes: Int, @get:DrawableRes val icon
     RESTAURANT(R.string.place_type_restaurant, R.drawable.ic_14_restaurant),
     ATTRACTION(R.string.place_type_attraction, R.drawable.ic_14_flag),
     CAFE(R.string.place_type_cafe, R.drawable.ic_14_coffee),
+    AIRPORT(R.string.place_type_airport, R.drawable.ic_14_airplane),
     TRANSPORT(R.string.place_type_transport, R.drawable.ic_14_car),
 }
 
@@ -22,12 +23,13 @@ fun PlaceType.getColor(): androidx.compose.ui.graphics.Color {
         PlaceType.RESTAURANT -> NDGLTheme.colors.etcOrange
         PlaceType.ATTRACTION -> NDGLTheme.colors.etcGreen
         PlaceType.CAFE -> NDGLTheme.colors.etcOrange
+        PlaceType.AIRPORT -> NDGLTheme.colors.etcGray
         PlaceType.TRANSPORT -> NDGLTheme.colors.etcGray
     }
 }
 
 internal fun PlaceCategory.toPlaceType(): PlaceType = when (this) {
-    PlaceCategory.AIRPORT -> PlaceType.TRANSPORT
+    PlaceCategory.AIRPORT -> PlaceType.AIRPORT
     PlaceCategory.TRANSPORT -> PlaceType.TRANSPORT
     PlaceCategory.ATTRACTION -> PlaceType.ATTRACTION
     PlaceCategory.RESTAURANT -> PlaceType.RESTAURANT
@@ -40,6 +42,7 @@ internal fun PlaceType.toPlaceCategory(): PlaceCategory = when (this) {
     PlaceType.RESTAURANT -> PlaceCategory.RESTAURANT
     PlaceType.ATTRACTION -> PlaceCategory.ATTRACTION
     PlaceType.CAFE -> PlaceCategory.CAFE
+    PlaceType.AIRPORT -> PlaceCategory.AIRPORT
     PlaceType.TRANSPORT -> PlaceCategory.TRANSPORT
 }
 
