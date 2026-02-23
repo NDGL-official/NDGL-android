@@ -4,9 +4,12 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import com.yapp.ndgl.core.base.BaseViewModel
 import com.yapp.ndgl.core.util.suspendRunCatching
+import com.yapp.ndgl.data.travel.model.AddPlaceEvent
 import com.yapp.ndgl.data.travel.repository.PlaceRepository
+import com.yapp.ndgl.data.travel.repository.UserTravelRepository
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
 import com.yapp.ndgl.feature.travel.model.PlaceType
+import com.yapp.ndgl.feature.travel.model.toPlaceCategory
 import com.yapp.ndgl.feature.travel.model.toPlaceInfo
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
@@ -26,6 +29,7 @@ class AddItineraryViewModel @AssistedInject constructor(
     @Assisted("country") private val country: String,
     @Assisted("representativeLatLng") private val representativeLatLng: LatLng,
     private val placeRepository: PlaceRepository,
+    private val userTravelRepository: UserTravelRepository,
 ) : BaseViewModel<AddItineraryState, AddItineraryIntent, AddItinerarySideEffect>(
     initialState = AddItineraryState(travelId = travelId, day = day, country = country, representativeLatLng = representativeLatLng),
 ) {
@@ -160,7 +164,7 @@ class AddItineraryViewModel @AssistedInject constructor(
                     )
                 }
                 reduce { copy(isSearched = true, searchResults = results) }
-            }.onFailure {
+            }.onFailure { error ->
                 // FIXME: 임시 조치
                 reduce { copy(isSearched = true, searchResults = emptyList()) }
             }
@@ -170,7 +174,9 @@ class AddItineraryViewModel @AssistedInject constructor(
     private suspend fun searchKeyword() {
         reduce { copy(selectedPlaceDetail = null, isSearchFocused = true) }
         val keyword = state.value.keyword
-        if (keyword.isBlank()) return
+        if (keyword.isBlank()) {
+            return
+        }
 
         suspendRunCatching {
             placeRepository.searchKeyword(
@@ -185,7 +191,7 @@ class AddItineraryViewModel @AssistedInject constructor(
                 )
             }
             reduce { copy(isSearched = true, searchResults = results) }
-        }.onFailure {
+        }.onFailure { error ->
             reduce { copy(isSearched = true, searchResults = emptyList()) }
         }
     }
@@ -271,8 +277,38 @@ class AddItineraryViewModel @AssistedInject constructor(
         postSideEffect(AddItinerarySideEffect.NavigateToAddPlace(googlePlaceId))
     }
 
-    private fun clickAddItinerary() {
-        // FIXME: 선택된 장소를 해당 travelId, day 일정에 추가 API 연동
+    private fun clickAddItinerary() = viewModelScope.launch {
+        val selectedDetail = state.value.selectedPlaceDetail
+
+        if (selectedDetail == null) {
+            postSideEffect(AddItinerarySideEffect.NavigateBack)
+            return@launch
+        }
+
+        val placeInfo = selectedDetail.placeInfo
+
+        suspendRunCatching {
+            userTravelRepository.emitAddPlaceEvent(
+                AddPlaceEvent(
+                    travelId = travelId,
+                    day = day,
+                    googlePlaceId = placeInfo.googlePlaceId,
+                    name = placeInfo.name,
+                    latitude = placeInfo.latitude,
+                    longitude = placeInfo.longitude,
+                    thumbnail = placeInfo.thumbnail,
+                    placeType = placeInfo.placeType.toPlaceCategory(),
+                    address = placeInfo.address,
+                    phoneNumber = placeInfo.phoneNumber,
+                    googleMapsUri = placeInfo.googleMapsUri,
+                    websiteUrl = placeInfo.websiteUrl,
+                    rating = placeInfo.rating,
+                    userRatingCount = placeInfo.userRatingCount,
+                    estimatedDuration = placeInfo.estimatedDuration.inWholeMinutes.toInt(),
+                ),
+            )
+        }
+
         postSideEffect(AddItinerarySideEffect.NavigateBack)
     }
 
