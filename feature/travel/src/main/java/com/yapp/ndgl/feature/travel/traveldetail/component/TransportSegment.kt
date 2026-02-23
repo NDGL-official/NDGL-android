@@ -9,7 +9,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -38,7 +37,7 @@ internal fun TransportSegment(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Spacer(Modifier.width(7.dp))
-        Icon(imageVector = ImageVector.vectorResource(segment.type.iconRes), contentDescription = null, tint = Color.Unspecified)
+        Icon(imageVector = ImageVector.vectorResource(segment.type.iconRes), contentDescription = null, tint = NDGLTheme.colors.black400)
         Spacer(Modifier.width(8.dp))
         Text(
             text = stringResource(
@@ -65,7 +64,8 @@ private fun TransportSegmentPreview() {
         TransportSegment(
             onClick = {},
             segment = TransportSegment(
-                type = TransportType.WALK,
+                googlePlaceId = "1",
+                type = TransportType.WALKING,
                 duration = 15.minutes,
                 distance = 1200,
             ),

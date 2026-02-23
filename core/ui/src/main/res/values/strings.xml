@@ -36,10 +36,14 @@
     <string name="place_type_transport">교통수단</string>
 
     <!-- Transport Type -->
-    <string name="transport_type_walk">도보</string>
-    <string name="transport_type_car">자동차</string>
-    <string name="transport_type_bus">버스</string>
-    <string name="transport_type_train">기차</string>
+    <string name="transport_type_walking">도보</string>
+    <string name="transport_type_driving">자동차</string>
+    <string name="transport_type_transit">대중교통</string>
+    <string name="transport_type_bicycling">자전거</string>
+    <string name="transport_type_taxi">택시</string>
+    <string name="transport_type_two_wheeler">오토바이</string>
+    <string name="transport_type_ferry">페리</string>
+    <string name="transport_type_flight">비행기</string>
 
     <!-- Follow Travel -->
     <string name="follow_travel_button">내 여행에 저장</string>
