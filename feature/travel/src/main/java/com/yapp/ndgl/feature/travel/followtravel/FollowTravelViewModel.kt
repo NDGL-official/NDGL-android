@@ -127,6 +127,7 @@ class FollowTravelViewModel @AssistedInject constructor(
                 regularOpeningHours = item.place.regularOpeningHours,
                 transportToNext = nextItem?.transportation?.firstOrNull()?.let { transport ->
                     TransportSegment(
+                        googlePlaceId = nextItem.place.googlePlaceId,
                         type = transport.mode.toTransportType(),
                         duration = transport.timeMin.minutes,
                         distance = ((nextItem.distanceKm ?: 0.0) * 1000).toInt(),
