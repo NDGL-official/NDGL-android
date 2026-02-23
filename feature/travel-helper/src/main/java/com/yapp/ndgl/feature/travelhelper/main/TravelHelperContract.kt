@@ -7,13 +7,20 @@ import com.yapp.ndgl.core.base.UiSideEffect
 import com.yapp.ndgl.core.base.UiState
 import com.yapp.ndgl.data.travel.model.PlaceCategory
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDate
+
+data class CurrencyOption(
+    val currencyCode: String,
+    val countryName: String,
+)
 
 @Stable
 data class TravelHelperState(
     val travelUiState: TravelUiState = TravelUiState.Loading,
     val currencyInput: String = "1",
     val convertedAmount: Double? = null,
+    val availableCurrencies: ImmutableList<CurrencyOption> = persistentListOf(),
 ) : UiState {
     sealed interface TravelUiState {
         data object Loading : TravelUiState
@@ -70,11 +77,20 @@ data class TravelHelperState(
         val thumbnailUrl: String?,
     )
 
+    @Immutable
+    data class CurrencyInfo(
+        val currencyCode: String,
+        val currencyLabel: String,
+        val countryName: String,
+        val flagEmoji: String,
+    )
+
+    @Immutable
     data class ExchangeRateInfo(
-        val foreignCurrencyCode: String,
-        val foreignCurrencyName: String,
-        val rateToKrw: Double,
-        val rateDate: String,
+        val topCurrency: CurrencyInfo,
+        val bottomCurrency: CurrencyInfo,
+        val rate: Double,
+        val rateDate: LocalDate,
     )
 }
 
@@ -82,8 +98,10 @@ sealed interface TravelHelperIntent : UiIntent {
     data object ClickSearch : TravelHelperIntent
     data class UpdateCurrencyInput(val input: String) : TravelHelperIntent
     data object SwapCurrency : TravelHelperIntent
+    data class SelectCurrency(val currencyCode: String) : TravelHelperIntent
 }
 
 sealed interface TravelHelperSideEffect : UiSideEffect {
     data object NavigateToSearch : TravelHelperSideEffect
+    data object ShowExchangeRateError : TravelHelperSideEffect
 }

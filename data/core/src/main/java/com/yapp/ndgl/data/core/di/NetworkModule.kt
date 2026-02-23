@@ -136,6 +136,15 @@ object NetworkModule {
         .addInterceptor(androidCredentialInterceptor)
         .addInterceptor(httpLoggingInterceptor)
         .build()
+
+    @ExchangeRateClient
+    @Singleton
+    @Provides
+    fun provideExchangeRateOkHttpClient(
+        httpLoggingInterceptor: HttpLoggingInterceptor,
+    ): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(httpLoggingInterceptor)
+        .build()
 }
 
 @Qualifier
@@ -173,3 +182,11 @@ annotation class WeatherClient
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class GeocodingClient
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ExchangeRateApiKey
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class ExchangeRateClient

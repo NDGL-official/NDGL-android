@@ -22,4 +22,6 @@
     <string name="travel_helper_currency_calculator_title">환율 계산기</string>
     <string name="travel_helper_currency_krw">KRW (원)</string>
     <string name="travel_helper_currency_rate_info">1 %1$s = %2$s KRW</string>
+    <string name="travel_helper_currency_rate_date">환율기준 %s</string>
+    <string name="travel_helper_exchange_rate_error">환율 정보를 불러오지 못했습니다.</string>
 </resources>

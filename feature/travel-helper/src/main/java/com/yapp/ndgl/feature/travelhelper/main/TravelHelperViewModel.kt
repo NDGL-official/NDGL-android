@@ -2,10 +2,14 @@ package com.yapp.ndgl.feature.travelhelper.main
 
 import androidx.lifecycle.viewModelScope
 import com.yapp.ndgl.core.base.BaseViewModel
+import com.yapp.ndgl.core.util.FlagEmojiUtil.toFlagEmoji
 import com.yapp.ndgl.core.util.suspendRunCatching
 import com.yapp.ndgl.data.travel.model.WeatherForecastResponse
+import com.yapp.ndgl.data.travel.repository.ExchangeRateRepository
 import com.yapp.ndgl.data.travel.repository.UserTravelRepository
 import com.yapp.ndgl.data.travel.repository.WeatherRepository
+import com.yapp.ndgl.data.travel.util.CurrencyInfoResolver
+import com.yapp.ndgl.feature.travelhelper.main.TravelHelperState.CurrencyInfo
 import com.yapp.ndgl.feature.travelhelper.main.TravelHelperState.ExchangeRateInfo
 import com.yapp.ndgl.feature.travelhelper.main.TravelHelperState.TravelPlace
 import com.yapp.ndgl.feature.travelhelper.main.TravelHelperState.TravelUiState
@@ -14,7 +18,6 @@ import com.yapp.ndgl.feature.travelhelper.main.TravelHelperState.WeatherUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.time.temporal.ChronoUnit
@@ -26,10 +29,30 @@ import kotlin.math.roundToInt
 class TravelHelperViewModel @Inject constructor(
     private val userTravelRepository: UserTravelRepository,
     private val weatherRepository: WeatherRepository,
+    private val exchangeRateRepository: ExchangeRateRepository,
 ) : BaseViewModel<TravelHelperState, TravelHelperIntent, TravelHelperSideEffect>(
     initialState = TravelHelperState(),
 ) {
     init {
+        viewModelScope.launch {
+            val supportedCodes = runCatching {
+                exchangeRateRepository.getSupportedCurrencyCodes()
+            }.getOrDefault(emptyList())
+
+            val currencies = supportedCodes
+                .filter { CurrencyInfoResolver.getCountryCode(it) != null }
+                .map { code ->
+                    CurrencyOption(
+                        currencyCode = code,
+                        countryName = CurrencyInfoResolver.getCountryName(code),
+                    )
+                }
+            val allCurrencies =
+                (listOf(CurrencyOption(currencyCode = "KRW", countryName = "대한민국")) + currencies)
+                    .toImmutableList()
+
+            reduce { copy(availableCurrencies = allCurrencies) }
+        }
         loadUpcomingTravel()
     }
 
@@ -43,15 +66,9 @@ class TravelHelperViewModel @Inject constructor(
                     }
 
                     val today = LocalDate.now()
-                    val (currencyCode, currencyDisplayName) = countryToCurrency[travel.country]
-                        ?: ("USD" to "달러")
-                    val rate = krwRates[currencyCode] ?: 1340.0
-                    val exchangeRateInfo = ExchangeRateInfo(
-                        foreignCurrencyCode = currencyCode,
-                        foreignCurrencyName = currencyDisplayName,
-                        rateToKrw = rate,
-                        rateDate = "2025-01-01",
-                    )
+                    val currencyCode = CurrencyInfoResolver.getCurrencyCode(travel.country)
+                    val exchangeRateInfo =
+                        buildExchangeRateInfo(topCode = currencyCode, bottomCode = "KRW")
 
                     val travelUiState = when {
                         today < travel.startDate -> {
@@ -99,16 +116,78 @@ class TravelHelperViewModel @Inject constructor(
                     reduce {
                         copy(
                             travelUiState = travelUiState,
-                            convertedAmount = calculateConvertedAmount(currencyInput, rate),
+                            convertedAmount = calculateConvertedAmount(
+                                currencyInput,
+                                exchangeRateInfo.rate
+                            ),
                         )
                     }
 
                     loadWeather(travel.city, travel.country, travel.startDate, travel.endDate)
                 }
                 .onFailure {
-                    Timber.e("Failed to load upcoming travel: $it")
                     reduce { copy(travelUiState = TravelUiState.NoTravel) }
                 }
+        }
+    }
+
+    private fun buildCurrencyInfo(code: String): CurrencyInfo {
+        return if (code == "KRW") {
+            CurrencyInfo(
+                currencyCode = "KRW",
+                currencyLabel = "원",
+                countryName = "대한민국",
+                flagEmoji = "KR".toFlagEmoji(),
+            )
+        } else {
+            CurrencyInfo(
+                currencyCode = code,
+                currencyLabel = CurrencyInfoResolver.getKoreanName(code),
+                countryName = CurrencyInfoResolver.getCountryName(code),
+                flagEmoji = (CurrencyInfoResolver.getCountryCode(code) ?: "").toFlagEmoji(),
+            )
+        }
+    }
+
+    private suspend fun buildExchangeRateInfo(
+        topCode: String,
+        bottomCode: String
+    ): ExchangeRateInfo {
+        val rateResult = runCatching { getCrossRate(topCode, bottomCode) }
+        rateResult.onFailure {
+            postSideEffect(TravelHelperSideEffect.ShowExchangeRateError)
+        }
+        return ExchangeRateInfo(
+            topCurrency = buildCurrencyInfo(topCode),
+            bottomCurrency = buildCurrencyInfo(bottomCode),
+            rate = rateResult.getOrDefault(1.0),
+            rateDate = LocalDate.now(),
+        )
+    }
+
+    private suspend fun getCrossRate(from: String, to: String): Double {
+        if (from == to) return 1.0
+        return when {
+            to == "KRW" -> {
+                exchangeRateRepository.getKrwRate(from)
+                    ?: throw IllegalStateException("Exchange rate not available for $from")
+            }
+
+            from == "KRW" -> {
+                val toKrw = exchangeRateRepository.getKrwRate(to)
+                    ?: throw IllegalStateException("Exchange rate not available for $to")
+                if (toKrw == 0.0) throw IllegalStateException("KRW rate for $to is zero")
+                1.0 / toKrw
+            }
+
+            else -> {
+                val fromKrw = exchangeRateRepository.getKrwRate(from)
+                    ?: throw IllegalStateException("Exchange rate not available for $from")
+                val toKrw = exchangeRateRepository.getKrwRate(to)
+                    ?: throw IllegalStateException("Exchange rate not available for $to")
+                if (toKrw == 0.0) throw IllegalStateException("KRW rate for $to is zero")
+                fromKrw / toKrw
+            }
         }
     }
 
@@ -126,26 +205,22 @@ class TravelHelperViewModel @Inject constructor(
                     startDate,
                     endDate,
                 )
+            }.onSuccess { response ->
+                if (response == null) return@onSuccess
+                val forecasts = response.forecastDays
+                    .map { it.toWeatherForecastUiInfo() }
+                    .toImmutableList()
+                val weatherState = WeatherUiState.Available(forecasts)
+                reduce {
+                    copy(
+                        travelUiState = when (val ts = travelUiState) {
+                            is TravelUiState.UpcomingTravel -> ts.copy(weatherState = weatherState)
+                            is TravelUiState.OngoingTravel -> ts.copy(weatherState = weatherState)
+                            else -> ts
+                        },
+                    )
+                }
             }
-                .onSuccess { response ->
-                    if (response == null) return@onSuccess
-                    val forecasts = response.forecastDays
-                        .map { it.toWeatherForecastUiInfo() }
-                        .toImmutableList()
-                    val weatherState = WeatherUiState.Available(forecasts)
-                    reduce {
-                        copy(
-                            travelUiState = when (val ts = travelUiState) {
-                                is TravelUiState.UpcomingTravel -> ts.copy(weatherState = weatherState)
-                                is TravelUiState.OngoingTravel -> ts.copy(weatherState = weatherState)
-                                else -> ts
-                            },
-                        )
-                    }
-                }
-                .onFailure {
-                    Timber.e("Failed to load weather: $it")
-                }
         }
     }
 
@@ -153,22 +228,65 @@ class TravelHelperViewModel @Inject constructor(
         when (intent) {
             TravelHelperIntent.ClickSearch -> postSideEffect(TravelHelperSideEffect.NavigateToSearch)
             is TravelHelperIntent.UpdateCurrencyInput -> {
-                val rate = when (val ts = state.value.travelUiState) {
-                    is TravelUiState.UpcomingTravel -> ts.exchangeRateInfo.rateToKrw
-                    is TravelUiState.OngoingTravel -> ts.exchangeRateInfo.rateToKrw
-                    else -> 1.0
-                }
+                val rate = getExchangeRateInfo()?.rate ?: 1.0
                 val converted = calculateConvertedAmount(intent.input, rate)
                 reduce { copy(currencyInput = intent.input, convertedAmount = converted) }
             }
 
-            TravelHelperIntent.SwapCurrency -> Unit
+            TravelHelperIntent.SwapCurrency -> {
+                val info = getExchangeRateInfo() ?: return
+                val newInfo = buildExchangeRateInfo(
+                    topCode = info.bottomCurrency.currencyCode,
+                    bottomCode = info.topCurrency.currencyCode,
+                )
+                val newInput = state.value.convertedAmount?.let { "%.2f".format(it) }
+                    ?: state.value.currencyInput
+                val newConverted = calculateConvertedAmount(newInput, newInfo.rate)
+                reduce {
+                    copy(
+                        travelUiState = travelUiState.withExchangeRateInfo(newInfo),
+                        currencyInput = newInput,
+                        convertedAmount = newConverted,
+                    )
+                }
+            }
+
+            is TravelHelperIntent.SelectCurrency -> {
+                val currentInfo = getExchangeRateInfo() ?: return
+                if (intent.currencyCode == currentInfo.topCurrency.currencyCode) return
+                val newInfo = buildExchangeRateInfo(
+                    topCode = intent.currencyCode,
+                    bottomCode = currentInfo.bottomCurrency.currencyCode,
+                )
+                val newConverted = calculateConvertedAmount("1", newInfo.rate)
+                reduce {
+                    copy(
+                        travelUiState = travelUiState.withExchangeRateInfo(newInfo),
+                        currencyInput = "1",
+                        convertedAmount = newConverted,
+                    )
+                }
+            }
         }
     }
 
-    private fun calculateConvertedAmount(input: String, rateToKrw: Double): Double? {
+    private fun getExchangeRateInfo(): ExchangeRateInfo? =
+        when (val ts = state.value.travelUiState) {
+            is TravelUiState.UpcomingTravel -> ts.exchangeRateInfo
+            is TravelUiState.OngoingTravel -> ts.exchangeRateInfo
+            else -> null
+        }
+
+    private fun TravelUiState.withExchangeRateInfo(info: ExchangeRateInfo): TravelUiState =
+        when (this) {
+            is TravelUiState.UpcomingTravel -> copy(exchangeRateInfo = info)
+            is TravelUiState.OngoingTravel -> copy(exchangeRateInfo = info)
+            else -> this
+        }
+
+    private fun calculateConvertedAmount(input: String, rate: Double): Double? {
         val amount = input.toDoubleOrNull() ?: return null
-        return amount * rateToKrw
+        return amount * rate
     }
 
     private fun WeatherForecastResponse.ForecastDay.toWeatherForecastUiInfo(): WeatherForecastUiInfo {
@@ -182,31 +300,4 @@ class TravelHelperViewModel @Inject constructor(
         )
     }
 
-    companion object {
-        private val countryToCurrency = mapOf(
-            "IT" to ("EUR" to "유로"),
-            "FR" to ("EUR" to "유로"),
-            "DE" to ("EUR" to "유로"),
-            "ES" to ("EUR" to "유로"),
-            "JP" to ("JPY" to "엔"),
-            "US" to ("USD" to "달러"),
-            "GB" to ("GBP" to "파운드"),
-            "TH" to ("THB" to "밧"),
-            "VN" to ("VND" to "동"),
-            "SG" to ("SGD" to "달러"),
-            "AU" to ("AUD" to "달러"),
-            "CN" to ("CNY" to "위안"),
-        )
-        private val krwRates = mapOf(
-            "EUR" to 1460.0,
-            "JPY" to 9.5,
-            "USD" to 1340.0,
-            "GBP" to 1700.0,
-            "THB" to 38.0,
-            "VND" to 0.054,
-            "SGD" to 1000.0,
-            "AUD" to 870.0,
-            "CNY" to 185.0,
-        )
-    }
 }

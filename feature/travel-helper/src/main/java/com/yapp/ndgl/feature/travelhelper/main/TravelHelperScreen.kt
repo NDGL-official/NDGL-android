@@ -20,13 +20,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -35,9 +40,12 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationIcon
+import com.yapp.ndgl.core.ui.designsystem.NDGLSnackbar
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.feature.travelhelper.R
 import com.yapp.ndgl.feature.travelhelper.main.TravelHelperState.TravelUiState
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.coroutines.launch
 import com.yapp.ndgl.core.ui.R as CoreR
 
 @Composable
@@ -45,20 +53,33 @@ internal fun TravelHelperRoute(
     navigateToSearch: () -> Unit,
     viewModel: TravelHelperViewModel = hiltViewModel(),
 ) {
+    val context = LocalContext.current
+
     val state by viewModel.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    val exchangeRateErrorMessage = stringResource(R.string.travel_helper_exchange_rate_error)
 
     TravelHelperScreen(
         state = state,
+        snackbarHostState = snackbarHostState,
         onSearchClick = { viewModel.onIntent(TravelHelperIntent.ClickSearch) },
         onNewTravelFindClick = {},
         onTravelClick = {},
         onPlaceClick = {},
         onCurrencyInputChange = { viewModel.onIntent(TravelHelperIntent.UpdateCurrencyInput(it)) },
+        onSwapCurrency = { viewModel.onIntent(TravelHelperIntent.SwapCurrency) },
+        onCurrencySelect = { viewModel.onIntent(TravelHelperIntent.SelectCurrency(it)) },
     )
 
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             TravelHelperSideEffect.NavigateToSearch -> navigateToSearch()
+            TravelHelperSideEffect.ShowExchangeRateError -> {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(exchangeRateErrorMessage)
+                }
+            }
         }
     }
 }
@@ -66,13 +87,24 @@ internal fun TravelHelperRoute(
 @Composable
 private fun TravelHelperScreen(
     state: TravelHelperState,
+    snackbarHostState: SnackbarHostState,
     onSearchClick: () -> Unit,
     onNewTravelFindClick: () -> Unit,
     onTravelClick: (Long) -> Unit,
     onPlaceClick: (Long) -> Unit,
     onCurrencyInputChange: (String) -> Unit,
+    onSwapCurrency: () -> Unit,
+    onCurrencySelect: (String) -> Unit,
 ) {
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                NDGLSnackbar(
+                    modifier = Modifier.padding(bottom = 100.dp),
+                    snackbarData = data
+                )
+            }
+        },
         topBar = {
             NDGLNavigationBar(
                 textAlignType = NDGLNavigationBarAttr.TextAlignType.START,
@@ -119,17 +151,23 @@ private fun TravelHelperScreen(
                     travel = travelUiState,
                     currencyInput = state.currencyInput,
                     convertedAmount = state.convertedAmount,
+                    availableCurrencies = state.availableCurrencies,
                     onTravelClick = onTravelClick,
                     onCurrencyInputChange = onCurrencyInputChange,
+                    onSwapCurrency = onSwapCurrency,
+                    onCurrencySelect = onCurrencySelect,
                 )
 
                 is TravelUiState.OngoingTravel -> inProgressTravelContent(
                     travel = travelUiState,
                     currencyInput = state.currencyInput,
                     convertedAmount = state.convertedAmount,
+                    availableCurrencies = state.availableCurrencies,
                     onTravelClick = onTravelClick,
                     onPlaceClick = onPlaceClick,
                     onCurrencyInputChange = onCurrencyInputChange,
+                    onSwapCurrency = onSwapCurrency,
+                    onCurrencySelect = onCurrencySelect,
                 )
             }
         }
@@ -220,8 +258,11 @@ private fun LazyListScope.upcomingTravelContent(
     travel: TravelUiState.UpcomingTravel,
     currencyInput: String,
     convertedAmount: Double?,
+    availableCurrencies: ImmutableList<CurrencyOption>,
     onTravelClick: (Long) -> Unit,
     onCurrencyInputChange: (String) -> Unit,
+    onSwapCurrency: () -> Unit,
+    onCurrencySelect: (String) -> Unit,
 ) {
     item {
         UpcomingTravelCard(
@@ -238,7 +279,10 @@ private fun LazyListScope.upcomingTravelContent(
             exchangeRateInfo = travel.exchangeRateInfo,
             currencyInput = currencyInput,
             convertedAmount = convertedAmount,
+            availableCurrencies = availableCurrencies,
             onInputChange = onCurrencyInputChange,
+            onSwap = onSwapCurrency,
+            onCurrencySelect = onCurrencySelect,
         )
     }
 }
@@ -247,9 +291,12 @@ private fun LazyListScope.inProgressTravelContent(
     travel: TravelUiState.OngoingTravel,
     currencyInput: String,
     convertedAmount: Double?,
+    availableCurrencies: ImmutableList<CurrencyOption>,
     onTravelClick: (Long) -> Unit,
     onPlaceClick: (Long) -> Unit,
     onCurrencyInputChange: (String) -> Unit,
+    onSwapCurrency: () -> Unit,
+    onCurrencySelect: (String) -> Unit,
 ) {
     item {
         InProgressTravelCard(
@@ -267,7 +314,10 @@ private fun LazyListScope.inProgressTravelContent(
             exchangeRateInfo = travel.exchangeRateInfo,
             currencyInput = currencyInput,
             convertedAmount = convertedAmount,
+            availableCurrencies = availableCurrencies,
             onInputChange = onCurrencyInputChange,
+            onSwap = onSwapCurrency,
+            onCurrencySelect = onCurrencySelect,
         )
     }
 }

@@ -199,7 +199,10 @@ internal fun InProgressTravelCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
-                        text = stringResource(R.string.travel_helper_card_in_progress_day_count, travel.dayCount),
+                        text = stringResource(
+                            R.string.travel_helper_card_in_progress_day_count,
+                            travel.dayCount
+                        ),
                         style = NDGLTheme.typography.subtitleMdSemiBold,
                         color = NDGLTheme.colors.black700,
                         maxLines = 1,
@@ -339,7 +342,22 @@ private fun UpcomingTravelCardPreview() {
                 thumbnail = null,
                 dDay = 7L,
                 weatherState = TravelHelperState.WeatherUiState.NotAvailable,
-                exchangeRateInfo = TravelHelperState.ExchangeRateInfo("JPY", "엔", 9.5, "2025-01-01"),
+                exchangeRateInfo = TravelHelperState.ExchangeRateInfo(
+                    topCurrency = TravelHelperState.CurrencyInfo(
+                        currencyCode = "JPY",
+                        currencyLabel = "엔",
+                        countryName = "일본",
+                        flagEmoji = "🇯🇵",
+                    ),
+                    bottomCurrency = TravelHelperState.CurrencyInfo(
+                        currencyCode = "KRW",
+                        currencyLabel = "원",
+                        countryName = "대한민국",
+                        flagEmoji = "🇰🇷",
+                    ),
+                    rate = 9.5,
+                    rateDate = LocalDate.of(2025, 1, 1),
+                ),
             ),
             onCardClick = {},
         )
@@ -366,7 +384,22 @@ private fun InProgressTravelCardPreview() {
                     estimatedDuration = 60,
                     thumbnailUrl = null,
                 ),
-                exchangeRateInfo = TravelHelperState.ExchangeRateInfo("USD", "달러", 1340.0, "2025-01-01"),
+                exchangeRateInfo = TravelHelperState.ExchangeRateInfo(
+                    topCurrency = TravelHelperState.CurrencyInfo(
+                        currencyCode = "USD",
+                        currencyLabel = "달러",
+                        countryName = "미국",
+                        flagEmoji = "🇺🇸",
+                    ),
+                    bottomCurrency = TravelHelperState.CurrencyInfo(
+                        currencyCode = "KRW",
+                        currencyLabel = "원",
+                        countryName = "대한민국",
+                        flagEmoji = "🇰🇷",
+                    ),
+                    rate = 1340.0,
+                    rateDate = LocalDate.of(2025, 1, 1),
+                ),
             ),
             onCardClick = {},
             onPlaceClick = {},
