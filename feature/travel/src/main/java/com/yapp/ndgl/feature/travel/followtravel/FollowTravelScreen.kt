@@ -99,6 +99,7 @@ private fun FollowTravelScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(NDGLTheme.colors.white)
             .navigationBarsPadding(),
     ) {
         LazyColumn(
