@@ -4,15 +4,18 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class TravelTemplateContentInfo(
-    val travelId: Long,
+data class UserTravelTemplateContentInfo(
+    val userTravelId: Long,
+    val templateId: Long,
+    val budgetPerPerson: Int? = null,
     @SerialName("country")
     val countryCode: String,
     val countryName: String? = null,
     val city: String,
-    val budgetPerPerson: Int? = null,
     val nights: Int,
     val days: Int,
+    val startDate: String,
+    val endDate: String,
     val program: ProgramInfo,
 ) {
     @Serializable

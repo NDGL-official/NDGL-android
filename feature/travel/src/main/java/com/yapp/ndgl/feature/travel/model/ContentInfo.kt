@@ -2,7 +2,8 @@ package com.yapp.ndgl.feature.travel.model
 
 data class ContentInfo(
     val travelId: Long = 0,
-    val country: String = "",
+    val countryCode: String = "",
+    val country: String? = null,
     val city: String = "",
     val budgetPerPerson: Budget = Budget(0),
     val nights: Int = 0,

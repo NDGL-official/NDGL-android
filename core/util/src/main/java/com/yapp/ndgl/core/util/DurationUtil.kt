@@ -48,7 +48,7 @@ fun parseTimeStringToDuration(timeString: String?): Duration? {
     return hours.toInt().hours + minutes.toInt().minutes
 }
 
-fun Duration.toTimeStringWithSeconds(): String {
+fun Duration.parseDurationToTimeString(): String {
     val totalMinutes = this.inWholeMinutes
     val hours = totalMinutes / 60
     val minutes = totalMinutes % 60

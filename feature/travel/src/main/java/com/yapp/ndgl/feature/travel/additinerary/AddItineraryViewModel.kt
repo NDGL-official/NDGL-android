@@ -26,12 +26,12 @@ private const val TEST_THUMBNAIL_URL = "https://picsum.photos/200"
 class AddItineraryViewModel @AssistedInject constructor(
     @Assisted("travelId") private val travelId: Long,
     @Assisted("day") private val day: Int,
-    @Assisted("country") private val country: String,
+    @Assisted("countryCode") private val countryCode: String,
     @Assisted("representativeLatLng") private val representativeLatLng: LatLng,
     private val placeRepository: PlaceRepository,
     private val userTravelRepository: UserTravelRepository,
 ) : BaseViewModel<AddItineraryState, AddItineraryIntent, AddItinerarySideEffect>(
-    initialState = AddItineraryState(travelId = travelId, day = day, country = country, representativeLatLng = representativeLatLng),
+    initialState = AddItineraryState(travelId = travelId, day = day, countryCode = countryCode, representativeLatLng = representativeLatLng),
 ) {
     private var searchJob: Job? = null
 
@@ -101,7 +101,6 @@ class AddItineraryViewModel @AssistedInject constructor(
         )
         reduce {
             copy(
-                country = state.value.country,
                 recommendedPlaces = stubRecommendedPlaces,
                 bookmarkedPlaces = stubBookmarkedPlaces,
             )
@@ -154,7 +153,7 @@ class AddItineraryViewModel @AssistedInject constructor(
             suspendRunCatching {
                 placeRepository.searchKeyword(
                     keyword = keyword,
-                    country = state.value.country,
+                    countryCode = state.value.countryCode,
                 )
             }.onSuccess { response ->
                 val results = response.results.map { result ->
@@ -181,7 +180,7 @@ class AddItineraryViewModel @AssistedInject constructor(
         suspendRunCatching {
             placeRepository.searchKeyword(
                 keyword = keyword,
-                country = state.value.country,
+                countryCode = state.value.countryCode,
             )
         }.onSuccess { response ->
             val results = response.results.map { result ->
@@ -286,28 +285,25 @@ class AddItineraryViewModel @AssistedInject constructor(
         }
 
         val placeInfo = selectedDetail.placeInfo
-
-        suspendRunCatching {
-            userTravelRepository.emitAddPlaceEvent(
-                AddPlaceEvent(
-                    travelId = travelId,
-                    day = day,
-                    googlePlaceId = placeInfo.googlePlaceId,
-                    name = placeInfo.name,
-                    latitude = placeInfo.latitude,
-                    longitude = placeInfo.longitude,
-                    thumbnail = placeInfo.thumbnail,
-                    placeType = placeInfo.placeType.toPlaceCategory(),
-                    address = placeInfo.address,
-                    phoneNumber = placeInfo.phoneNumber,
-                    googleMapsUri = placeInfo.googleMapsUri,
-                    websiteUrl = placeInfo.websiteUrl,
-                    rating = placeInfo.rating,
-                    userRatingCount = placeInfo.userRatingCount,
-                    estimatedDuration = placeInfo.estimatedDuration.inWholeMinutes.toInt(),
-                ),
-            )
-        }
+        userTravelRepository.emitAddPlaceEvent(
+            AddPlaceEvent(
+                travelId = travelId,
+                day = day,
+                googlePlaceId = placeInfo.googlePlaceId,
+                name = placeInfo.name,
+                latitude = placeInfo.latitude,
+                longitude = placeInfo.longitude,
+                thumbnail = placeInfo.thumbnail,
+                placeType = placeInfo.placeType.toPlaceCategory(),
+                address = placeInfo.address,
+                phoneNumber = placeInfo.phoneNumber,
+                googleMapsUri = placeInfo.googleMapsUri,
+                websiteUrl = placeInfo.websiteUrl,
+                rating = placeInfo.rating,
+                userRatingCount = placeInfo.userRatingCount,
+                estimatedDuration = placeInfo.estimatedDuration.inWholeMinutes.toInt(),
+            ),
+        )
 
         postSideEffect(AddItinerarySideEffect.NavigateBack)
     }
@@ -333,7 +329,7 @@ class AddItineraryViewModel @AssistedInject constructor(
         fun create(
             @Assisted("travelId") travelId: Long,
             @Assisted("day") day: Int,
-            @Assisted("country") country: String,
+            @Assisted("countryCode") countryCode: String,
             @Assisted("representativeLatLng") representativeLatLng: LatLng,
         ): AddItineraryViewModel
     }

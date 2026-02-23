@@ -103,7 +103,7 @@ fun ContentCard(contentInfo: ContentInfo) {
                             text = stringResource(
                                 R.string.content_card_info_format,
                                 contentInfo.videoInfo.creatorName,
-                                contentInfo.city,
+                                contentInfo.country ?: contentInfo.city,
                                 contentInfo.nights,
                                 contentInfo.days,
                             ),

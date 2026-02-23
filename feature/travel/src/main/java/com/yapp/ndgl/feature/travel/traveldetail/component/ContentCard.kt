@@ -103,7 +103,7 @@ fun ContentCard(contentInfo: ContentInfo) {
                             text = stringResource(
                                 R.string.content_card_info_format,
                                 contentInfo.videoInfo.creatorName,
-                                contentInfo.country,
+                                contentInfo.country ?: contentInfo.city,
                                 contentInfo.nights,
                                 contentInfo.days,
                             ),
@@ -172,7 +172,7 @@ fun ContentCard(contentInfo: ContentInfo) {
                                     R.string.content_card_budget_format,
                                     contentInfo.budgetPerPerson.formatString(),
                                 ),
-                                color = NDGLTheme.colors.etcBlue,
+                                color = NDGLTheme.colors.green500,
                                 style = NDGLTheme.typography.bodyMdSemiBold,
                             )
                         }

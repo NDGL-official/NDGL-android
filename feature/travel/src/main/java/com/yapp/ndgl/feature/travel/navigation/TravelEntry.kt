@@ -158,7 +158,7 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
                 factory.create(
                     travelId = route.travelId,
                     day = route.day,
-                    country = route.country,
+                    countryCode = route.countryCode,
                     representativeLatLng = LatLng(route.representativeLatitude, route.representativeLongitude),
                 )
             }

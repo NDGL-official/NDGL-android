@@ -3,7 +3,6 @@ package com.yapp.ndgl.feature.travel.followtravel
 import androidx.lifecycle.viewModelScope
 import com.yapp.ndgl.core.base.BaseViewModel
 import com.yapp.ndgl.core.util.suspendRunCatching
-import com.yapp.ndgl.core.util.toCountryName
 import com.yapp.ndgl.data.travel.model.TravelTemplateContentInfo
 import com.yapp.ndgl.data.travel.model.TravelTemplateItinerary
 import com.yapp.ndgl.data.travel.repository.TravelTemplateRepository
@@ -138,7 +137,8 @@ class FollowTravelViewModel @AssistedInject constructor(
     )
 
     private fun TravelTemplateContentInfo.toContentInfo(): ContentInfo = ContentInfo(
-        country = countryCode.toCountryName(),
+        countryCode = countryCode,
+        country = countryName,
         city = city,
         budgetPerPerson = Budget(budgetPerPerson ?: 0),
         nights = nights,

@@ -4,7 +4,6 @@ import android.content.Context
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
-import com.yapp.ndgl.data.core.adapter.NDGLCallAdapterFactory
 import com.yapp.ndgl.data.core.di.RouteApiKey
 import com.yapp.ndgl.data.core.di.RouteBaseUrl
 import com.yapp.ndgl.data.core.di.RouteClient

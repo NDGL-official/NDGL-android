@@ -52,7 +52,7 @@ sealed interface Route : NavKey {
     data class AddItinerary(
         val travelId: Long,
         val day: Int,
-        val country: String,
+        val countryCode: String,
         val representativeLatitude: Double,
         val representativeLongitude: Double,
     ) : Route

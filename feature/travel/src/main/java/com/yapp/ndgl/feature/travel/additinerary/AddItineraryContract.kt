@@ -13,7 +13,7 @@ import com.yapp.ndgl.feature.travel.model.PlaceType
 data class AddItineraryState(
     val travelId: Long = 0,
     val day: Int = 1,
-    val country: String = "",
+    val countryCode: String = "",
     val representativeLatLng: LatLng = LatLng(37.5665, 126.9780),
     val keyword: String = "",
     val isSearchFocused: Boolean = false,

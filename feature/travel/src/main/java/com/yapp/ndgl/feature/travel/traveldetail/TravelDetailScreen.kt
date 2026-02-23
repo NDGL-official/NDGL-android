@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,12 +33,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -88,6 +89,8 @@ import com.yapp.ndgl.feature.travel.traveldetail.component.TransportSegment
 import com.yapp.ndgl.feature.travel.traveldetail.component.TravelDetailToolBar
 import com.yapp.ndgl.feature.travel.traveldetail.component.TravelMap
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
@@ -102,6 +105,8 @@ internal fun TravelDetailRoute(
 ) {
     val state by viewModel.collectAsState()
     val context = LocalContext.current
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
@@ -118,16 +123,34 @@ internal fun TravelDetailRoute(
                 navigateToAddItinerary(
                     sideEffect.travelId,
                     sideEffect.day,
-                    sideEffect.country,
+                    sideEffect.countryCode,
                     sideEffect.representativeLatLng.latitude,
                     sideEffect.representativeLatLng.longitude,
                 )
+            }
+
+            is TravelDetailSideEffect.NavigateToMyTravel -> navigateBack()
+
+            // FIXME: 임의로 넣은 애니메이션, 추후 수정 가능성 있음
+            is TravelDetailSideEffect.ScrollToPlace -> {
+                coroutineScope.launch {
+                    val dayIndex = state.selectedDay - 1
+                    val places = state.itineraries.getOrNull(dayIndex)?.places.orEmpty()
+                    val placeIndex = places.indexOfFirst { it.id == sideEffect.placeId }
+
+                    if (placeIndex >= 0) {
+                        val targetIndex = state.placesOffset + placeIndex
+                        delay(100)
+                        listState.animateScrollToItem(targetIndex)
+                    }
+                }
             }
         }
     }
 
     TravelDetailScreen(
         state = state,
+        listState = listState,
         clickBack = { viewModel.onIntent(TravelDetailIntent.ClickBack) },
         selectDay = { viewModel.onIntent(TravelDetailIntent.SelectDay(it)) },
         clickStartTimeSetting = { viewModel.onIntent(TravelDetailIntent.ClickStartTimeSetting) },
@@ -143,8 +166,8 @@ internal fun TravelDetailRoute(
         confirmCancelEditMode = { viewModel.onIntent(TravelDetailIntent.ConfirmCancelEditMode) },
         dismissCancelEditModal = { viewModel.onIntent(TravelDetailIntent.DismissCancelEditModal) },
         longClickPlaceItem = { viewModel.onIntent(TravelDetailIntent.LongClickPlaceItem) },
-        dismissTimelineBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissTimelineBottomSheet) },
-        confirmTimelineSetting = { startTime -> viewModel.onIntent(TravelDetailIntent.ConfirmTimelineSetting(startTime)) },
+        dismissStartTimeSettingBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissStartTimeSettingBottomSheet) },
+        confirmStartTimeSetting = { startTime -> viewModel.onIntent(TravelDetailIntent.ConfirmStartTimeSetting(startTime)) },
         reorderPlaces = { dayIndex, fromIndex, toIndex -> viewModel.onIntent(TravelDetailIntent.ReorderPlaces(dayIndex, fromIndex, toIndex)) },
         clickTransportSegment = { place -> viewModel.onIntent(TravelDetailIntent.ClickTransportSegment(place)) },
         confirmChangeTransport = { segment -> viewModel.onIntent(TravelDetailIntent.ConfirmChangeTransportSegment(segment)) },
@@ -171,6 +194,7 @@ internal fun TravelDetailRoute(
 @Composable
 private fun TravelDetailScreen(
     state: TravelDetailState,
+    listState: LazyListState,
     clickBack: () -> Unit,
     selectDay: (Int) -> Unit,
     clickStartTimeSetting: () -> Unit,
@@ -184,8 +208,8 @@ private fun TravelDetailScreen(
     confirmCancelEditMode: () -> Unit,
     dismissCancelEditModal: () -> Unit,
     longClickPlaceItem: () -> Unit,
-    dismissTimelineBottomSheet: () -> Unit,
-    confirmTimelineSetting: (Duration) -> Unit,
+    dismissStartTimeSettingBottomSheet: () -> Unit,
+    confirmStartTimeSetting: (Duration) -> Unit,
     reorderPlaces: (Int, Int, Int) -> Unit,
     confirmEditMode: () -> Unit,
     clickTransportSegment: (TravelPlace) -> Unit,
@@ -216,7 +240,6 @@ private fun TravelDetailScreen(
         )
     }.let { persistentListOf(*it.toTypedArray()) }
 
-    val listState = rememberLazyListState()
     val isHeaderSticky by remember {
         derivedStateOf {
             val firstItem = listState.layoutInfo.visibleItemsInfo.firstOrNull()
@@ -226,19 +249,13 @@ private fun TravelDetailScreen(
     }
     var isMapScrolled by remember { mutableStateOf(true) }
 
-    val currentItineraries = if (state.isEditMode) state.tempItineraries else state.itineraries
-    val currentItinerary = currentItineraries.getOrNull(state.selectedDay - 1)
-    val currentPlaces = currentItinerary?.places.orEmpty()
-
-    // 헤더(0) + stickyHeader(1) + 맵 아이템(2) = 3개가 장소 아이템 앞에 위치
-    val placesOffset = 3
     val tempPlaces = remember(state.tempItineraries, state.selectedDay) {
         state.tempItineraries.getOrNull(state.selectedDay - 1)?.places.orEmpty().toMutableStateList()
     }
     val reorderableState = rememberReorderableState(
         list = tempPlaces,
         lazyListState = listState,
-        offset = placesOffset,
+        offset = state.placesOffset,
         isReorderable = { key -> key is String && key.startsWith("place_") },
     )
     var isDragMode by remember { mutableStateOf(false) }
@@ -246,6 +263,7 @@ private fun TravelDetailScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
+            .background(NDGLTheme.colors.white)
             .navigationBarsPadding(),
     ) {
         LazyColumn(
@@ -258,7 +276,7 @@ private fun TravelDetailScreen(
                     if (state.isEditMode) {
                         Modifier.reorderable(reorderableState) { from, to ->
                             if (from != null && to != null && from != to) {
-                                reorderPlaces(state.selectedDay - 1, from - placesOffset, to - placesOffset)
+                                reorderPlaces(state.selectedDay - 1, from - state.placesOffset, to - state.placesOffset)
                             }
                         }
                     } else {
@@ -322,7 +340,7 @@ private fun TravelDetailScreen(
                         .padding(bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
-                    currentItineraries.getOrNull(state.selectedDay - 1)?.let { itinerary ->
+                    state.currentItinerary?.let { itinerary ->
                         if (itinerary.places.isNotEmpty()) {
                             TravelMap(
                                 places = itinerary.places,
@@ -339,7 +357,7 @@ private fun TravelDetailScreen(
                                 )
                             } else {
                                 TravelDetailToolBar(
-                                    startTime = itinerary.startTime,
+                                    startTime = if (itinerary.isStartTimeSet) itinerary.startTime else null,
                                     clickStartTimeSetting = clickStartTimeSetting,
                                     clickEditTravel = clickEditTravel,
                                 )
@@ -373,7 +391,7 @@ private fun TravelDetailScreen(
                     items = tempPlaces,
                     key = { _, place -> "place_${state.selectedDay}_${place.id}" },
                 ) { index, place ->
-                    val isDragging = reorderableState.currentIndex == index + placesOffset
+                    val isDragging = reorderableState.currentIndex == index + state.placesOffset
                     Box(
                         modifier = Modifier
                             .animateItem()
@@ -399,32 +417,29 @@ private fun TravelDetailScreen(
                     }
                 }
             } else {
-                item(key = "places_${state.selectedDay}") {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clipToBounds(),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        currentPlaces.forEachIndexed { index, place ->
-                            key("place_${state.selectedDay}_${place.id}") {
+                itemsIndexed(
+                    items = state.currentPlaces,
+                    key = { _, place -> "place_${state.selectedDay}_${place.id}" },
+                ) { index, place ->
+                    Column {
+                        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
+                            PlaceItem(
+                                place = place,
+                                onClick = { clickPlaceItem(place) },
+                                onLongClick = longClickPlaceItem,
+                            )
+                        }
+
+                        if (index < state.currentPlaces.size - 1) {
+                            place.transportToNext?.let { segment ->
+                                Spacer(Modifier.height(10.dp))
                                 Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-                                    PlaceItem(
-                                        place = place,
-                                        onClick = { clickPlaceItem(place) },
-                                        onLongClick = longClickPlaceItem,
+                                    TransportSegment(
+                                        segment = segment,
+                                        onClick = { clickTransportSegment(place) },
                                     )
                                 }
-                            }
-
-                            if (index < currentPlaces.size - 1) {
-                                key("transport_${state.selectedDay}_${place.id}") {
-                                    place.transportToNext?.let { segment ->
-                                        Box(modifier = Modifier.padding(horizontal = 24.dp)) {
-                                            TransportSegment(segment = segment, onClick = { clickTransportSegment(place) })
-                                        }
-                                    }
-                                }
+                                Spacer(Modifier.height(10.dp))
                             }
                         }
                     }
@@ -478,14 +493,19 @@ private fun TravelDetailScreen(
                     )
                 }
             } else {
-                NDGLCTAButton(
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    type = NDGLCTAButtonAttr.Type.PRIMARY,
-                    size = NDGLCTAButtonAttr.Size.LARGE,
-                    status = NDGLCTAButtonAttr.Status.ACTIVE,
-                    label = stringResource(R.string.add_schedule),
-                    onClick = clickAddScheduleButton,
-                )
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    NDGLCTAButton(
+                        modifier = Modifier.fillMaxWidth(),
+                        type = NDGLCTAButtonAttr.Type.PRIMARY,
+                        size = NDGLCTAButtonAttr.Size.LARGE,
+                        status = NDGLCTAButtonAttr.Status.ACTIVE,
+                        label = stringResource(R.string.add_schedule),
+                        onClick = clickAddScheduleButton,
+                    )
+                }
             }
         }
 
@@ -513,34 +533,24 @@ private fun TravelDetailScreen(
             )
         }
 
-        if (state.showTimelineBottomSheet) {
+        if (state.showStartTimeSettingBottomSheet) {
             NDGLBottomSheet(
-                onDismissRequest = dismissTimelineBottomSheet,
+                onDismissRequest = dismissStartTimeSettingBottomSheet,
                 showDragHandle = false,
-                title = stringResource(R.string.schedule_setting_title),
+                title = stringResource(R.string.start_time_setting_title),
             ) {
                 TimelineContent(
-                    startTime = currentItinerary?.startTime ?: 8.hours,
-                    totalDuration = state.itineraries.getOrNull(state.selectedDay - 1)?.totalDuration ?: 0.hours,
-                    onConfirm = confirmTimelineSetting,
+                    startTime = state.currentItinerary?.startTime ?: Itinerary.DEFAULT_START_TIME.hours,
+                    totalDuration = state.currentItinerary?.totalDuration ?: 0.hours,
+                    onConfirm = confirmStartTimeSetting,
                 )
             }
         }
 
         if (state.showTransportBottomSheet && state.selectedPlace != null && state.selectedPlace.transportToNext != null) {
-            // TODO: 실제 교통수단 후보로 수정
-            val mockAvailableTransports = mutableListOf(
-                TransportSegment(TransportType.WALK, 15.minutes, 1200),
-                TransportSegment(TransportType.CAR, 10.minutes, 5400),
-                TransportSegment(TransportType.BUS, 25.minutes, 4800),
-                TransportSegment(TransportType.TRAIN, 40.minutes, 12000),
-            )
-            mockAvailableTransports.remove(state.selectedPlace.transportToNext)
-            mockAvailableTransports.add(state.selectedPlace.transportToNext)
-
             TransportBottomSheet(
                 initialTransport = state.selectedPlace.transportToNext,
-                availableTransports = mockAvailableTransports,
+                availableTransports = state.availableTransports,
                 onDismissRequest = dismissTransportBottomSheet,
                 onConfirm = confirmChangeTransport,
             )
@@ -635,6 +645,7 @@ private fun TravelDetailScreen(
 private fun TravelDetailScreenPreview() {
     NDGLTheme {
         TravelDetailScreen(
+            listState = rememberLazyListState(),
             state = TravelDetailState(
                 contentInfo = ContentInfo(
                     country = "태국",
@@ -669,7 +680,12 @@ private fun TravelDetailScreenPreview() {
                                     placeType = PlaceType.ATTRACTION,
                                 ),
                                 userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
-                                transportToNext = TransportSegment(type = TransportType.CAR, duration = 25.minutes, distance = 3500),
+                                transportToNext = TransportSegment(
+                                    googlePlaceId = "1",
+                                    type = TransportType.DRIVING,
+                                    duration = 25.minutes,
+                                    distance = 3500,
+                                ),
                                 startTime = 8.hours,
                             ),
                             TravelPlace(
@@ -708,8 +724,8 @@ private fun TravelDetailScreenPreview() {
             confirmCancelEditMode = {},
             dismissCancelEditModal = {},
             longClickPlaceItem = {},
-            dismissTimelineBottomSheet = {},
-            confirmTimelineSetting = {},
+            dismissStartTimeSettingBottomSheet = {},
+            confirmStartTimeSetting = {},
             reorderPlaces = { _, _, _ -> },
             confirmEditMode = {},
             clickPlaceItem = {},
@@ -772,7 +788,12 @@ private fun TravelDetailScreenEditModePreview() {
                                     placeType = PlaceType.ATTRACTION,
                                 ),
                                 userData = TravelPlace.UserData(estimatedDuration = 90.minutes),
-                                transportToNext = TransportSegment(type = TransportType.CAR, duration = 25.minutes, distance = 3500),
+                                transportToNext = TransportSegment(
+                                    googlePlaceId = "1",
+                                    type = TransportType.DRIVING,
+                                    duration = 25.minutes,
+                                    distance = 3500,
+                                ),
                                 startTime = 0.hours,
                             ),
                             TravelPlace(
@@ -811,8 +832,8 @@ private fun TravelDetailScreenEditModePreview() {
             confirmCancelEditMode = {},
             dismissCancelEditModal = {},
             longClickPlaceItem = {},
-            dismissTimelineBottomSheet = {},
-            confirmTimelineSetting = {},
+            dismissStartTimeSettingBottomSheet = {},
+            confirmStartTimeSetting = {},
             reorderPlaces = { _, _, _ -> },
             confirmEditMode = {},
             clickPlaceItem = {},
@@ -831,6 +852,7 @@ private fun TravelDetailScreenEditModePreview() {
             clickTransportSegment = {},
             confirmChangeTransport = { _ -> },
             dismissTransportBottomSheet = {},
+            listState = rememberLazyListState(),
         )
     }
 }
