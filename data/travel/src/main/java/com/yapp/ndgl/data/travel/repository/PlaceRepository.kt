@@ -6,6 +6,7 @@ import com.google.android.libraries.places.api.net.PlacesClient
 import com.yapp.ndgl.data.core.model.error.HttpResponseException
 import com.yapp.ndgl.data.core.model.getData
 import com.yapp.ndgl.data.travel.api.PlaceApi
+import com.yapp.ndgl.data.travel.model.GetBookmarkedPlacesResponse
 import com.yapp.ndgl.data.travel.model.GetPlacePhotosResponse
 import com.yapp.ndgl.data.travel.model.PlaceDetailResponse
 import com.yapp.ndgl.data.travel.model.SavePlaceRequest
@@ -62,5 +63,17 @@ class PlaceRepository @Inject constructor(
 
     suspend fun getPlacePhotos(googlePlaceId: String): GetPlacePhotosResponse {
         return placeApi.getPlacePhotos(googlePlaceId).getData()
+    }
+
+    suspend fun getBookmarkedPlaces(page: Int? = null, size: Int? = null): GetBookmarkedPlacesResponse {
+        return placeApi.getBookmarkedPlaces(page = page, size = size).getData()
+    }
+
+    suspend fun bookmarkPlace(googlePlaceId: String) {
+        placeApi.bookmarkPlace(googlePlaceId).getData()
+    }
+
+    suspend fun unBookmarkPlace(googlePlaceId: String) {
+        placeApi.unBookmarkPlace(googlePlaceId).getData()
     }
 }

@@ -57,9 +57,9 @@ enum class AddItineraryBottomSheetValue {
 internal fun AddItineraryBottomSheet(
     modifier: Modifier = Modifier,
     initialValue: AddItineraryBottomSheetValue = AddItineraryBottomSheetValue.PartiallyExpanded,
+    places: List<SelectablePlace>,
     day: Int,
     selectedChip: AddItineraryChip,
-    places: List<SelectablePlace>,
     checkedPlaceId: String? = null,
     selectChip: (AddItineraryChip) -> Unit,
     checkSelectablePlace: (String) -> Unit,

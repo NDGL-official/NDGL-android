@@ -58,7 +58,7 @@ data class SelectablePlace(
     val googlePlaceId: String,
     val name: String,
     val placeType: PlaceType = PlaceType.ATTRACTION,
-    val thumbnail: String,
+    val thumbnail: String?,
 )
 
 data class SelectedPlaceDetail(
