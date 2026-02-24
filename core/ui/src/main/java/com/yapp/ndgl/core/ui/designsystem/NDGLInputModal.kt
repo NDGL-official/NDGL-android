@@ -57,22 +57,12 @@ fun NDGLInputModal(
     textAlign: TextAlign = TextAlign.Start,
 ) {
     val focusRequester = remember { FocusRequester() }
-    var textFieldValue by remember(value) {
+    var textFieldValue by remember {
         mutableStateOf(TextFieldValue(value, selection = TextRange(value.length)))
     }
 
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
-    }
-
-    // value가 변경되면 textFieldValue 업데이트
-    LaunchedEffect(value) {
-        if (textFieldValue.text != value) {
-            textFieldValue = TextFieldValue(
-                text = value,
-                selection = TextRange(value.length),
-            )
-        }
     }
 
     Dialog(onDismissRequest = onDismissRequest) {
