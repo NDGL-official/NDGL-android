@@ -8,19 +8,19 @@ import com.yapp.ndgl.data.travel.model.AddPlaceEvent
 import com.yapp.ndgl.data.travel.repository.PlaceRepository
 import com.yapp.ndgl.data.travel.repository.UserTravelRepository
 import com.yapp.ndgl.feature.travel.model.PlacePhoto
-import com.yapp.ndgl.feature.travel.model.PlaceType
 import com.yapp.ndgl.feature.travel.model.toPlaceCategory
 import com.yapp.ndgl.feature.travel.model.toPlaceInfo
+import com.yapp.ndgl.feature.travel.model.toPlaceType
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
-// TODO("테스트용으로 지워야함")
-private const val TEST_THUMBNAIL_URL = "https://picsum.photos/200"
+import timber.log.Timber
 
 @HiltViewModel(assistedFactory = AddItineraryViewModel.Factory::class)
 class AddItineraryViewModel @AssistedInject constructor(
@@ -36,74 +36,74 @@ class AddItineraryViewModel @AssistedInject constructor(
     private var searchJob: Job? = null
 
     init {
-        loadInitialData()
+        loadRecommendedPlaces()
+        loadBookmarkedPlaces()
     }
 
-    private fun loadInitialData() {
-        // FIXME: Repository에서 현재 일차 장소 + 추천 장소 로드
-        val stubRecommendedPlaces = listOf(
-            SelectablePlace(
-                googlePlaceId = "ChIJKWGrTn8hQTUR7zeTLtzYJL4",
-                name = "카피톨리니 박물관 (Musei Capitolini)",
-                placeType = PlaceType.ATTRACTION,
-                thumbnail = TEST_THUMBNAIL_URL,
-            ),
-            SelectablePlace(
-                googlePlaceId = "1",
-                name = "콜로세움 (Colosseo)",
-                placeType = PlaceType.ATTRACTION,
-                thumbnail = TEST_THUMBNAIL_URL,
-            ),
-            SelectablePlace(
-                googlePlaceId = "2",
-                name = "트레비 분수 (Fontana di Trevi)",
-                placeType = PlaceType.ATTRACTION,
-                thumbnail = TEST_THUMBNAIL_URL,
-            ),
-            SelectablePlace(
-                googlePlaceId = "3",
-                name = "젤라테리아 파씨 (Gelateria Fassi)",
-                placeType = PlaceType.CAFE,
-                thumbnail = TEST_THUMBNAIL_URL,
-            ),
-            SelectablePlace(
-                googlePlaceId = "4",
-                name = "리스토란테 일 팔라초 (Ristorante Il Palazzo)",
-                placeType = PlaceType.RESTAURANT,
-                thumbnail = TEST_THUMBNAIL_URL,
-            ),
-            SelectablePlace(
-                googlePlaceId = "5",
-                name = "카피톨리니 박물관 (Musei Capitolini)",
-                placeType = PlaceType.ATTRACTION,
-                thumbnail = TEST_THUMBNAIL_URL,
-            ),
-            SelectablePlace(
-                googlePlaceId = "6",
-                name = "리스토란테 일 팔라초 (Ristorante Il Palazzo)",
-                placeType = PlaceType.RESTAURANT,
-                thumbnail = TEST_THUMBNAIL_URL,
-            ),
-            SelectablePlace(
-                googlePlaceId = "7",
-                name = "카피톨리니 박물관 (Musei Capitolini)",
-                placeType = PlaceType.ATTRACTION,
-                thumbnail = TEST_THUMBNAIL_URL,
-            ),
-        )
-        val stubBookmarkedPlaces = listOf(
-            SelectablePlace(
-                googlePlaceId = "8",
-                name = "카페 산트에우스타키오 (Caffè Sant'Eustachio)",
-                placeType = PlaceType.CAFE,
-                thumbnail = TEST_THUMBNAIL_URL,
-            ),
-        )
-        reduce {
-            copy(
-                recommendedPlaces = stubRecommendedPlaces,
-                bookmarkedPlaces = stubBookmarkedPlaces,
-            )
+    private fun loadRecommendedPlaces() = viewModelScope.launch {
+        val travelInfo = suspendRunCatching {
+            userTravelRepository.getUserTravelTemplateContentInfo(travelId)
+        }.getOrNull()
+
+        // FIXME: 임시 추천 장소
+        val recommendedPlaces = if (travelInfo != null) {
+            val firstChar = travelInfo.city.firstOrNull()?.toString() ?: travelInfo.countryName?.firstOrNull()?.toString() ?: ""
+            if (firstChar.isNotBlank()) {
+                // 1. 검색으로 5개 장소 찾기
+                val searchResults = suspendRunCatching {
+                    placeRepository.searchKeyword(
+                        keyword = firstChar,
+                        countryCode = countryCode,
+                    )
+                }.getOrNull()?.results?.take(5) ?: emptyList()
+
+                // 2. 5개 장소를 동시에 조회 (병렬 처리)
+                val placeDetails = searchResults.map { result ->
+                    async {
+                        suspendRunCatching {
+                            placeRepository.getPlace(result.googlePlaceId)
+                        }.getOrNull()
+                    }
+                }.awaitAll()
+
+                // 3. SelectablePlace로 변환
+                placeDetails.mapNotNull { response ->
+                    response?.let {
+                        SelectablePlace(
+                            googlePlaceId = it.place.id,
+                            name = it.place.name,
+                            placeType = it.place.category.toPlaceType(),
+                            thumbnail = it.place.thumbnail,
+                        )
+                    }
+                }
+            } else {
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+
+        reduce { copy(recommendedPlaces = recommendedPlaces) }
+    }
+
+    private fun loadBookmarkedPlaces() = viewModelScope.launch {
+        suspendRunCatching {
+            placeRepository.getBookmarkedPlaces()
+        }.onSuccess { response ->
+            val bookmarkedPlaces = response.places.map { place ->
+                SelectablePlace(
+                    googlePlaceId = place.googlePlaceId,
+                    name = place.name,
+                    placeType = place.category.toPlaceType(),
+                    thumbnail = place.thumbnail,
+                )
+            }
+
+            reduce { copy(bookmarkedPlaces = bookmarkedPlaces) }
+        }.onFailure {
+            // FIXME: Handle Error
+            Timber.d("${it.message} $it")
         }
     }
 
@@ -163,8 +163,8 @@ class AddItineraryViewModel @AssistedInject constructor(
                     )
                 }
                 reduce { copy(isSearched = true, searchResults = results) }
-            }.onFailure { error ->
-                // FIXME: 임시 조치
+            }.onFailure {
+                // FIXME: Handle Error
                 reduce { copy(isSearched = true, searchResults = emptyList()) }
             }
         }
@@ -190,7 +190,7 @@ class AddItineraryViewModel @AssistedInject constructor(
                 )
             }
             reduce { copy(isSearched = true, searchResults = results) }
-        }.onFailure { error ->
+        }.onFailure {
             reduce { copy(isSearched = true, searchResults = emptyList()) }
         }
     }
@@ -261,7 +261,6 @@ class AddItineraryViewModel @AssistedInject constructor(
 
     private fun selectChip(chip: AddItineraryChip) {
         reduce { copy(selectedChip = chip) }
-        // FIXME: 칩에 따라 추천 장소 목록 로드
     }
 
     private fun checkSelectablePlace(googlePlaceId: String) {
@@ -278,33 +277,68 @@ class AddItineraryViewModel @AssistedInject constructor(
 
     private fun clickAddItinerary() = viewModelScope.launch {
         val selectedDetail = state.value.selectedPlaceDetail
+        val checkedPlaceId = state.value.checkedPlaceId
 
-        if (selectedDetail == null) {
+        // 검색해서 선택한 장소가 있는 경우
+        if (selectedDetail != null) {
+            val placeInfo = selectedDetail.placeInfo
+            userTravelRepository.emitAddPlaceEvent(
+                AddPlaceEvent(
+                    travelId = travelId,
+                    day = day,
+                    googlePlaceId = placeInfo.googlePlaceId,
+                    name = placeInfo.name,
+                    latitude = placeInfo.latitude,
+                    longitude = placeInfo.longitude,
+                    thumbnail = placeInfo.thumbnail,
+                    placeType = placeInfo.placeType.toPlaceCategory(),
+                    address = placeInfo.address,
+                    phoneNumber = placeInfo.phoneNumber,
+                    googleMapsUri = placeInfo.googleMapsUri,
+                    websiteUrl = placeInfo.websiteUrl,
+                    rating = placeInfo.rating,
+                    userRatingCount = placeInfo.userRatingCount,
+                    estimatedDuration = placeInfo.estimatedDuration.inWholeMinutes.toInt(),
+                ),
+            )
             postSideEffect(AddItinerarySideEffect.NavigateBack)
             return@launch
         }
 
-        val placeInfo = selectedDetail.placeInfo
-        userTravelRepository.emitAddPlaceEvent(
-            AddPlaceEvent(
-                travelId = travelId,
-                day = day,
-                googlePlaceId = placeInfo.googlePlaceId,
-                name = placeInfo.name,
-                latitude = placeInfo.latitude,
-                longitude = placeInfo.longitude,
-                thumbnail = placeInfo.thumbnail,
-                placeType = placeInfo.placeType.toPlaceCategory(),
-                address = placeInfo.address,
-                phoneNumber = placeInfo.phoneNumber,
-                googleMapsUri = placeInfo.googleMapsUri,
-                websiteUrl = placeInfo.websiteUrl,
-                rating = placeInfo.rating,
-                userRatingCount = placeInfo.userRatingCount,
-                estimatedDuration = placeInfo.estimatedDuration.inWholeMinutes.toInt(),
-            ),
-        )
+        // AddItineraryBottomSheet에서 체크박스로 선택한 장소가 있는 경우
+        if (checkedPlaceId != null) {
+            // 장소 상세 정보 가져오기
+            val placeDetail = suspendRunCatching {
+                placeRepository.getPlace(checkedPlaceId)
+            }.getOrNull()
 
+            if (placeDetail != null) {
+                userTravelRepository.emitAddPlaceEvent(
+                    AddPlaceEvent(
+                        travelId = travelId,
+                        day = day,
+                        googlePlaceId = placeDetail.place.id,
+                        name = placeDetail.place.name,
+                        latitude = placeDetail.place.location.latitude,
+                        longitude = placeDetail.place.location.longitude,
+                        thumbnail = placeDetail.place.thumbnail,
+                        placeType = placeDetail.place.category,
+                        address = placeDetail.place.formattedAddress,
+                        phoneNumber = placeDetail.place.nationalPhoneNumber
+                            ?: placeDetail.place.internationalPhoneNumber,
+                        googleMapsUri = placeDetail.place.googleMapsUri,
+                        websiteUrl = placeDetail.place.websiteUri,
+                        rating = placeDetail.place.rating,
+                        userRatingCount = placeDetail.place.userRatingCount,
+                        estimatedDuration = 60, // 기본값 60분
+                    ),
+                )
+                postSideEffect(AddItinerarySideEffect.NavigateBack)
+                return@launch
+            }
+        }
+
+        // 선택한 장소가 없으면 그냥 뒤로가기
         postSideEffect(AddItinerarySideEffect.NavigateBack)
     }
 
@@ -320,8 +354,32 @@ class AddItineraryViewModel @AssistedInject constructor(
         postSideEffect(AddItinerarySideEffect.NavigateToBrowser(url))
     }
 
-    private fun bookmarkPlace(placeId: String) {
-        // FIXME: 북마크 저장 기능 연동
+    private fun bookmarkPlace(placeId: String) = viewModelScope.launch {
+        val currentPlaceDetail = state.value.selectedPlaceDetail
+        val isBookmarked = currentPlaceDetail?.placeInfo?.isBookMarked ?: false
+
+        suspendRunCatching {
+            if (isBookmarked) {
+                placeRepository.unBookmarkPlace(placeId)
+            } else {
+                placeRepository.bookmarkPlace(placeId)
+            }
+        }.onSuccess {
+            currentPlaceDetail?.let { detail ->
+                reduce {
+                    copy(
+                        selectedPlaceDetail = detail.copy(
+                            placeInfo = detail.placeInfo.copy(isBookMarked = !isBookmarked),
+                        ),
+                    )
+                }
+            }
+
+            // 북마크 리스트 새로고침
+            loadBookmarkedPlaces()
+        }.onFailure {
+            // TODO: 에러 처리
+        }
     }
 
     @AssistedFactory
