@@ -74,6 +74,7 @@ internal fun PlaceDetailRoute(
         when (sideEffect) {
             is PlaceDetailSideEffect.NavigateToBrowser -> context.launchBrowser(sideEffect.url)
             is PlaceDetailSideEffect.NavigateToAlternativePlaceDetail -> navigateToAlternativePlaceDetail(sideEffect.googlePlaceId)
+            is PlaceDetailSideEffect.NavigateBack -> navigateBack()
         }
     }
 

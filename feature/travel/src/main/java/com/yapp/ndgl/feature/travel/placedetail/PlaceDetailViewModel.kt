@@ -21,10 +21,14 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = PlaceDetailViewModel.Factory::class)
 class PlaceDetailViewModel @AssistedInject constructor(
-    @Assisted private val googlePlaceId: String,
-    @Assisted private val tipContent: RouteTipContent?,
-    @Assisted private val alternativePlaces: List<RouteAlternativePlace>?,
+    @Assisted("googlePlaceId") private val googlePlaceId: String,
+    @Assisted("tipContent") private val tipContent: RouteTipContent?,
+    @Assisted("alternativePlaces") private val alternativePlaces: List<RouteAlternativePlace>?,
+    @Assisted("travelId") private val travelId: Long?,
+    @Assisted("day") private val day: Int?,
+    @Assisted("itineraryId") private val itineraryId: Long?,
     private val placeRepository: PlaceRepository,
+    private val userTravelRepository: com.yapp.ndgl.data.travel.repository.UserTravelRepository,
 ) : BaseViewModel<PlaceDetailState, PlaceDetailIntent, PlaceDetailSideEffect>(
     initialState = PlaceDetailState(),
 ) {
@@ -110,13 +114,25 @@ class PlaceDetailViewModel @AssistedInject constructor(
         reduce { copy(selectedAlternativePlace = alternativePlace, showChangeModal = true) }
     }
 
-    // TODO("Plan B 장소 변경 로직")
-    private fun confirmChangePlace() {
-        reduce {
-            copy(
-                showChangeModal = false,
-            )
-        }
+    private fun confirmChangePlace() = viewModelScope.launch {
+        val selectedPlace = state.value.selectedAlternativePlace ?: return@launch
+        val currentTravelId = travelId ?: return@launch
+        val currentDay = day ?: return@launch
+        val currentItineraryId = itineraryId ?: return@launch
+
+        reduce { copy(showChangeModal = false) }
+
+        userTravelRepository.emitChangePlaceEvent(
+            com.yapp.ndgl.data.travel.model.ChangePlaceEvent(
+                travelId = currentTravelId,
+                day = currentDay,
+                itineraryId = currentItineraryId,
+                oldGooglePlaceId = googlePlaceId,
+                newGooglePlaceId = selectedPlace.id,
+            ),
+        )
+
+        postSideEffect(PlaceDetailSideEffect.NavigateBack)
     }
 
     private fun dismissChangeModal() {
@@ -126,9 +142,12 @@ class PlaceDetailViewModel @AssistedInject constructor(
     @AssistedFactory
     interface Factory {
         fun create(
-            googlePlaceId: String,
-            tipContent: RouteTipContent?,
-            alternativePlaces: List<RouteAlternativePlace>?,
+            @Assisted("googlePlaceId") googlePlaceId: String,
+            @Assisted("tipContent") tipContent: RouteTipContent?,
+            @Assisted("alternativePlaces") alternativePlaces: List<RouteAlternativePlace>?,
+            @Assisted("travelId") travelId: Long?,
+            @Assisted("day") day: Int?,
+            @Assisted("itineraryId") itineraryId: Long?,
         ): PlaceDetailViewModel
     }
 }
