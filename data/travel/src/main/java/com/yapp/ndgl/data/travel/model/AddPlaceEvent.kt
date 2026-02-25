@@ -12,8 +12,4 @@ data class AddPlaceEvent(
     val address: String?,
     val phoneNumber: String?,
     val googleMapsUri: String?,
-    val websiteUrl: String?,
-    val rating: Double?,
-    val userRatingCount: Int?,
-    val estimatedDuration: Int, // 분 단위
 )
