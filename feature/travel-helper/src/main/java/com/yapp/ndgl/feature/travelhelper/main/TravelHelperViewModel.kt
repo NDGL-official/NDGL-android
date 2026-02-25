@@ -9,6 +9,7 @@ import com.yapp.ndgl.data.travel.repository.ExchangeRateRepository
 import com.yapp.ndgl.data.travel.repository.UserTravelRepository
 import com.yapp.ndgl.data.travel.repository.WeatherRepository
 import com.yapp.ndgl.data.travel.util.CurrencyInfoResolver
+import com.yapp.ndgl.feature.travelhelper.main.TravelHelperSideEffect.NavigateToTravelDetail
 import com.yapp.ndgl.feature.travelhelper.main.TravelHelperState.CurrencyInfo
 import com.yapp.ndgl.feature.travelhelper.main.TravelHelperState.ExchangeRateInfo
 import com.yapp.ndgl.feature.travelhelper.main.TravelHelperState.TravelPlace
@@ -54,6 +55,13 @@ class TravelHelperViewModel @Inject constructor(
             reduce { copy(availableCurrencies = allCurrencies) }
         }
         loadUpcomingTravel()
+        subscribeToTravelCreatedEvent()
+    }
+
+    private fun subscribeToTravelCreatedEvent() = viewModelScope.launch {
+        userTravelRepository.travelCreatedEvent.collect { _ ->
+            loadUpcomingTravel()
+        }
     }
 
     private fun loadUpcomingTravel() {
@@ -80,6 +88,7 @@ class TravelHelperViewModel @Inject constructor(
                                 startDate = travel.startDate,
                                 endDate = travel.endDate,
                                 thumbnail = travel.thumbnail,
+                                days = travel.days,
                                 dDay = dDay,
                                 weatherState = WeatherUiState.NotAvailable,
                                 exchangeRateInfo = exchangeRateInfo,
@@ -96,10 +105,11 @@ class TravelHelperViewModel @Inject constructor(
                                 startDate = travel.startDate,
                                 endDate = travel.endDate,
                                 thumbnail = travel.thumbnail,
-                                dayCount = dayNumber,
+                                dayCount = dayNumber.toInt(),
                                 weatherState = WeatherUiState.NotAvailable,
                                 currentPlace = place?.place?.let {
                                     TravelPlace(
+                                        googlePlaceId = it.googlePlaceId,
                                         name = it.name,
                                         category = it.category,
                                         estimatedDuration = place.estimatedDuration,
@@ -118,7 +128,7 @@ class TravelHelperViewModel @Inject constructor(
                             travelUiState = travelUiState,
                             convertedAmount = calculateConvertedAmount(
                                 currencyInput,
-                                exchangeRateInfo.rate
+                                exchangeRateInfo.rate,
                             ),
                         )
                     }
@@ -151,7 +161,7 @@ class TravelHelperViewModel @Inject constructor(
 
     private suspend fun buildExchangeRateInfo(
         topCode: String,
-        bottomCode: String
+        bottomCode: String,
     ): ExchangeRateInfo {
         val rateResult = runCatching { getCrossRate(topCode, bottomCode) }
         rateResult.onFailure {
@@ -251,6 +261,10 @@ class TravelHelperViewModel @Inject constructor(
                 }
             }
 
+            is TravelHelperIntent.ClickTravelCard -> {
+                postSideEffect(NavigateToTravelDetail(intent.travelId, intent.days))
+            }
+
             is TravelHelperIntent.SelectCurrency -> {
                 val currentInfo = getExchangeRateInfo() ?: return
                 if (intent.currencyCode == currentInfo.topCurrency.currencyCode) return
@@ -266,6 +280,10 @@ class TravelHelperViewModel @Inject constructor(
                         convertedAmount = newConverted,
                     )
                 }
+            }
+
+            is TravelHelperIntent.ClickPlace -> {
+                postSideEffect(TravelHelperSideEffect.NavigateToPlaceDetail(intent.placeId))
             }
         }
     }
@@ -299,5 +317,4 @@ class TravelHelperViewModel @Inject constructor(
             lowTempCelsius = minTemperature?.degrees?.roundToInt() ?: 0,
         )
     }
-
 }

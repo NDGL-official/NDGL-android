@@ -51,6 +51,9 @@ import com.yapp.ndgl.core.ui.R as CoreR
 @Composable
 internal fun TravelHelperRoute(
     navigateToSearch: () -> Unit,
+    navigateToTravelDetail: (Long, Int) -> Unit,
+    navigateToPopularTravelList: () -> Unit,
+    navigateToPlaceDetail: (String) -> Unit,
     viewModel: TravelHelperViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
@@ -64,9 +67,13 @@ internal fun TravelHelperRoute(
         state = state,
         snackbarHostState = snackbarHostState,
         onSearchClick = { viewModel.onIntent(TravelHelperIntent.ClickSearch) },
-        onNewTravelFindClick = {},
-        onTravelClick = {},
-        onPlaceClick = {},
+        onNewTravelFindClick = navigateToPopularTravelList,
+        onTravelClick = { travelId, days ->
+            viewModel.onIntent(TravelHelperIntent.ClickTravelCard(travelId, days))
+        },
+        onPlaceClick = {
+            viewModel.onIntent(TravelHelperIntent.ClickPlace(it))
+        },
         onCurrencyInputChange = { viewModel.onIntent(TravelHelperIntent.UpdateCurrencyInput(it)) },
         onSwapCurrency = { viewModel.onIntent(TravelHelperIntent.SwapCurrency) },
         onCurrencySelect = { viewModel.onIntent(TravelHelperIntent.SelectCurrency(it)) },
@@ -75,11 +82,17 @@ internal fun TravelHelperRoute(
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             TravelHelperSideEffect.NavigateToSearch -> navigateToSearch()
+            is TravelHelperSideEffect.NavigateToTravelDetail -> {
+                navigateToTravelDetail(sideEffect.travelId, sideEffect.days)
+            }
+
             TravelHelperSideEffect.ShowExchangeRateError -> {
                 coroutineScope.launch {
                     snackbarHostState.showSnackbar(exchangeRateErrorMessage)
                 }
             }
+
+            is TravelHelperSideEffect.NavigateToPlaceDetail -> navigateToPlaceDetail(sideEffect.placeId)
         }
     }
 }
@@ -90,8 +103,8 @@ private fun TravelHelperScreen(
     snackbarHostState: SnackbarHostState,
     onSearchClick: () -> Unit,
     onNewTravelFindClick: () -> Unit,
-    onTravelClick: (Long) -> Unit,
-    onPlaceClick: (Long) -> Unit,
+    onTravelClick: (Long, Int) -> Unit,
+    onPlaceClick: (String) -> Unit,
     onCurrencyInputChange: (String) -> Unit,
     onSwapCurrency: () -> Unit,
     onCurrencySelect: (String) -> Unit,
@@ -101,7 +114,7 @@ private fun TravelHelperScreen(
             SnackbarHost(snackbarHostState) { data ->
                 NDGLSnackbar(
                     modifier = Modifier.padding(bottom = 100.dp),
-                    snackbarData = data
+                    snackbarData = data,
                 )
             }
         },
@@ -259,7 +272,7 @@ private fun LazyListScope.upcomingTravelContent(
     currencyInput: String,
     convertedAmount: Double?,
     availableCurrencies: ImmutableList<CurrencyOption>,
-    onTravelClick: (Long) -> Unit,
+    onTravelClick: (Long, Int) -> Unit,
     onCurrencyInputChange: (String) -> Unit,
     onSwapCurrency: () -> Unit,
     onCurrencySelect: (String) -> Unit,
@@ -268,7 +281,7 @@ private fun LazyListScope.upcomingTravelContent(
         UpcomingTravelCard(
             modifier = Modifier,
             travel = travel,
-            onCardClick = { onTravelClick(travel.id) },
+            onCardClick = { onTravelClick(travel.id, travel.days) },
         )
     }
     item {
@@ -292,8 +305,8 @@ private fun LazyListScope.inProgressTravelContent(
     currencyInput: String,
     convertedAmount: Double?,
     availableCurrencies: ImmutableList<CurrencyOption>,
-    onTravelClick: (Long) -> Unit,
-    onPlaceClick: (Long) -> Unit,
+    onTravelClick: (Long, Int) -> Unit,
+    onPlaceClick: (String) -> Unit,
     onCurrencyInputChange: (String) -> Unit,
     onSwapCurrency: () -> Unit,
     onCurrencySelect: (String) -> Unit,
@@ -301,8 +314,8 @@ private fun LazyListScope.inProgressTravelContent(
     item {
         InProgressTravelCard(
             travel = travel,
-            onCardClick = { onTravelClick(travel.id) },
-            onPlaceClick = { onPlaceClick(travel.id) },
+            onTravelClick = onTravelClick,
+            onPlaceClick = onPlaceClick,
             modifier = Modifier,
         )
     }

@@ -171,13 +171,13 @@ private fun DayTag(
 @Composable
 internal fun InProgressTravelCard(
     travel: TravelUiState.OngoingTravel,
-    onCardClick: () -> Unit,
-    onPlaceClick: () -> Unit,
+    onTravelClick: (Long, Int) -> Unit,
+    onPlaceClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     CardContainer(
         modifier = modifier,
-        onCardClick = onCardClick,
+        onCardClick = { onTravelClick(travel.id, travel.dayCount) },
     ) {
         Column(
             modifier = Modifier
@@ -201,7 +201,7 @@ internal fun InProgressTravelCard(
                     Text(
                         text = stringResource(
                             R.string.travel_helper_card_in_progress_day_count,
-                            travel.dayCount
+                            travel.dayCount,
                         ),
                         style = NDGLTheme.typography.subtitleMdSemiBold,
                         color = NDGLTheme.colors.black700,
@@ -235,7 +235,7 @@ internal fun InProgressTravelCard(
 @Composable
 private fun PlaceInfoCard(
     place: TravelPlace,
-    onPlaceClick: () -> Unit,
+    onPlaceClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -243,7 +243,7 @@ private fun PlaceInfoCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(NDGLTheme.colors.white)
-            .clickable(onClick = onPlaceClick)
+            .clickable(onClick = { onPlaceClick(place.googlePlaceId) })
             .padding(16.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -284,6 +284,8 @@ private fun PlaceInfoCard(
             Text(
                 text = place.name,
                 color = NDGLTheme.colors.black900,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 style = NDGLTheme.typography.bodyLgSemiBold,
             )
         }
@@ -341,6 +343,7 @@ private fun UpcomingTravelCardPreview() {
                 endDate = LocalDate.of(2025, 2, 20),
                 thumbnail = null,
                 dDay = 7L,
+                days = 6,
                 weatherState = TravelHelperState.WeatherUiState.NotAvailable,
                 exchangeRateInfo = TravelHelperState.ExchangeRateInfo(
                     topCurrency = TravelHelperState.CurrencyInfo(
@@ -376,9 +379,10 @@ private fun InProgressTravelCardPreview() {
                 startDate = LocalDate.of(2025, 2, 1),
                 endDate = LocalDate.of(2025, 2, 10),
                 thumbnail = null,
-                dayCount = 3L,
+                dayCount = 3,
                 weatherState = TravelHelperState.WeatherUiState.NotAvailable,
                 currentPlace = TravelPlace(
+                    googlePlaceId = "",
                     name = "인도 국제 공항",
                     category = PlaceCategory.TRANSPORT,
                     estimatedDuration = 60,
@@ -401,7 +405,7 @@ private fun InProgressTravelCardPreview() {
                     rateDate = LocalDate.of(2025, 1, 1),
                 ),
             ),
-            onCardClick = {},
+            onTravelClick = { _, _ -> },
             onPlaceClick = {},
         )
     }

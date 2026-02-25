@@ -35,6 +35,7 @@ data class TravelHelperState(
             val endDate: LocalDate,
             val thumbnail: String?,
             val dDay: Long,
+            val days: Int,
             val weatherState: WeatherUiState,
             val exchangeRateInfo: ExchangeRateInfo,
         ) : TravelUiState
@@ -46,7 +47,7 @@ data class TravelHelperState(
             val startDate: LocalDate,
             val endDate: LocalDate,
             val thumbnail: String?,
-            val dayCount: Long,
+            val dayCount: Int,
             val weatherState: WeatherUiState,
             val currentPlace: TravelPlace?,
             val exchangeRateInfo: ExchangeRateInfo,
@@ -71,6 +72,7 @@ data class TravelHelperState(
     )
 
     data class TravelPlace(
+        val googlePlaceId: String,
         val name: String,
         val category: PlaceCategory,
         val estimatedDuration: Int,
@@ -99,9 +101,13 @@ sealed interface TravelHelperIntent : UiIntent {
     data class UpdateCurrencyInput(val input: String) : TravelHelperIntent
     data object SwapCurrency : TravelHelperIntent
     data class SelectCurrency(val currencyCode: String) : TravelHelperIntent
+    data class ClickTravelCard(val travelId: Long, val days: Int) : TravelHelperIntent
+    data class ClickPlace(val placeId: String) : TravelHelperIntent
 }
 
 sealed interface TravelHelperSideEffect : UiSideEffect {
     data object NavigateToSearch : TravelHelperSideEffect
     data object ShowExchangeRateError : TravelHelperSideEffect
+    data class NavigateToTravelDetail(val travelId: Long, val days: Int) : TravelHelperSideEffect
+    data class NavigateToPlaceDetail(val placeId: String) : TravelHelperSideEffect
 }

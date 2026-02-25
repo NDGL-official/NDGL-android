@@ -46,8 +46,8 @@ import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.feature.travelhelper.R
 import com.yapp.ndgl.feature.travelhelper.main.TravelHelperState.ExchangeRateInfo
 import kotlinx.collections.immutable.ImmutableList
-import java.time.format.DateTimeFormatter
 import kotlinx.collections.immutable.persistentListOf
+import java.time.format.DateTimeFormatter
 import com.yapp.ndgl.core.ui.R as CoreR
 
 @Composable
@@ -95,7 +95,7 @@ internal fun CurrencyCalculatorSection(
                 )
                 Box(
                     modifier = Modifier.fillMaxWidth(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     HorizontalDivider(
                         modifier = Modifier
@@ -167,7 +167,7 @@ private fun CurrencyCard(
             .border(
                 width = 1.dp,
                 color = NDGLTheme.colors.black200,
-                shape = RoundedCornerShape(4.dp)
+                shape = RoundedCornerShape(4.dp),
             ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -203,7 +203,7 @@ private fun ForeignCurrencyLeft(
     onCurrencySelect: (String) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
-    
+
     Row(
         modifier = modifier
             .background(
@@ -211,11 +211,15 @@ private fun ForeignCurrencyLeft(
                 shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp),
             )
             .then(
-                if (showCurrencySelector) Modifier.clickable(
-                    interactionSource = null,
-                    indication = ripple(),
-                    onClick = { expanded = true },
-                ) else Modifier
+                if (showCurrencySelector) {
+                    Modifier.clickable(
+                        interactionSource = null,
+                        indication = ripple(),
+                        onClick = { expanded = true },
+                    )
+                } else {
+                    Modifier
+                },
             )
             .padding(horizontal = 10.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -232,7 +236,7 @@ private fun ForeignCurrencyLeft(
             )
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                verticalArrangement = Arrangement.spacedBy(2.dp),
             ) {
                 Text(
                     text = currencyName,
@@ -298,7 +302,7 @@ private fun CurrencyDropdownItem(
                     NDGLTheme.colors.green100
                 } else {
                     NDGLTheme.colors.white
-                }
+                },
             )
             .clickable(onClick = onClick)
             .padding(horizontal = 4.dp, vertical = 8.dp),
@@ -355,8 +359,11 @@ private fun ForeignCurrencyRight(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             singleLine = true,
             cursorBrush = SolidColor(NDGLTheme.colors.green500),
-            visualTransformation = if (isEditable) ThousandSeparatorTransformation()
-            else VisualTransformation.None,
+            visualTransformation = if (isEditable) {
+                ThousandSeparatorTransformation()
+            } else {
+                VisualTransformation.None
+            },
             decorationBox = { innerTextField ->
                 Box(contentAlignment = Alignment.CenterEnd) {
                     if (currencyInput.isEmpty()) {
@@ -398,8 +405,11 @@ private class ThousandSeparatorTransformation : VisualTransformation {
         val intPart = if (dotIndex >= 0) original.substring(0, dotIndex) else original
         val decimalPart = if (dotIndex >= 0) original.substring(dotIndex) else ""
 
-        val formattedInt = if (intPart.isEmpty()) ""
-        else intPart.reversed().chunked(3).joinToString(",").reversed()
+        val formattedInt = if (intPart.isEmpty()) {
+            ""
+        } else {
+            intPart.reversed().chunked(3).joinToString(",").reversed()
+        }
         val formatted = formattedInt + decimalPart
 
         val offsetMapping = object : OffsetMapping {

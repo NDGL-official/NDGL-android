@@ -10,6 +10,11 @@ fun EntryProviderScope<NavKey>.travelHelperEntry(navigator: Navigator) {
     entry<Route.TravelHelper> {
         TravelHelperRoute(
             navigateToSearch = { navigator.navigate(Route.TemplateSearch) },
+            navigateToTravelDetail = { travelId, days ->
+                navigator.navigate(Route.TravelDetail(travelId, days))
+            },
+            navigateToPopularTravelList = { navigator.navigate(Route.PopularTravelList) },
+            navigateToPlaceDetail = { placeId -> navigator.navigate(Route.PlaceDetail(placeId)) },
         )
     }
 }
