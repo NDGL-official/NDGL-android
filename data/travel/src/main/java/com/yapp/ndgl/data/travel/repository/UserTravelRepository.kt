@@ -138,7 +138,7 @@ class UserTravelRepository @Inject constructor(
         day: Int,
         sequence: Int,
         startTime: String? = null,
-        estimatedDuration: String? = null,
+        estimatedDuration: Int,
         cost: Int? = null,
         memo: String? = null,
         distanceKm: Double? = null,

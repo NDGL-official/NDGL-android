@@ -34,7 +34,6 @@ class PlaceRepository @Inject constructor(
         val requestBuilder = FindAutocompletePredictionsRequest.builder()
             .setQuery(keyword)
             .setSessionToken(sessionToken)
-            // .setCountries(countryCode)
             .setLocationBias(bias)
 
         val response = placesClient.findAutocompletePredictions(requestBuilder.build()).await()

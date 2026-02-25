@@ -117,18 +117,23 @@ class TravelDetailViewModel @AssistedInject constructor(
         val dayIndex = event.day - 1
         val currentItinerary = state.value.itineraries.getOrNull(dayIndex) ?: return
         val newSequence = currentItinerary.places.size + 1
-        val lastPlace = currentItinerary.places.last()
+        val lastPlace = currentItinerary.places.lastOrNull()
 
         // 추가된 장소로 가는 교통수단 계산
-        val newTransportSegment = computeRoute(
-            originLatitude = lastPlace.placeInfo.latitude,
-            originLongitude = lastPlace.placeInfo.longitude,
-            destinationLatitude = event.latitude,
-            destinationLongitude = event.longitude,
-            newGooglePlaceId = event.googlePlaceId,
-            travelMode = TravelMode.TRANSIT,
-        )
-        val (distanceKm, transportation) = if (currentItinerary.places.isNotEmpty()) {
+        val newTransportSegment = if (lastPlace != null) {
+            computeRoute(
+                originLatitude = lastPlace.placeInfo.latitude,
+                originLongitude = lastPlace.placeInfo.longitude,
+                destinationLatitude = event.latitude,
+                destinationLongitude = event.longitude,
+                newGooglePlaceId = event.googlePlaceId,
+                travelMode = TravelMode.TRANSIT,
+            )
+        } else {
+            null
+        }
+
+        val (distanceKm, transportation) = if (!currentItinerary.places.isNullOrEmpty()) {
             newTransportSegment?.distanceKm to listOfNotNull(newTransportSegment?.toTransportationItem())
         } else {
             null to null
@@ -140,8 +145,17 @@ class TravelDetailViewModel @AssistedInject constructor(
                 googlePlaceId = event.googlePlaceId,
                 day = event.day,
                 sequence = newSequence,
-                startTime = null,
-                estimatedDuration = "${event.estimatedDuration}",
+                startTime = if (lastPlace == null) {
+                    null
+                } else {
+                    (
+                        lastPlace.startTime + lastPlace.placeInfo.estimatedDuration + (
+                            newTransportSegment?.duration
+                                ?: 0.hours
+                            )
+                        ).parseDurationToTimeString()
+                },
+                estimatedDuration = event.estimatedDuration,
                 cost = null,
                 memo = null,
                 distanceKm = distanceKm,
@@ -166,7 +180,8 @@ class TravelDetailViewModel @AssistedInject constructor(
                 userData = TravelPlace.UserData(
                     estimatedDuration = response.estimatedDuration.minutes,
                 ),
-                startTime = lastPlace.startTime + lastPlace.placeInfo.estimatedDuration + (newTransportSegment?.duration ?: 0.hours),
+                startTime = (lastPlace?.startTime ?: Itinerary.DEFAULT_START_TIME.hours) +
+                    (lastPlace?.placeInfo?.estimatedDuration ?: 1.hours) + (newTransportSegment?.duration ?: 0.hours),
                 transportToNext = null,
             )
 

@@ -32,7 +32,7 @@ data class TransportSegment(
     fun toTransportationItem(): TransportationItem {
         return TransportationItem(
             mode = type.toTransportCategory(),
-            timeMin = duration.inWholeMinutes.toInt(),
+            timeMin = duration.inWholeMinutes.toInt().coerceAtLeast(1),
         )
     }
 }
