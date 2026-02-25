@@ -31,6 +31,8 @@ class AndroidCredentialInterceptor @Inject constructor(
             MessageDigest.getInstance("SHA-1")
                 .digest(signatures?.getOrNull(0)?.toByteArray())
                 .joinToString("") { "%02x".format(it) }
-        } catch (e: Exception) { "" }
+        } catch (_: Exception) {
+            ""
+        }
     }
 }

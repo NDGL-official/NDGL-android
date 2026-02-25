@@ -180,22 +180,22 @@ class TravelHelperViewModel @Inject constructor(
         return when {
             to == "KRW" -> {
                 exchangeRateRepository.getKrwRate(from)
-                    ?: throw IllegalStateException("Exchange rate not available for $from")
+                    ?: error("Exchange rate not available for $from")
             }
 
             from == "KRW" -> {
                 val toKrw = exchangeRateRepository.getKrwRate(to)
-                    ?: throw IllegalStateException("Exchange rate not available for $to")
-                if (toKrw == 0.0) throw IllegalStateException("KRW rate for $to is zero")
+                    ?: error("Exchange rate not available for $to")
+                check(toKrw != 0.0) { "KRW rate for $to is zero" }
                 1.0 / toKrw
             }
 
             else -> {
                 val fromKrw = exchangeRateRepository.getKrwRate(from)
-                    ?: throw IllegalStateException("Exchange rate not available for $from")
+                    ?: error("Exchange rate not available for $from")
                 val toKrw = exchangeRateRepository.getKrwRate(to)
-                    ?: throw IllegalStateException("Exchange rate not available for $to")
-                if (toKrw == 0.0) throw IllegalStateException("KRW rate for $to is zero")
+                    ?: error("Exchange rate not available for $to")
+                check(toKrw != 0.0) { "KRW rate for $to is zero" }
                 fromKrw / toKrw
             }
         }

@@ -31,7 +31,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
@@ -56,8 +55,6 @@ internal fun TravelHelperRoute(
     navigateToPlaceDetail: (String) -> Unit,
     viewModel: TravelHelperViewModel = hiltViewModel(),
 ) {
-    val context = LocalContext.current
-
     val state by viewModel.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
