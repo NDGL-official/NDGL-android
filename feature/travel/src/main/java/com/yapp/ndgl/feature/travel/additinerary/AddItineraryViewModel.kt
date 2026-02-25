@@ -295,10 +295,6 @@ class AddItineraryViewModel @AssistedInject constructor(
                     address = placeInfo.address,
                     phoneNumber = placeInfo.phoneNumber,
                     googleMapsUri = placeInfo.googleMapsUri,
-                    websiteUrl = placeInfo.websiteUrl,
-                    rating = placeInfo.rating,
-                    userRatingCount = placeInfo.userRatingCount,
-                    estimatedDuration = placeInfo.estimatedDuration.inWholeMinutes.toInt(),
                 ),
             )
             postSideEffect(AddItinerarySideEffect.NavigateBack)
@@ -327,10 +323,6 @@ class AddItineraryViewModel @AssistedInject constructor(
                         phoneNumber = placeDetail.place.nationalPhoneNumber
                             ?: placeDetail.place.internationalPhoneNumber,
                         googleMapsUri = placeDetail.place.googleMapsUri,
-                        websiteUrl = placeDetail.place.websiteUri,
-                        rating = placeDetail.place.rating,
-                        userRatingCount = placeDetail.place.userRatingCount,
-                        estimatedDuration = 60, // 기본값 60분
                     ),
                 )
                 postSideEffect(AddItinerarySideEffect.NavigateBack)

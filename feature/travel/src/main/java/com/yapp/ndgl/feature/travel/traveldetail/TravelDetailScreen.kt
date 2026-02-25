@@ -9,15 +9,14 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -26,6 +25,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -62,6 +64,7 @@ import com.yapp.ndgl.core.ui.designsystem.NDGLModal
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationIcon
+import com.yapp.ndgl.core.ui.designsystem.NDGLSnackbar
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.core.ui.util.dropShadow
 import com.yapp.ndgl.core.ui.util.launchBrowser
@@ -106,6 +109,7 @@ internal fun TravelDetailRoute(
     val context = LocalContext.current
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
@@ -144,7 +148,7 @@ internal fun TravelDetailRoute(
                     val placeIndex = places.indexOfFirst { it.id == sideEffect.placeId }
 
                     if (placeIndex >= 0) {
-                        val targetIndex = state.placesOffset + placeIndex
+                        val targetIndex = TravelDetailState.PLACES_OFFSET + placeIndex
                         delay(100)
                         listState.animateScrollToItem(targetIndex)
                     }
@@ -158,60 +162,77 @@ internal fun TravelDetailRoute(
                     val placeIndex = places.indexOfFirst { it.placeInfo.googlePlaceId == sideEffect.googlePlaceId }
 
                     if (placeIndex >= 0) {
-                        val targetIndex = state.placesOffset + placeIndex
+                        val targetIndex = TravelDetailState.PLACES_OFFSET + placeIndex
                         delay(100)
                         listState.animateScrollToItem(targetIndex)
                     }
                 }
             }
+
+            is TravelDetailSideEffect.ShowSnackbar -> {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(sideEffect.message)
+                }
+            }
         }
     }
 
-    TravelDetailScreen(
-        state = state,
-        listState = listState,
-        clickBack = { viewModel.onIntent(TravelDetailIntent.ClickBack) },
-        selectDay = { viewModel.onIntent(TravelDetailIntent.SelectDay(it)) },
-        clickStartTimeSetting = { viewModel.onIntent(TravelDetailIntent.ClickStartTimeSetting) },
-        clickEditTravel = { viewModel.onIntent(TravelDetailIntent.ClickEditTravel) },
-        clickAddScheduleButton = { viewModel.onIntent(TravelDetailIntent.ClickAddScheduleButton) },
-        checkPlaceItem = { placeId ->
-            viewModel.onIntent(TravelDetailIntent.CheckPlaceItem(placeId))
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = {
+            SnackbarHost(snackbarHostState) { data ->
+                NDGLSnackbar(modifier = Modifier.padding(bottom = 106.dp), snackbarData = data)
+            }
         },
-        checkSelectAll = { viewModel.onIntent(TravelDetailIntent.CheckSelectAll) },
-        clickDeleteSelectedPlaces = { viewModel.onIntent(TravelDetailIntent.ClickDeleteSelectedPlaces) },
-        confirmDeleteSelectedPlaces = { viewModel.onIntent(TravelDetailIntent.ConfirmDeleteSelectedPlaces) },
-        dismissDeleteModal = { viewModel.onIntent(TravelDetailIntent.DismissDeleteModal) },
-        confirmCancelEditMode = { viewModel.onIntent(TravelDetailIntent.ConfirmCancelEditMode) },
-        dismissCancelEditModal = { viewModel.onIntent(TravelDetailIntent.DismissCancelEditModal) },
-        longClickPlaceItem = { viewModel.onIntent(TravelDetailIntent.LongClickPlaceItem) },
-        dismissStartTimeSettingBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissStartTimeSettingBottomSheet) },
-        confirmStartTimeSetting = { startTime -> viewModel.onIntent(TravelDetailIntent.ConfirmStartTimeSetting(startTime)) },
-        reorderPlaces = { dayIndex, fromIndex, toIndex -> viewModel.onIntent(TravelDetailIntent.ReorderPlaces(dayIndex, fromIndex, toIndex)) },
-        clickTransportSegment = { place -> viewModel.onIntent(TravelDetailIntent.ClickTransportSegment(place)) },
-        confirmChangeTransport = { segment -> viewModel.onIntent(TravelDetailIntent.ConfirmChangeTransportSegment(segment)) },
-        dismissTransportBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissTransportBottomSheet) },
-        confirmEditMode = { viewModel.onIntent(TravelDetailIntent.ConfirmEditMode) },
-        clickPlaceItem = { viewModel.onIntent(TravelDetailIntent.ClickPlaceItem(it)) },
-        dismissPlaceBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissPlaceBottomSheet) },
-        navigateToTravelPlaceDetail = { viewModel.onIntent(TravelDetailIntent.NavigateToTravelPlaceDetail(it)) },
-        clickAddTime = { viewModel.onIntent(TravelDetailIntent.ClickAddTime(it)) },
-        clickAddMemo = { viewModel.onIntent(TravelDetailIntent.ClickAddMemo(it)) },
-        clickAddCost = { viewModel.onIntent(TravelDetailIntent.ClickAddCost(it)) },
-        clickFindRoute = { viewModel.onIntent(TravelDetailIntent.ClickFindRoute(it)) },
-        dismissTimeBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissTimeBottomSheet) },
-        confirmDuration = {
-            viewModel.onIntent(TravelDetailIntent.ConfirmDuration(it))
-        },
-        dismissCostModal = { viewModel.onIntent(TravelDetailIntent.DismissCostModal) },
-        confirmCost = { viewModel.onIntent(TravelDetailIntent.ConfirmCost(it)) },
-        dismissMemoModal = { viewModel.onIntent(TravelDetailIntent.DismissMemoModal) },
-        confirmMemo = { viewModel.onIntent(TravelDetailIntent.ConfirmMemo(it)) },
-    )
+    ) { innerPadding ->
+        TravelDetailScreen(
+            innerPadding = innerPadding,
+            state = state,
+            listState = listState,
+            clickBack = { viewModel.onIntent(TravelDetailIntent.ClickBack) },
+            selectDay = { viewModel.onIntent(TravelDetailIntent.SelectDay(it)) },
+            clickStartTimeSetting = { viewModel.onIntent(TravelDetailIntent.ClickStartTimeSetting) },
+            clickEditTravel = { viewModel.onIntent(TravelDetailIntent.ClickEditTravel) },
+            clickAddScheduleButton = { viewModel.onIntent(TravelDetailIntent.ClickAddScheduleButton) },
+            checkPlaceItem = { placeId ->
+                viewModel.onIntent(TravelDetailIntent.CheckPlaceItem(placeId))
+            },
+            checkSelectAll = { viewModel.onIntent(TravelDetailIntent.CheckSelectAll) },
+            clickDeleteSelectedPlaces = { viewModel.onIntent(TravelDetailIntent.ClickDeleteSelectedPlaces) },
+            confirmDeleteSelectedPlaces = { viewModel.onIntent(TravelDetailIntent.ConfirmDeleteSelectedPlaces) },
+            dismissDeleteModal = { viewModel.onIntent(TravelDetailIntent.DismissDeleteModal) },
+            confirmCancelEditMode = { viewModel.onIntent(TravelDetailIntent.ConfirmCancelEditMode) },
+            dismissCancelEditModal = { viewModel.onIntent(TravelDetailIntent.DismissCancelEditModal) },
+            longClickPlaceItem = { viewModel.onIntent(TravelDetailIntent.LongClickPlaceItem) },
+            dismissStartTimeSettingBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissStartTimeSettingBottomSheet) },
+            confirmStartTimeSetting = { startTime -> viewModel.onIntent(TravelDetailIntent.ConfirmStartTimeSetting(startTime)) },
+            reorderPlaces = { dayIndex, fromIndex, toIndex -> viewModel.onIntent(TravelDetailIntent.ReorderPlaces(dayIndex, fromIndex, toIndex)) },
+            clickTransportSegment = { place -> viewModel.onIntent(TravelDetailIntent.ClickTransportSegment(place)) },
+            confirmChangeTransport = { segment -> viewModel.onIntent(TravelDetailIntent.ConfirmChangeTransportSegment(segment)) },
+            dismissTransportBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissTransportBottomSheet) },
+            confirmEditMode = { viewModel.onIntent(TravelDetailIntent.ConfirmEditMode) },
+            clickPlaceItem = { viewModel.onIntent(TravelDetailIntent.ClickPlaceItem(it)) },
+            dismissPlaceBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissPlaceBottomSheet) },
+            navigateToTravelPlaceDetail = { viewModel.onIntent(TravelDetailIntent.NavigateToTravelPlaceDetail(it)) },
+            clickAddTime = { viewModel.onIntent(TravelDetailIntent.ClickAddTime(it)) },
+            clickAddMemo = { viewModel.onIntent(TravelDetailIntent.ClickAddMemo(it)) },
+            clickAddCost = { viewModel.onIntent(TravelDetailIntent.ClickAddCost(it)) },
+            clickFindRoute = { viewModel.onIntent(TravelDetailIntent.ClickFindRoute(it)) },
+            dismissTimeBottomSheet = { viewModel.onIntent(TravelDetailIntent.DismissTimeBottomSheet) },
+            confirmDuration = {
+                viewModel.onIntent(TravelDetailIntent.ConfirmDuration(it))
+            },
+            dismissCostModal = { viewModel.onIntent(TravelDetailIntent.DismissCostModal) },
+            confirmCost = { viewModel.onIntent(TravelDetailIntent.ConfirmCost(it)) },
+            dismissMemoModal = { viewModel.onIntent(TravelDetailIntent.DismissMemoModal) },
+            confirmMemo = { viewModel.onIntent(TravelDetailIntent.ConfirmMemo(it)) },
+        )
+    }
 }
 
 @Composable
 private fun TravelDetailScreen(
+    innerPadding: PaddingValues = PaddingValues(),
     state: TravelDetailState,
     listState: LazyListState,
     clickBack: () -> Unit,
@@ -274,7 +295,7 @@ private fun TravelDetailScreen(
     val reorderableState = rememberReorderableState(
         list = tempPlaces,
         lazyListState = listState,
-        offset = state.placesOffset,
+        offset = TravelDetailState.PLACES_OFFSET,
         isReorderable = { key -> key is String && key.startsWith("place_") },
     )
     var isDragMode by remember { mutableStateOf(false) }
@@ -283,7 +304,7 @@ private fun TravelDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(NDGLTheme.colors.white)
-            .navigationBarsPadding(),
+            .padding(bottom = innerPadding.calculateBottomPadding()),
     ) {
         LazyColumn(
             state = listState,
@@ -295,7 +316,7 @@ private fun TravelDetailScreen(
                     if (state.isEditMode) {
                         Modifier.reorderable(reorderableState) { from, to ->
                             if (from != null && to != null && from != to) {
-                                reorderPlaces(state.selectedDay - 1, from - state.placesOffset, to - state.placesOffset)
+                                reorderPlaces(state.selectedDay - 1, from - TravelDetailState.PLACES_OFFSET, to - TravelDetailState.PLACES_OFFSET)
                             }
                         }
                     } else {
@@ -309,7 +330,7 @@ private fun TravelDetailScreen(
                         .fillMaxWidth()
                         .clip(shape = RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
                         .background(NDGLTheme.colors.black50)
-                        .statusBarsPadding(),
+                        .padding(top = innerPadding.calculateTopPadding()),
                 ) {
                     NDGLNavigationBar(
                         textAlignType = NDGLNavigationBarAttr.TextAlignType.START,
@@ -333,9 +354,7 @@ private fun TravelDetailScreen(
                         .background(NDGLTheme.colors.white)
                         .then(
                             if (isHeaderSticky) {
-                                Modifier
-                                    .statusBarsPadding()
-                                    .padding(top = 10.dp)
+                                Modifier.padding(top = innerPadding.calculateTopPadding() + 10.dp)
                             } else {
                                 Modifier.padding(top = 22.dp)
                             },
@@ -416,7 +435,7 @@ private fun TravelDetailScreen(
                     items = tempPlaces,
                     key = { _, place -> "place_${state.selectedDay}_${place.id}" },
                 ) { index, place ->
-                    val isDragging = reorderableState.currentIndex == index + state.placesOffset
+                    val isDragging = reorderableState.currentIndex == index + TravelDetailState.PLACES_OFFSET
                     Box(
                         modifier = Modifier
                             .animateItem()
