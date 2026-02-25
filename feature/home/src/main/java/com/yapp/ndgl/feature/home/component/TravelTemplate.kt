@@ -27,14 +27,14 @@ import com.yapp.ndgl.feature.home.model.TravelContent
 @Composable
 internal fun TravelTemplate(
     travel: TravelContent,
-    onTravelTemplateClick: (Long) -> Unit,
+    onTravelTemplateClick: (Long, Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(4.dp))
-            .clickable(onClick = { onTravelTemplateClick(travel.travelId) })
+            .clickable(onClick = { onTravelTemplateClick(travel.travelId, travel.days) })
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.Top,

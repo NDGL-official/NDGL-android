@@ -3,13 +3,18 @@ package com.yapp.ndgl.data.travel.repository
 import com.yapp.ndgl.data.core.model.error.HttpResponseException
 import com.yapp.ndgl.data.core.model.getData
 import com.yapp.ndgl.data.travel.api.UserTravelApi
+import com.yapp.ndgl.data.travel.model.AddItineraryRequest
 import com.yapp.ndgl.data.travel.model.AddPlaceEvent
 import com.yapp.ndgl.data.travel.model.BulkUpdateStartTimeRequest
+import com.yapp.ndgl.data.travel.model.ChangePlaceEvent
 import com.yapp.ndgl.data.travel.model.ItineraryUpdateItem
 import com.yapp.ndgl.data.travel.model.StartTimeUpdateItem
+import com.yapp.ndgl.data.travel.model.TransportationItem
+import com.yapp.ndgl.data.travel.model.TravelCreatedEvent
 import com.yapp.ndgl.data.travel.model.UpcomingTravelList
 import com.yapp.ndgl.data.travel.model.UpcomingTravelResponse
 import com.yapp.ndgl.data.travel.model.UpdateItineraryRequest
+import com.yapp.ndgl.data.travel.model.UpdateTravelPlaceRequest
 import com.yapp.ndgl.data.travel.model.UserTravelTemplateContentInfo
 import com.yapp.ndgl.data.travel.model.UserTravelTemplateItinerary
 import kotlinx.coroutines.channels.BufferOverflow
@@ -31,8 +36,30 @@ class UserTravelRepository @Inject constructor(
     )
     val addPlaceEvent: SharedFlow<AddPlaceEvent> = _addPlaceEvent.asSharedFlow()
 
+    private val _travelCreatedEvent = MutableSharedFlow<TravelCreatedEvent>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+    val travelCreatedEvent: SharedFlow<TravelCreatedEvent> = _travelCreatedEvent.asSharedFlow()
+
+    private val _changePlaceEvent = MutableSharedFlow<ChangePlaceEvent>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+    val changePlaceEvent: SharedFlow<ChangePlaceEvent> = _changePlaceEvent.asSharedFlow()
+
     suspend fun emitAddPlaceEvent(event: AddPlaceEvent) {
         _addPlaceEvent.emit(event)
+    }
+
+    suspend fun emitTravelCreatedEvent(event: TravelCreatedEvent) {
+        _travelCreatedEvent.emit(event)
+    }
+
+    suspend fun emitChangePlaceEvent(event: ChangePlaceEvent) {
+        _changePlaceEvent.emit(event)
     }
 
     suspend fun getUpcomingTravel(): UpcomingTravelResponse? {
@@ -49,6 +76,24 @@ class UserTravelRepository @Inject constructor(
 
     suspend fun getUpcomingTravelList(): UpcomingTravelList {
         return userTravelApi.getUpcomingTravelList().getData()
+    }
+
+    suspend fun getUserTravelTemplateItinerary(
+        travelId: Long,
+        day: Int,
+    ): UserTravelTemplateItinerary {
+        return userTravelApi.getUserTravelTemplateItinerary(
+            id = travelId,
+            day = day,
+        ).getData()
+    }
+
+    suspend fun getUserTravelTemplateContentInfo(
+        travelId: Long,
+    ): UserTravelTemplateContentInfo {
+        return userTravelApi.getUserTravelTemplateContentInfo(
+            id = travelId,
+        ).getData()
     }
 
     suspend fun bulkUpdateStartTime(
@@ -71,21 +116,45 @@ class UserTravelRepository @Inject constructor(
         ).getData()
     }
 
-    suspend fun getUserTravelTemplateItinerary(
+    suspend fun updateTravelPlace(
         travelId: Long,
-        day: Int,
-    ): UserTravelTemplateItinerary {
-        return userTravelApi.getUserTravelTemplateItinerary(
+        userTravelPlaceId: Long,
+        memo: String? = null,
+        cost: Int? = null,
+    ) {
+        userTravelApi.updateTravelPlace(
             id = travelId,
-            day = day,
+            userTravelPlaceId = userTravelPlaceId,
+            request = UpdateTravelPlaceRequest(
+                memo = memo,
+                cost = cost,
+            ),
         ).getData()
     }
 
-    suspend fun getUserTravelTemplateContentInfo(
+    suspend fun addItinerary(
         travelId: Long,
-    ): UserTravelTemplateContentInfo {
-        return userTravelApi.getUserTravelTemplateContentInfo(
-            id = travelId,
-        ).getData()
-    }
+        googlePlaceId: String,
+        day: Int,
+        sequence: Int,
+        startTime: String? = null,
+        estimatedDuration: Int,
+        cost: Int? = null,
+        memo: String? = null,
+        distanceKm: Double? = null,
+        transportation: List<TransportationItem>? = null,
+    ) = userTravelApi.addItinerary(
+        id = travelId,
+        request = AddItineraryRequest(
+            googlePlaceId = googlePlaceId,
+            day = day,
+            sequence = sequence,
+            startTime = startTime,
+            estimatedDuration = estimatedDuration,
+            cost = cost,
+            memo = memo,
+            distanceKm = distanceKm,
+            transportation = transportation,
+        ),
+    ).getData()
 }

@@ -1,15 +1,19 @@
 package com.yapp.ndgl.data.travel.api
 
 import com.yapp.ndgl.data.core.model.BaseResponse
+import com.yapp.ndgl.data.travel.model.AddItineraryRequest
+import com.yapp.ndgl.data.travel.model.AddItineraryResponse
 import com.yapp.ndgl.data.travel.model.BulkUpdateStartTimeRequest
 import com.yapp.ndgl.data.travel.model.UpcomingTravelList
 import com.yapp.ndgl.data.travel.model.UpcomingTravelResponse
 import com.yapp.ndgl.data.travel.model.UpdateItineraryRequest
+import com.yapp.ndgl.data.travel.model.UpdateTravelPlaceRequest
 import com.yapp.ndgl.data.travel.model.UserTravelTemplateContentInfo
 import com.yapp.ndgl.data.travel.model.UserTravelTemplateItinerary
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.PATCH
+import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -40,6 +44,19 @@ interface UserTravelApi {
         @Path("id") id: Long,
         @Body request: BulkUpdateStartTimeRequest,
     ): BaseResponse<Unit>
+
+    @PATCH("/api/v1/travels/{id}/itinerary/{userTravelPlaceId}")
+    suspend fun updateTravelPlace(
+        @Path("id") id: Long,
+        @Path("userTravelPlaceId") userTravelPlaceId: Long,
+        @Body request: UpdateTravelPlaceRequest,
+    ): BaseResponse<Unit>
+
+    @POST("/api/v1/travels/{id}/itinerary")
+    suspend fun addItinerary(
+        @Path("id") id: Long,
+        @Body request: AddItineraryRequest,
+    ): BaseResponse<AddItineraryResponse>
 
     @PUT("/api/v1/travels/{id}/itinerary")
     suspend fun updateItinerary(

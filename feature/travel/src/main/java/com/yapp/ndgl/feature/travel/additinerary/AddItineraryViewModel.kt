@@ -53,7 +53,7 @@ class AddItineraryViewModel @AssistedInject constructor(
                 val searchResults = suspendRunCatching {
                     placeRepository.searchKeyword(
                         keyword = firstChar,
-                        countryCode = countryCode,
+                        representativeLatLng = state.value.representativeLatLng,
                     )
                 }.getOrNull()?.results?.take(5) ?: emptyList()
 
@@ -153,7 +153,7 @@ class AddItineraryViewModel @AssistedInject constructor(
             suspendRunCatching {
                 placeRepository.searchKeyword(
                     keyword = keyword,
-                    countryCode = state.value.countryCode,
+                    representativeLatLng = state.value.representativeLatLng,
                 )
             }.onSuccess { response ->
                 val results = response.results.map { result ->
@@ -180,7 +180,7 @@ class AddItineraryViewModel @AssistedInject constructor(
         suspendRunCatching {
             placeRepository.searchKeyword(
                 keyword = keyword,
-                countryCode = state.value.countryCode,
+                representativeLatLng = state.value.representativeLatLng,
             )
         }.onSuccess { response ->
             val results = response.results.map { result ->

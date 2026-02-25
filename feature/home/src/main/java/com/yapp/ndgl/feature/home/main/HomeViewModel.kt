@@ -29,12 +29,20 @@ class HomeViewModel @Inject constructor(
 ) {
     init {
         loadHomeContents()
+        subscribeToTravelCreatedEvent()
     }
 
     private fun loadHomeContents() {
         loadMyTravel()
         loadPopularTemplates()
         loadRecommendedTravel()
+    }
+
+    private fun subscribeToTravelCreatedEvent() = viewModelScope.launch {
+        userTravelRepository.travelCreatedEvent.collect { event ->
+            // 새 여행 생성 시 내 여행 섹션만 새로고침
+            loadMyTravel()
+        }
     }
 
     private fun loadMyTravel() {

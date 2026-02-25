@@ -22,7 +22,7 @@ data class TemplateSearchState(
 sealed interface TemplateSearchIntent : UiIntent {
     data class UpdateSearchKeyword(val keyword: String) : TemplateSearchIntent
     data class SearchTemplate(val keyword: String) : TemplateSearchIntent
-    data class ClickTravelTemplate(val travelId: Long) : TemplateSearchIntent
+    data class ClickTravelTemplate(val travelId: Long, val days: Int) : TemplateSearchIntent
 }
 
 sealed interface TemplateSearchSideEffect : UiSideEffect {

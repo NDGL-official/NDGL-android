@@ -4,12 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UpdateItineraryRequest(
-    val itineraries: List<ItineraryUpdateItem>,
-)
-
-@Serializable
-data class ItineraryUpdateItem(
+data class AddItineraryRequest(
     val googlePlaceId: String,
     val day: Int,
     val sequence: Int,

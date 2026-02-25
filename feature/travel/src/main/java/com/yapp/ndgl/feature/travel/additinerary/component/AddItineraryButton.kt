@@ -30,7 +30,7 @@ internal fun AddItineraryButton(
             type = NDGLCTAButtonAttr.Type.PRIMARY,
             size = NDGLCTAButtonAttr.Size.LARGE,
             status = if (enabled) NDGLCTAButtonAttr.Status.ACTIVE else NDGLCTAButtonAttr.Status.DISABLED,
-            label = stringResource(R.string.add_schedule),
+            label = stringResource(R.string.add_schedule_button_text),
             onClick = { if (enabled) clickAddItinerary() },
         )
     }

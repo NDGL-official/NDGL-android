@@ -4,7 +4,9 @@ import androidx.lifecycle.viewModelScope
 import com.yapp.ndgl.core.base.BaseViewModel
 import com.yapp.ndgl.core.util.suspendRunCatching
 import com.yapp.ndgl.data.travel.exception.DuplicateTravelPeriodException
+import com.yapp.ndgl.data.travel.model.TravelCreatedEvent
 import com.yapp.ndgl.data.travel.repository.TravelTemplateRepository
+import com.yapp.ndgl.data.travel.repository.UserTravelRepository
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
@@ -18,6 +20,7 @@ class DatePickerViewModel @AssistedInject constructor(
     @Assisted private val templateId: Long,
     @Assisted private val tripDays: Int,
     private val travelTemplateRepository: TravelTemplateRepository,
+    private val userTravelRepository: UserTravelRepository,
 ) : BaseViewModel<DatePickerState, DatePickerIntent, DatePickerSideEffect>(
     initialState = DatePickerState(templateId = templateId, tripDays = tripDays),
 ) {
@@ -126,6 +129,14 @@ class DatePickerViewModel @AssistedInject constructor(
                 endDate = endDate.toString(),
             )
         }.onSuccess { response ->
+            // 이벤트 발행 - 홈/내 여행 탭 자동 새로고침
+            userTravelRepository.emitTravelCreatedEvent(
+                TravelCreatedEvent(
+                    userTravelId = response.userTravelId,
+                    templateId = templateId,
+                ),
+            )
+
             reduce {
                 copy(
                     isLoading = false,
@@ -143,7 +154,7 @@ class DatePickerViewModel @AssistedInject constructor(
                 }
 
                 else -> {
-                    // FIXME: UI 구현 필요 - 일반 에러 토스트 표시
+                    // FIXME: UI 구현 필요
                     Timber.e(exception, "Failed to create travel from template")
                 }
             }

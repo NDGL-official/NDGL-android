@@ -110,7 +110,7 @@ private fun AddPlaceScreen(
                     type = NDGLCTAButtonAttr.Type.PRIMARY,
                     size = NDGLCTAButtonAttr.Size.LARGE,
                     status = NDGLCTAButtonAttr.Status.ACTIVE,
-                    label = stringResource(R.string.add_schedule),
+                    label = stringResource(R.string.add_schedule_button_text),
                     onClick = clickAddItinerary,
                 )
             }

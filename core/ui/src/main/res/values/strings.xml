@@ -62,10 +62,12 @@
     <string name="start_time_setting">여행 시작 시간 설정</string>
     <string name="edit_travel">편집하기</string>
     <string name="edit_done">편집 완료</string>
-    <string name="add_schedule">일정 추가하기</string>
+    <string name="add_schedule_button_text">일정 추가하기</string>
     <string name="select_all">전체 선택</string>
     <string name="delete_selected">선택 삭제</string>
-    <string name="no_schedule_message">아직 %d일차 일정이 없어요</string>
+    <string name="no_schedule_message">일정이 없어요</string>
+    <string name="no_schedule_message_detail">아직 %d일차 일정이 없어요</string>
+    <string name="add_schedule_button_text_no_schedule">%d일차 첫 일정 추가하기</string>
 
     <!-- Dialog - Cancel Edit -->
     <string name="cancel_edit_dialog_title">편집 중단</string>

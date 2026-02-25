@@ -143,7 +143,7 @@ private fun PopularTravelItem(
 ) {
     TravelTemplate(
         travel = travel,
-        onTravelTemplateClick = { travelId -> onTravelClick(travelId, travel.days) },
+        onTravelTemplateClick = { travelId, _ -> onTravelClick(travelId, travel.days) },
     )
 }
 

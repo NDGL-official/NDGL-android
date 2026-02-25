@@ -51,8 +51,8 @@ internal fun TemplateSearchRoute(
         onSearch = { keyword ->
             viewModel.onIntent(TemplateSearchIntent.SearchTemplate(keyword))
         },
-        onTravelTemplateClick = { travelId ->
-            viewModel.onIntent(TemplateSearchIntent.ClickTravelTemplate(travelId))
+        onTravelTemplateClick = { travelId, days ->
+            viewModel.onIntent(TemplateSearchIntent.ClickTravelTemplate(travelId, days))
         },
     )
 
@@ -72,7 +72,7 @@ private fun TemplateSearchScreen(
     onBackClick: () -> Unit,
     onSearchKeywordChange: (String) -> Unit,
     onSearch: (String) -> Unit,
-    onTravelTemplateClick: (Long) -> Unit,
+    onTravelTemplateClick: (Long, Int) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -317,7 +317,7 @@ private fun TemplateSearchScreenFilledPreview() {
             onBackClick = {},
             onSearchKeywordChange = {},
             onSearch = {},
-            onTravelTemplateClick = {},
+            onTravelTemplateClick = { _, _ -> },
         )
     }
 }
