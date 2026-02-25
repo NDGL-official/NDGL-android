@@ -2,6 +2,9 @@ package com.yapp.ndgl.feature.travel.model
 
 import com.yapp.ndgl.core.util.formatDecimal
 import com.yapp.ndgl.data.travel.model.PlaceDetailResponse
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
@@ -58,4 +61,26 @@ fun PlaceDetailResponse.toPlaceInfo(): PlaceInfo {
         googleMapsUri = place.googleMapsUri,
         websiteUrl = place.websiteUri,
     )
+}
+fun List<String>?.toOpeningHours(startDate: String, day: Int): String? {
+    if (this.isNullOrEmpty() || startDate.isBlank()) return null
+
+    val targetDayOfWeek = runCatching {
+        val travelStartDate = LocalDate.parse(startDate, DateTimeFormatter.ISO_LOCAL_DATE)
+        val targetDate = travelStartDate.plusDays((day - 1).toLong())
+        targetDate.dayOfWeek
+    }.getOrNull() ?: return null
+
+    val dayOfWeekName = when (targetDayOfWeek) {
+        DayOfWeek.MONDAY -> "월요일"
+        DayOfWeek.TUESDAY -> "화요일"
+        DayOfWeek.WEDNESDAY -> "수요일"
+        DayOfWeek.THURSDAY -> "목요일"
+        DayOfWeek.FRIDAY -> "금요일"
+        DayOfWeek.SATURDAY -> "토요일"
+        DayOfWeek.SUNDAY -> "일요일"
+    }
+
+    val openingHour = this.find { it.startsWith(dayOfWeekName) }
+    return openingHour?.substringAfter(":")?.trim()
 }
