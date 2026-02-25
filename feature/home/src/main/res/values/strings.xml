@@ -8,7 +8,7 @@
     <string name="home_my_travel_card_empty_description">새 여행 일정을 만들어 보세요!</string>
     <string name="home_my_travel_card_travel_duration">%s~%s</string>
     <string name="home_my_travel_card_date_format">M월 d일</string>
-    <string name="home_my_travel_card_in_progress_title">%1$s %2$d일차 입니다!</string>
+    <string name="home_my_travel_card_in_progress_day_count"> %d일차 입니다!</string>
     <string name="home_my_travel_card_d_day_minus">D-%d</string>
     <string name="home_my_travel_card_d_day_plus">D+%d</string>
 

@@ -13,6 +13,8 @@ android {
         }
         buildConfigField("String", "PLACE_API_KEY", "\"${localProperties.getProperty("PLACE_API_KEY", "")}\"")
         buildConfigField("String", "ROUTE_API_KEY", "\"${localProperties.getProperty("ROUTE_API_KEY", "")}\"")
+        buildConfigField("String", "WEATHER_API_KEY", "\"${localProperties.getProperty("WEATHER_API_KEY", "")}\"")
+        buildConfigField("String", "EXCHANGE_RATE_API_KEY", "\"${localProperties.getProperty("EXCHANGE_RATE_API_KEY", "")}\"")
     }
 
     buildFeatures {

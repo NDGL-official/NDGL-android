@@ -5,7 +5,7 @@
     <string name="my_travel_upcoming_travel_empty_description">새 여행 일정을 만들어 보세요!</string>
     <string name="my_travel_upcoming_travel_travel_duration">%s~%s</string>
     <string name="my_travel_upcoming_travel_date_format">M월 d일</string>
-    <string name="my_travel_upcoming_travel_in_progress_title">%1$s %2$d일차 입니다!</string>
+    <string name="my_travel_upcoming_travel_in_progress_day_count"> %d일차 입니다!</string>
     <string name="my_travel_upcoming_travel_d_day_minus">D-%d</string>
     <string name="my_travel_upcoming_travel_d_day_plus">D+%d</string>
 
