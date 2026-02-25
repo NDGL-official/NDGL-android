@@ -133,7 +133,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             null
         }
 
-        val (distanceKm, transportation) = if (!currentItinerary.places.isNullOrEmpty()) {
+        val (distanceKm, transportation) = if (currentItinerary.places.isNotEmpty()) {
             newTransportSegment?.distanceKm to listOfNotNull(newTransportSegment?.toTransportationItem())
         } else {
             null to null
@@ -149,13 +149,12 @@ class TravelDetailViewModel @AssistedInject constructor(
                     null
                 } else {
                     (
-                        lastPlace.startTime + lastPlace.placeInfo.estimatedDuration + (
-                            newTransportSegment?.duration
-                                ?: 0.hours
-                            )
-                        ).parseDurationToTimeString()
+                        lastPlace.startTime + lastPlace.placeInfo.estimatedDuration +
+                            (newTransportSegment?.duration ?: 0.hours)
+                        )
+                        .parseDurationToTimeString()
                 },
-                estimatedDuration = event.estimatedDuration,
+                estimatedDuration = 60,
                 cost = null,
                 memo = null,
                 distanceKm = distanceKm,
@@ -215,6 +214,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             }
 
             postSideEffect(TravelDetailSideEffect.ScrollToPlace(newPlace.id))
+            postSideEffect(TravelDetailSideEffect.ShowSnackbar(TravelDetailSideEffect.SNACKBAR_ADDED_TO_MY_TRAVEL))
         }.onFailure {
             // TODO: Handle API failure
         }
@@ -269,6 +269,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             }
 
             postSideEffect(TravelDetailSideEffect.AnimatePlaceChange(event.newGooglePlaceId))
+            postSideEffect(TravelDetailSideEffect.ShowSnackbar(TravelDetailSideEffect.SNACKBAR_PLACE_CHANGED))
         }.onFailure {
             // TODO: 에러 처리
         }
@@ -355,6 +356,8 @@ class TravelDetailViewModel @AssistedInject constructor(
                 showDeleteModal = false,
             )
         }
+
+        postSideEffect(TravelDetailSideEffect.ShowSnackbar(TravelDetailSideEffect.SNACKBAR_PLACE_DELETED))
     }
 
     private fun dismissDeleteModal() {
@@ -562,6 +565,8 @@ class TravelDetailViewModel @AssistedInject constructor(
                     availableTransports = emptyList(),
                 )
             }
+
+            postSideEffect(TravelDetailSideEffect.ShowSnackbar(TravelDetailSideEffect.SNACKBAR_TRANSPORT_CHANGED))
         }.onFailure {
             // TODO: Handle failure
         }

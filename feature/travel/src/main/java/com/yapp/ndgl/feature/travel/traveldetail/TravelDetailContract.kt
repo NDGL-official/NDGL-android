@@ -62,9 +62,10 @@ data class TravelDetailState(
                 ?.let { LatLng(it.placeInfo.latitude, it.placeInfo.longitude) } ?: LatLng(37.5665, 126.9780) // FIXME: 모든 일차가 비어 있다면 '서울' 좌표 반환
         }
 
-    // 헤더(0) + stickyHeader(1) + 맵 아이템(2) = 3개가 장소 아이템 앞에 위치
-    val placesOffset: Int
-        get() = 3
+    companion object {
+        // 헤더(0) + stickyHeader(1) + 맵 아이템(2) = 3개가 장소 아이템 앞에 위치
+        const val PLACES_OFFSET = 3
+    }
 }
 
 data class Itinerary(
@@ -158,4 +159,12 @@ sealed interface TravelDetailSideEffect : UiSideEffect {
     data object NavigateToMyTravel : TravelDetailSideEffect
     data class ScrollToPlace(val placeId: Long) : TravelDetailSideEffect
     data class AnimatePlaceChange(val googlePlaceId: String) : TravelDetailSideEffect
+    data class ShowSnackbar(val message: String) : TravelDetailSideEffect
+
+    companion object {
+        const val SNACKBAR_ADDED_TO_MY_TRAVEL = "내 여행에 추가되었습니다"
+        const val SNACKBAR_PLACE_CHANGED = "장소가 변경되었습니다"
+        const val SNACKBAR_TRANSPORT_CHANGED = "교통수단이 변경되었습니다"
+        const val SNACKBAR_PLACE_DELETED = "장소가 삭제되었습니다"
+    }
 }
