@@ -149,7 +149,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                     null
                 } else {
                     (
-                        lastPlace.startTime + lastPlace.placeInfo.estimatedDuration +
+                        lastPlace.startTime + lastPlace.userData.estimatedDuration +
                             (newTransportSegment?.duration ?: 0.hours)
                         )
                         .parseDurationToTimeString()
