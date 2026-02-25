@@ -30,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -390,15 +389,21 @@ private fun TravelDetailScreen(
                             ) {
                                 Spacer(Modifier.height(80.dp))
                                 Icon(
-                                    imageVector = ImageVector.vectorResource(R.drawable.ic_140_no_schedule_calendar),
+                                    imageVector = ImageVector.vectorResource(R.drawable.img_empty_suitcase),
                                     contentDescription = null,
                                     tint = Color.Unspecified,
                                 )
                                 Spacer(Modifier.height(16.dp))
                                 Text(
-                                    text = stringResource(R.string.no_schedule_message, state.selectedDay),
+                                    text = stringResource(R.string.no_schedule_message),
+                                    color = NDGLTheme.colors.black500,
+                                    style = NDGLTheme.typography.subtitleMdSemiBold,
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = stringResource(R.string.no_schedule_message_detail, state.selectedDay),
                                     color = NDGLTheme.colors.black400,
-                                    style = NDGLTheme.typography.bodyLgMedium,
+                                    style = NDGLTheme.typography.bodyLgRegular,
                                 )
                             }
                         }
@@ -524,7 +529,14 @@ private fun TravelDetailScreen(
                         type = NDGLCTAButtonAttr.Type.PRIMARY,
                         size = NDGLCTAButtonAttr.Size.LARGE,
                         status = NDGLCTAButtonAttr.Status.ACTIVE,
-                        label = stringResource(R.string.add_schedule),
+                        label = if (state.isEmptyItinerary) {
+                            stringResource(
+                                R.string.add_schedule_button_text_no_schedule,
+                                state.selectedDay,
+                            )
+                        } else {
+                            stringResource(R.string.add_schedule_button_text)
+                        },
                         onClick = clickAddScheduleButton,
                     )
                 }

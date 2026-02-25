@@ -44,6 +44,9 @@ data class TravelDetailState(
     val currentPlaces: List<TravelPlace>
         get() = currentItinerary?.places.orEmpty()
 
+    val isEmptyItinerary: Boolean
+        get() = currentItinerary?.places.isNullOrEmpty()
+
     val representativeLatLng: LatLng
         get() {
             val currentDayPlaces = itineraries.getOrNull(selectedDay - 1)?.places
