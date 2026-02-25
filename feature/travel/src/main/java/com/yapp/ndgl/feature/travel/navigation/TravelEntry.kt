@@ -83,7 +83,7 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
         TravelDetailRoute(
             viewModel = viewModel,
             navigateBack = { navigator.goBack() },
-            navigateToTravelPlaceDetail = { googlePlaceId, tipContent, alternativePlaces ->
+            navigateToTravelPlaceDetail = { googlePlaceId, tipContent, alternativePlaces, day, itineraryId ->
                 navigator.navigate(
                     Route.PlaceDetail(
                         googlePlaceId = googlePlaceId,
@@ -95,6 +95,9 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
                         alternativePlaces = alternativePlaces?.map {
                             RouteAlternativePlace(id = it.id, name = it.name, thumbnail = it.thumbnail, placeType = it.placeType.name)
                         },
+                        travelId = route.travelId,
+                        day = day,
+                        itineraryId = itineraryId,
                     ),
                 )
             },
@@ -125,6 +128,9 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
                     googlePlaceId = route.googlePlaceId,
                     tipContent = route.tipContent,
                     alternativePlaces = route.alternativePlaces,
+                    travelId = route.travelId,
+                    day = route.day,
+                    itineraryId = route.itineraryId,
                 )
             }
         PlaceDetailRoute(

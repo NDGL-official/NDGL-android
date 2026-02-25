@@ -109,7 +109,7 @@ class PopularTravelListViewModel @Inject constructor(
         when (intent) {
             PopularTravelListIntent.ClickSearchTravelTemplate -> postNavigateToSearchTravelTemplate()
             is PopularTravelListIntent.SelectPopularTravelTab -> selectTab(intent.index)
-            is PopularTravelListIntent.ClickTravel -> postNavigateToTravelTemplate(intent.travelId)
+            is PopularTravelListIntent.ClickTravel -> postNavigateToTravelTemplate(intent.travelId, intent.days)
         }
     }
 
@@ -121,11 +121,11 @@ class PopularTravelListViewModel @Inject constructor(
         reduce { copy(selectedTabIndex = index) }
     }
 
-    private fun postNavigateToTravelTemplate(travelId: Long) {
+    private fun postNavigateToTravelTemplate(travelId: Long, days: Int) {
         postSideEffect(
             PopularTravelListSideEffect.NavigateToFollowTravel(
                 travelId = travelId,
-                days = 1,
+                days = days,
             ),
         )
     }

@@ -39,6 +39,9 @@ sealed interface Route : NavKey {
         val googlePlaceId: String,
         val tipContent: RouteTipContent? = null,
         val alternativePlaces: List<RouteAlternativePlace>? = null,
+        val travelId: Long? = null,
+        val day: Int? = null,
+        val itineraryId: Long? = null,
     ) : Route
 
     @Serializable

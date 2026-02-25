@@ -23,7 +23,7 @@ class TemplateSearchViewModel @Inject constructor(
         when (intent) {
             is TemplateSearchIntent.UpdateSearchKeyword -> updateKeyword(intent.keyword)
             is TemplateSearchIntent.SearchTemplate -> searchTravelTemplates(intent.keyword)
-            is TemplateSearchIntent.ClickTravelTemplate -> postNavigateToTravelTemplate(intent.travelId)
+            is TemplateSearchIntent.ClickTravelTemplate -> postNavigateToTravelTemplate(intent.travelId, intent.days)
         }
     }
 
@@ -65,11 +65,11 @@ class TemplateSearchViewModel @Inject constructor(
         }
     }
 
-    private fun postNavigateToTravelTemplate(travelId: Long) {
+    private fun postNavigateToTravelTemplate(travelId: Long, days: Int) {
         postSideEffect(
             TemplateSearchSideEffect.NavigateToFollowTravel(
                 travelId = travelId,
-                days = 1,
+                days = days,
             ),
         )
     }

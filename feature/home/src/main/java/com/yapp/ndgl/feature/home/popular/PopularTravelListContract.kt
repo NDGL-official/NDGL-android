@@ -34,7 +34,7 @@ data class PopularTravelListState(
 sealed interface PopularTravelListIntent : UiIntent {
     data object ClickSearchTravelTemplate : PopularTravelListIntent
     data class SelectPopularTravelTab(val index: Int) : PopularTravelListIntent
-    data class ClickTravel(val travelId: Long) : PopularTravelListIntent
+    data class ClickTravel(val travelId: Long, val days: Int) : PopularTravelListIntent
 }
 
 sealed interface PopularTravelListSideEffect : UiSideEffect {

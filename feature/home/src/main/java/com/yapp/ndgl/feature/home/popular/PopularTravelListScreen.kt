@@ -48,8 +48,8 @@ internal fun PopularTravelListRoute(
         onTabSelected = { index ->
             viewModel.onIntent(PopularTravelListIntent.SelectPopularTravelTab(index))
         },
-        onTravelClick = { travelId ->
-            viewModel.onIntent(PopularTravelListIntent.ClickTravel(travelId))
+        onTravelClick = { travelId, days ->
+            viewModel.onIntent(PopularTravelListIntent.ClickTravel(travelId, days))
         },
     )
 
@@ -70,7 +70,7 @@ private fun PopularTravelListScreen(
     goBack: () -> Unit,
     onSearchClick: () -> Unit,
     onTabSelected: (Int) -> Unit,
-    onTravelClick: (Long) -> Unit,
+    onTravelClick: (Long, Int) -> Unit,
 ) {
     Scaffold(
         topBar = {
