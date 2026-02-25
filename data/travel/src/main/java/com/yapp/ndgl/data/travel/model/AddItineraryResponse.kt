@@ -4,26 +4,21 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserTravelTemplateItinerary(
-    val itineraries: List<ItineraryItem>,
+data class AddItineraryResponse(
+    val id: Long,
+    val day: Int,
+    val sequence: Int,
+    val startTime: String? = null,
+    val estimatedDuration: Int,
+    val memo: String? = null,
+    @SerialName("budget")
+    val cost: Int? = null,
+    val distanceKm: Double? = null,
+    val transportation: List<Transportation>? = null,
+    val travelerTips: List<String>? = null,
+    val planB: List<PlanBPlace>? = null,
+    val place: ItineraryPlace,
 ) {
-    @Serializable
-    data class ItineraryItem(
-        val id: Long,
-        val day: Int,
-        val sequence: Int,
-        val startTime: String? = null,
-        val estimatedDuration: Int,
-        val memo: String? = null,
-        @SerialName("budget")
-        val cost: Int? = null,
-        val distanceKm: Double? = null,
-        val transportation: List<Transportation>? = null,
-        val travelerTips: List<String>? = null,
-        val planB: List<PlanBPlace>? = null,
-        val place: ItineraryPlace,
-    )
-
     @Serializable
     data class Transportation(
         val mode: TransportCategory,

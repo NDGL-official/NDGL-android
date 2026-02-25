@@ -6,8 +6,10 @@ import com.yapp.ndgl.data.travel.api.UserTravelApi
 import com.yapp.ndgl.data.travel.model.AddItineraryRequest
 import com.yapp.ndgl.data.travel.model.AddPlaceEvent
 import com.yapp.ndgl.data.travel.model.BulkUpdateStartTimeRequest
+import com.yapp.ndgl.data.travel.model.ChangePlaceEvent
 import com.yapp.ndgl.data.travel.model.ItineraryUpdateItem
 import com.yapp.ndgl.data.travel.model.StartTimeUpdateItem
+import com.yapp.ndgl.data.travel.model.TransportationItem
 import com.yapp.ndgl.data.travel.model.TravelCreatedEvent
 import com.yapp.ndgl.data.travel.model.UpcomingTravelList
 import com.yapp.ndgl.data.travel.model.UpcomingTravelResponse
@@ -41,12 +43,23 @@ class UserTravelRepository @Inject constructor(
     )
     val travelCreatedEvent: SharedFlow<TravelCreatedEvent> = _travelCreatedEvent.asSharedFlow()
 
+    private val _changePlaceEvent = MutableSharedFlow<ChangePlaceEvent>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+    val changePlaceEvent: SharedFlow<ChangePlaceEvent> = _changePlaceEvent.asSharedFlow()
+
     suspend fun emitAddPlaceEvent(event: AddPlaceEvent) {
         _addPlaceEvent.emit(event)
     }
 
     suspend fun emitTravelCreatedEvent(event: TravelCreatedEvent) {
         _travelCreatedEvent.emit(event)
+    }
+
+    suspend fun emitChangePlaceEvent(event: ChangePlaceEvent) {
+        _changePlaceEvent.emit(event)
     }
 
     suspend fun getUpcomingTravel(): UpcomingTravelResponse? {
@@ -128,18 +141,20 @@ class UserTravelRepository @Inject constructor(
         estimatedDuration: String? = null,
         cost: Int? = null,
         memo: String? = null,
-    ) {
-        userTravelApi.addItinerary(
-            id = travelId,
-            request = AddItineraryRequest(
-                googlePlaceId = googlePlaceId,
-                day = day,
-                sequence = sequence,
-                startTime = startTime,
-                estimatedDuration = estimatedDuration,
-                cost = cost,
-                memo = memo,
-            ),
-        ).getData()
-    }
+        distanceKm: Double? = null,
+        transportation: List<TransportationItem>? = null,
+    ) = userTravelApi.addItinerary(
+        id = travelId,
+        request = AddItineraryRequest(
+            googlePlaceId = googlePlaceId,
+            day = day,
+            sequence = sequence,
+            startTime = startTime,
+            estimatedDuration = estimatedDuration,
+            cost = cost,
+            memo = memo,
+            distanceKm = distanceKm,
+            transportation = transportation,
+        ),
+    ).getData()
 }

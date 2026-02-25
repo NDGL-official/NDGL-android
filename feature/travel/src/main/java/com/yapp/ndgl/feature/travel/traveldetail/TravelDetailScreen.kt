@@ -99,7 +99,7 @@ import kotlin.time.Duration.Companion.minutes
 internal fun TravelDetailRoute(
     viewModel: TravelDetailViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
-    navigateToTravelPlaceDetail: (String, TipContent?, List<AlternativePlace>?) -> Unit,
+    navigateToTravelPlaceDetail: (String, TipContent?, List<AlternativePlace>?, Int, Long) -> Unit,
     navigateToAddItinerary:
     (travelId: Long, day: Int, country: String, representativeLatitude: Double, representativeLongitude: Double) -> Unit,
 ) {
@@ -112,7 +112,13 @@ internal fun TravelDetailRoute(
         when (sideEffect) {
             is TravelDetailSideEffect.NavigateBack -> navigateBack()
             is TravelDetailSideEffect.NavigateToTravelPlaceDetail -> {
-                navigateToTravelPlaceDetail(sideEffect.googlePlaceId, sideEffect.tipContent, sideEffect.alternativePlaces)
+                navigateToTravelPlaceDetail(
+                    sideEffect.googlePlaceId,
+                    sideEffect.tipContent,
+                    sideEffect.alternativePlaces,
+                    sideEffect.day,
+                    sideEffect.itineraryId,
+                )
             }
 
             is TravelDetailSideEffect.NavigateToBrowser -> {
@@ -137,6 +143,20 @@ internal fun TravelDetailRoute(
                     val dayIndex = state.selectedDay - 1
                     val places = state.itineraries.getOrNull(dayIndex)?.places.orEmpty()
                     val placeIndex = places.indexOfFirst { it.id == sideEffect.placeId }
+
+                    if (placeIndex >= 0) {
+                        val targetIndex = state.placesOffset + placeIndex
+                        delay(100)
+                        listState.animateScrollToItem(targetIndex)
+                    }
+                }
+            }
+
+            is TravelDetailSideEffect.AnimatePlaceChange -> {
+                coroutineScope.launch {
+                    val dayIndex = state.selectedDay - 1
+                    val places = state.itineraries.getOrNull(dayIndex)?.places.orEmpty()
+                    val placeIndex = places.indexOfFirst { it.placeInfo.googlePlaceId == sideEffect.googlePlaceId }
 
                     if (placeIndex >= 0) {
                         val targetIndex = state.placesOffset + placeIndex
@@ -431,16 +451,18 @@ private fun TravelDetailScreen(
                         }
 
                         if (index < state.currentPlaces.size - 1) {
+                            Spacer(Modifier.height(10.dp))
+
                             place.transportToNext?.let { segment ->
-                                Spacer(Modifier.height(10.dp))
                                 Box(modifier = Modifier.padding(horizontal = 24.dp)) {
                                     TransportSegment(
                                         segment = segment,
                                         onClick = { clickTransportSegment(place) },
                                     )
                                 }
-                                Spacer(Modifier.height(10.dp))
                             }
+
+                            Spacer(Modifier.height(10.dp))
                         }
                     }
                 }
