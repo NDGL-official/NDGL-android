@@ -1,11 +1,14 @@
 package com.yapp.ndgl.data.travel.repository
 
+import com.google.android.gms.maps.model.LatLng
 import com.google.android.libraries.places.api.model.AutocompleteSessionToken
+import com.google.android.libraries.places.api.model.CircularBounds
 import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest
 import com.google.android.libraries.places.api.net.PlacesClient
 import com.yapp.ndgl.data.core.model.error.HttpResponseException
 import com.yapp.ndgl.data.core.model.getData
 import com.yapp.ndgl.data.travel.api.PlaceApi
+import com.yapp.ndgl.data.travel.model.GetBookmarkedPlacesResponse
 import com.yapp.ndgl.data.travel.model.GetPlacePhotosResponse
 import com.yapp.ndgl.data.travel.model.PlaceDetailResponse
 import com.yapp.ndgl.data.travel.model.SavePlaceRequest
@@ -22,15 +25,16 @@ class PlaceRepository @Inject constructor(
 ) {
     private var sessionToken: AutocompleteSessionToken? = null
 
-    suspend fun searchKeyword(keyword: String, countryCode: String): SearchKeywordResponse {
+    suspend fun searchKeyword(keyword: String, representativeLatLng: LatLng): SearchKeywordResponse {
         if (sessionToken == null) {
             sessionToken = AutocompleteSessionToken.newInstance()
         }
 
+        val bias = CircularBounds.newInstance(representativeLatLng, 10000.0)
         val requestBuilder = FindAutocompletePredictionsRequest.builder()
             .setQuery(keyword)
             .setSessionToken(sessionToken)
-            .setCountries(countryCode)
+            .setLocationBias(bias)
 
         val response = placesClient.findAutocompletePredictions(requestBuilder.build()).await()
 
@@ -62,5 +66,17 @@ class PlaceRepository @Inject constructor(
 
     suspend fun getPlacePhotos(googlePlaceId: String): GetPlacePhotosResponse {
         return placeApi.getPlacePhotos(googlePlaceId).getData()
+    }
+
+    suspend fun getBookmarkedPlaces(page: Int? = null, size: Int? = null): GetBookmarkedPlacesResponse {
+        return placeApi.getBookmarkedPlaces(page = page, size = size).getData()
+    }
+
+    suspend fun bookmarkPlace(googlePlaceId: String) {
+        placeApi.bookmarkPlace(googlePlaceId).getData()
+    }
+
+    suspend fun unBookmarkPlace(googlePlaceId: String) {
+        placeApi.unBookmarkPlace(googlePlaceId).getData()
     }
 }

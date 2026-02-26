@@ -37,6 +37,9 @@ class MyTravelViewModel @Inject constructor(
                 loadRecommendedTravels()
             }
         }
+
+        // 초기 로드 후 이벤트 구독
+        subscribeToTravelCreatedEvent()
     }
 
     private suspend fun loadUpcomingTravel(): MyTravelState.UpcomingTravel? {
@@ -125,6 +128,28 @@ class MyTravelViewModel @Inject constructor(
                 )
             }.toImmutableList()
             reduce { copy(recommendedTravels = travels) }
+        }
+    }
+
+    private fun subscribeToTravelCreatedEvent() = viewModelScope.launch {
+        userTravelRepository.travelCreatedEvent.collect { event ->
+            refreshTravelData()
+        }
+    }
+
+    private fun refreshTravelData() = viewModelScope.launch {
+        // 병렬로 두 API 호출
+        val upcomingDeferred = async { loadUpcomingTravel() }
+        val listDeferred = async { loadUpcomingTravelList() }
+
+        val upcomingTravel = upcomingDeferred.await()
+        val upcomingTravels = listDeferred.await()
+
+        reduce { copy(upcomingTravel = upcomingTravel, upcomingTravels = upcomingTravels) }
+
+        // 여행 목록이 비어있으면 추천 여행 로드
+        if (upcomingTravel == null && upcomingTravels.isEmpty()) {
+            loadRecommendedTravels()
         }
     }
 

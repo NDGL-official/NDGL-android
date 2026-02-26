@@ -178,47 +178,34 @@ private fun AddItineraryScreen(
     }
 }
 
-private val previewRecommendedPlaces = listOf(
-    SelectablePlace(
-        googlePlaceId = "place_1",
-        name = "카피톨리니 박물관 (Musei Capitolini)",
-        placeType = PlaceType.ATTRACTION,
-        thumbnail = "https://picsum.photos/seed/capitolini/200",
-    ),
-    SelectablePlace(
-        googlePlaceId = "place_2",
-        name = "콜로세움 (Colosseo)",
-        placeType = PlaceType.ATTRACTION,
-        thumbnail = "https://picsum.photos/seed/colosseo/200",
-    ),
-    SelectablePlace(
-        googlePlaceId = "place_3",
-        name = "젤라테리아 파씨 (Gelateria Fassi)",
-        placeType = PlaceType.CAFE,
-        thumbnail = "https://picsum.photos/seed/gelato/200",
-    ),
-)
-
-private val previewSelectedPlaceDetail = SelectedPlaceDetail(
-    placeInfo = PlaceInfo(
-        googlePlaceId = "1",
-        name = "콜로세움",
-        placeType = PlaceType.ATTRACTION,
-        rating = 4.8,
-        userRatingCount = 12450,
-        address = "Piazza del Colosseo, 1, 00184 Roma RM, Italy",
-        phoneNumber = "+39 06 3996 7700",
-        websiteUrl = "https://www.colosseo.it",
-        estimatedDuration = 2.hours,
-    ),
-)
-
 @Preview(showBackground = true)
 @Composable
 private fun AddItineraryScreenWithAddItineraryBottomSheetPreview() {
     NDGLTheme {
         AddItineraryScreen(
-            state = AddItineraryState(day = 1, recommendedPlaces = previewRecommendedPlaces),
+            state = AddItineraryState(
+                day = 1,
+                recommendedPlaces = listOf(
+                    SelectablePlace(
+                        googlePlaceId = "place_1",
+                        name = "카피톨리니 박물관 (Musei Capitolini)",
+                        placeType = PlaceType.ATTRACTION,
+                        thumbnail = "https://picsum.photos/seed/capitolini/200",
+                    ),
+                    SelectablePlace(
+                        googlePlaceId = "place_2",
+                        name = "콜로세움 (Colosseo)",
+                        placeType = PlaceType.ATTRACTION,
+                        thumbnail = "https://picsum.photos/seed/colosseo/200",
+                    ),
+                    SelectablePlace(
+                        googlePlaceId = "place_3",
+                        name = "젤라테리아 파씨 (Gelateria Fassi)",
+                        placeType = PlaceType.CAFE,
+                        thumbnail = "https://picsum.photos/seed/gelato/200",
+                    ),
+                ),
+            ),
             clickBack = {},
             updateKeyword = {},
             searchKeyword = {},
@@ -243,7 +230,19 @@ private fun AddItineraryWithSearchedPlaceBottomSheetPreview() {
             state = AddItineraryState(
                 day = 1,
                 isSearched = true,
-                selectedPlaceDetail = previewSelectedPlaceDetail,
+                selectedPlaceDetail = SelectedPlaceDetail(
+                    placeInfo = PlaceInfo(
+                        googlePlaceId = "1",
+                        name = "콜로세움",
+                        placeType = PlaceType.ATTRACTION,
+                        rating = 4.8,
+                        userRatingCount = 12450,
+                        address = "Piazza del Colosseo, 1, 00184 Roma RM, Italy",
+                        phoneNumber = "+39 06 3996 7700",
+                        websiteUrl = "https://www.colosseo.it",
+                        estimatedDuration = 2.hours,
+                    ),
+                ),
             ),
             clickBack = {},
             updateKeyword = {},

@@ -33,6 +33,7 @@ internal fun HomeRoute(
     navigateToFollowTravel: (Long, Int) -> Unit,
     navigateToPopularTravelList: () -> Unit,
     navigateToTravelDetail: (Long, Int) -> Unit,
+    navigateToPlaceDetail: (String) -> Unit,
 ) {
     val state by viewModel.collectAsState()
 
@@ -53,12 +54,11 @@ internal fun HomeRoute(
         onTravelMoreClick = {
             viewModel.onIntent(HomeIntent.ClickTravelMore)
         },
-        onMyTravelCardClick = {
-            when (val myTravel = state.myTravel) {
-                is HomeState.MyTravel.Upcoming -> viewModel.onIntent(HomeIntent.ClickMyTravel(myTravel.travelId, myTravel.days))
-                is HomeState.MyTravel.InProgress -> viewModel.onIntent(HomeIntent.ClickMyTravel(myTravel.travelId, myTravel.days))
-                HomeState.MyTravel.None -> {} // Do nothing
-            }
+        onMyTravelClick = { travelId, days ->
+            viewModel.onIntent(HomeIntent.ClickMyTravel(travelId, days))
+        },
+        onPlaceClick = {
+            viewModel.onIntent(HomeIntent.ClickMyTravelPlace(it))
         },
     )
 
@@ -66,9 +66,18 @@ internal fun HomeRoute(
         when (sideEffect) {
             HomeSideEffect.NavigateToSearchTravelTemplate -> navigateToTemplateSearch()
             HomeSideEffect.NavigateToSettings -> navigateToSettings()
-            is HomeSideEffect.NavigateToFollowTravel -> navigateToFollowTravel(sideEffect.travelId, sideEffect.days)
+            is HomeSideEffect.NavigateToFollowTravel -> navigateToFollowTravel(
+                sideEffect.travelId,
+                sideEffect.days,
+            )
+
             HomeSideEffect.NavigateToTravelMore -> navigateToPopularTravelList()
-            is HomeSideEffect.NavigateToTravelDetail -> navigateToTravelDetail(sideEffect.travelId, sideEffect.days)
+            is HomeSideEffect.NavigateToTravelDetail -> navigateToTravelDetail(
+                sideEffect.travelId,
+                sideEffect.days,
+            )
+
+            is HomeSideEffect.NavigateToPlaceDetail -> navigateToPlaceDetail(sideEffect.placeId)
         }
     }
 }
@@ -81,7 +90,8 @@ private fun HomeScreen(
     onTabSelected: (Int) -> Unit,
     onTravelClick: (Long, Int) -> Unit,
     onTravelMoreClick: () -> Unit,
-    onMyTravelCardClick: () -> Unit,
+    onMyTravelClick: (Long, Int) -> Unit,
+    onPlaceClick: (String) -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -116,7 +126,9 @@ private fun HomeScreen(
                 UpcomingTravelCardSection(
                     modifier = Modifier.fillMaxWidth(),
                     myTravel = state.myTravel,
-                    onCardClick = onMyTravelCardClick,
+                    onMyTravelClick = onMyTravelClick,
+                    onPlaceClick = onPlaceClick,
+                    onEmptyTravelClick = onTravelMoreClick,
                 )
             }
 
@@ -197,6 +209,7 @@ private fun HomeScreenPreview() {
                     startDate = LocalDate.of(2024, 12, 23),
                     endDate = LocalDate.of(2024, 12, 26),
                     currentPlace = HomeState.TravelPlace(
+                        googlePlaceId = "",
                         category = PlaceCategory.TRANSPORT,
                         estimatedDuration = 60,
                         name = "인도 국제 공항",
@@ -228,7 +241,8 @@ private fun HomeScreenPreview() {
             onTabSelected = {},
             onTravelClick = { _, _ -> },
             onTravelMoreClick = {},
-            onMyTravelCardClick = {},
+            onMyTravelClick = { _, _ -> },
+            onPlaceClick = {},
         )
     }
 }

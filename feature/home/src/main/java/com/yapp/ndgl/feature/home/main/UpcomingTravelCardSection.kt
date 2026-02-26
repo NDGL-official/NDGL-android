@@ -25,6 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -43,25 +44,27 @@ import com.yapp.ndgl.core.ui.R as CoreR
 @Composable
 internal fun UpcomingTravelCardSection(
     myTravel: MyTravel,
+    onMyTravelClick: (Long, Int) -> Unit,
+    onPlaceClick: (String) -> Unit,
+    onEmptyTravelClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onCardClick: () -> Unit = {},
 ) {
     when (myTravel) {
         MyTravel.None -> EmptyTravelCard(
             modifier = modifier,
-            onCardClick = { /* FIXME: 인기 여행 컨텐츠 전체보기 페이지 이동 */ },
+            onCardClick = onEmptyTravelClick,
         )
 
         is MyTravel.Upcoming -> UpcomingTravelCard(
             modifier = modifier,
             travel = myTravel,
-            onCardClick = onCardClick,
+            onCardClick = { onMyTravelClick(myTravel.travelId, myTravel.days) },
         )
 
         is MyTravel.InProgress -> InProgressTravelCard(
             travel = myTravel,
-            onCardClick = onCardClick,
-            onPlaceClick = { /* FIXME: 장소 상세 보기 페이지 이동 */ },
+            onCardClick = { onMyTravelClick(myTravel.travelId, myTravel.days) },
+            onPlaceClick = onPlaceClick,
         )
     }
 }
@@ -143,8 +146,10 @@ private fun UpcomingTravelCard(
                     DayTag(dDay = travel.dDay)
                     Text(
                         text = travel.title,
-                        style = NDGLTheme.typography.subtitleMdSemiBold,
                         color = NDGLTheme.colors.black700,
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 1,
+                        style = NDGLTheme.typography.subtitleMdSemiBold,
                     )
                 }
                 val dateFormatter = DateTimeFormatter.ofPattern(
@@ -193,13 +198,13 @@ private fun DayTag(
 @Composable
 private fun InProgressTravelCard(
     travel: MyTravel.InProgress,
-    onCardClick: () -> Unit,
-    onPlaceClick: () -> Unit,
+    onCardClick: (Long) -> Unit,
+    onPlaceClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     CardContainer(
         modifier = modifier,
-        onCardClick = onCardClick,
+        onCardClick = { onCardClick(travel.travelId) },
     ) {
         Column(
             modifier = Modifier
@@ -208,15 +213,28 @@ private fun InProgressTravelCard(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = stringResource(
-                        R.string.home_my_travel_card_in_progress_title,
-                        travel.title,
-                        travel.dayCount,
-                    ),
-                    style = NDGLTheme.typography.subtitleMdSemiBold,
-                    color = NDGLTheme.colors.black700,
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = travel.title + " ",
+                        modifier = Modifier.weight(1f, fill = false),
+                        style = NDGLTheme.typography.subtitleMdSemiBold,
+                        color = NDGLTheme.colors.black700,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.home_my_travel_card_in_progress_day_count,
+                            travel.dayCount,
+                        ),
+                        style = NDGLTheme.typography.subtitleMdSemiBold,
+                        color = NDGLTheme.colors.black700,
+                        maxLines = 1,
+                    )
+                }
                 val dateFormatter = DateTimeFormatter.ofPattern(
                     stringResource(R.string.home_my_travel_card_date_format),
                 )
@@ -234,7 +252,7 @@ private fun InProgressTravelCard(
             if (travel.currentPlace != null) {
                 PlaceInfoCard(
                     place = travel.currentPlace,
-                    onPlaceClick = onPlaceClick,
+                    onPlaceClick = { onPlaceClick(travel.currentPlace.googlePlaceId) },
                 )
             }
         }
@@ -293,6 +311,8 @@ private fun PlaceInfoCard(
             Text(
                 text = place.name,
                 color = NDGLTheme.colors.black900,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
                 style = NDGLTheme.typography.bodyLgSemiBold,
             )
         }
@@ -332,6 +352,9 @@ private fun EmptyTravelCardPreview() {
         UpcomingTravelCardSection(
             modifier = Modifier,
             myTravel = MyTravel.None,
+            onMyTravelClick = { _, _ -> },
+            onPlaceClick = {},
+            onEmptyTravelClick = {},
         )
     }
 }
@@ -351,6 +374,9 @@ private fun UpcomingTravelCardPreview() {
                 endDate = LocalDate.of(2025, 2, 20),
                 imageUrl = "",
             ),
+            onMyTravelClick = { _, _ -> },
+            onPlaceClick = {},
+            onEmptyTravelClick = {},
         )
     }
 }
@@ -369,12 +395,16 @@ private fun InProgressTravelCardPreview() {
                 startDate = LocalDate.of(2025, 2, 1),
                 endDate = LocalDate.of(2025, 2, 10),
                 currentPlace = TravelPlace(
+                    googlePlaceId = "",
                     category = PlaceCategory.TRANSPORT,
                     estimatedDuration = 60,
                     name = "인도 국제 공항",
                     thumbnailUrl = "",
                 ),
             ),
+            onMyTravelClick = { _, _ -> },
+            onPlaceClick = {},
+            onEmptyTravelClick = {},
         )
     }
 }

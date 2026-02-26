@@ -39,7 +39,7 @@ internal fun SearchEmptyContent() {
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Icon(
-            imageVector = ImageVector.vectorResource(R.drawable.ic_140_serach),
+            imageVector = ImageVector.vectorResource(R.drawable.img_search),
             contentDescription = null,
             tint = Color.Unspecified,
             modifier = Modifier.size(140.dp),
@@ -59,7 +59,7 @@ internal fun NoSearchResultContent() {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
-            imageVector = ImageVector.vectorResource(R.drawable.ic_140_serach),
+            imageVector = ImageVector.vectorResource(R.drawable.img_search),
             contentDescription = null,
             tint = Color.Unspecified,
             modifier = Modifier.size(140.dp),

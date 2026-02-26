@@ -6,12 +6,13 @@ import com.yapp.ndgl.core.util.parseDurationToTimeString
 import com.yapp.ndgl.core.util.parseTimeStringToDuration
 import com.yapp.ndgl.core.util.suspendRunCatching
 import com.yapp.ndgl.data.travel.model.AddPlaceEvent
+import com.yapp.ndgl.data.travel.model.ChangePlaceEvent
 import com.yapp.ndgl.data.travel.model.ItineraryUpdateItem
 import com.yapp.ndgl.data.travel.model.StartTimeUpdateItem
-import com.yapp.ndgl.data.travel.model.TransportationItem
 import com.yapp.ndgl.data.travel.model.TravelMode
 import com.yapp.ndgl.data.travel.model.UserTravelTemplateContentInfo
 import com.yapp.ndgl.data.travel.model.UserTravelTemplateItinerary
+import com.yapp.ndgl.data.travel.repository.PlaceRepository
 import com.yapp.ndgl.data.travel.repository.RouteRepository
 import com.yapp.ndgl.data.travel.repository.UserTravelRepository
 import com.yapp.ndgl.feature.travel.model.AlternativePlace
@@ -22,8 +23,9 @@ import com.yapp.ndgl.feature.travel.model.TipContent
 import com.yapp.ndgl.feature.travel.model.TransportSegment
 import com.yapp.ndgl.feature.travel.model.TransportType
 import com.yapp.ndgl.feature.travel.model.VideoInfo
+import com.yapp.ndgl.feature.travel.model.toOpeningHours
+import com.yapp.ndgl.feature.travel.model.toPlaceInfo
 import com.yapp.ndgl.feature.travel.model.toPlaceType
-import com.yapp.ndgl.feature.travel.model.toTransportCategory
 import com.yapp.ndgl.feature.travel.model.toTransportType
 import com.yapp.ndgl.feature.travel.model.toTravelMode
 import dagger.assisted.Assisted
@@ -47,6 +49,7 @@ class TravelDetailViewModel @AssistedInject constructor(
     @Assisted private val days: Int,
     private val userTravelRepository: UserTravelRepository,
     private val routeRepository: RouteRepository,
+    private val placeRepository: PlaceRepository,
 ) : BaseViewModel<TravelDetailState, TravelDetailIntent, TravelDetailSideEffect>(
     initialState = TravelDetailState(days = days),
 ) {
@@ -54,6 +57,7 @@ class TravelDetailViewModel @AssistedInject constructor(
         loadUserTravelTemplateItinerary()
         loadUserTravelTemplateContentInfo()
         subscribeToAddPlaceEvent()
+        subscribeToChangePlaceEvent()
     }
 
     private fun loadUserTravelTemplateItinerary() = viewModelScope.launch {
@@ -84,6 +88,8 @@ class TravelDetailViewModel @AssistedInject constructor(
                 copy(
                     contentInfo = info.toContentInfo(),
                     countryCode = info.countryCode,
+                    creatorName = info.program.creatorName,
+                    startDate = info.startDate,
                 )
             }
         }.onFailure {
@@ -99,133 +105,173 @@ class TravelDetailViewModel @AssistedInject constructor(
         }
     }
 
+    private fun subscribeToChangePlaceEvent() = viewModelScope.launch {
+        userTravelRepository.changePlaceEvent.collect { event ->
+            if (event.travelId == travelId) {
+                handleChangePlace(event)
+            }
+        }
+    }
+
     private suspend fun handleAddPlace(event: AddPlaceEvent) {
         val dayIndex = event.day - 1
         val currentItinerary = state.value.itineraries.getOrNull(dayIndex) ?: return
-
         val newSequence = currentItinerary.places.size + 1
+        val lastPlace = currentItinerary.places.lastOrNull()
 
-        val newPlaceInfo = PlaceInfo(
-            googlePlaceId = event.googlePlaceId,
-            name = event.name,
-            placeType = event.placeType.toPlaceType(),
-            day = event.day,
-            sequence = newSequence,
-            thumbnail = event.thumbnail,
-            latitude = event.latitude,
-            longitude = event.longitude,
-            address = event.address,
-            phoneNumber = event.phoneNumber,
-            googleMapsUri = event.googleMapsUri,
-            websiteUrl = event.websiteUrl,
-            rating = event.rating,
-            userRatingCount = event.userRatingCount,
-            estimatedDuration = event.estimatedDuration.minutes,
-        )
-
-        val newPlace = TravelPlace(
-            id = event.googlePlaceId.hashCode().toLong(), // FIXME: 임시 ID (googlePlaceId 해시), API 응답에서 실제 itinerary item ID 필요
-            placeInfo = newPlaceInfo,
-            regularOpeningHours = null,
-            userData = TravelPlace.UserData(
-                estimatedDuration = event.estimatedDuration.minutes,
-            ),
-            startTime = 0.hours,
-            transportToNext = null,
-        )
-
-        val updatedPlaces = if (currentItinerary.places.isNotEmpty()) {
-            val lastPlace = currentItinerary.places.last()
-            val transportSegment = calculateTransport(lastPlace, newPlace)
-
-            val placesWithTransport = currentItinerary.places.dropLast(1) +
-                lastPlace.copy(transportToNext = transportSegment)
-            placesWithTransport + newPlace
-        } else {
-            listOf(newPlace)
-        }
-
-        val firstPlaceStartTime = currentItinerary.places.firstOrNull()?.startTime
-            ?: Itinerary.DEFAULT_START_TIME.hours
-        val timedPlaces = calculatePlaceStartTimes(updatedPlaces, firstPlaceStartTime)
-
-        reduce {
-            val updatedItineraries = itineraries.mapIndexed { index, itinerary ->
-                if (index == dayIndex) {
-                    itinerary.copy(places = timedPlaces)
-                } else {
-                    itinerary
-                }
-            }
-            copy(itineraries = updatedItineraries)
-        }
-
-        postSideEffect(TravelDetailSideEffect.ScrollToPlace(newPlace.id))
-        // FIXME: 일정 추가 API 연동
-    }
-
-    private suspend fun calculateTransport(
-        from: TravelPlace,
-        to: TravelPlace,
-    ): TransportSegment? {
-        // FIXME: 기획상 변경될 수 있음, 현재는 대중교통 고정
-        return suspendRunCatching {
-            routeRepository.computeRoute(
-                originLatitude = from.placeInfo.latitude,
-                originLongitude = from.placeInfo.longitude,
-                destinationLatitude = to.placeInfo.latitude,
-                destinationLongitude = to.placeInfo.longitude,
+        // 추가된 장소로 가는 교통수단 계산
+        val newTransportSegment = if (lastPlace != null) {
+            computeRoute(
+                originLatitude = lastPlace.placeInfo.latitude,
+                originLongitude = lastPlace.placeInfo.longitude,
+                destinationLatitude = event.latitude,
+                destinationLongitude = event.longitude,
+                newGooglePlaceId = event.googlePlaceId,
                 travelMode = TravelMode.TRANSIT,
             )
-        }.getOrNull()?.let { routeInfo ->
-            if (routeInfo.distanceMeters > 0) {
-                TransportSegment(
-                    googlePlaceId = to.placeInfo.googlePlaceId,
-                    type = TransportType.TRANSIT,
-                    duration = routeInfo.duration.removeSuffix("s").toInt().seconds,
-                    distance = routeInfo.distanceMeters,
-                )
+        } else {
+            null
+        }
+
+        val (distanceKm, transportation) = if (currentItinerary.places.isNotEmpty()) {
+            newTransportSegment?.distanceKm to listOfNotNull(newTransportSegment?.toTransportationItem())
+        } else {
+            null to null
+        }
+
+        suspendRunCatching {
+            userTravelRepository.addItinerary(
+                travelId = travelId,
+                googlePlaceId = event.googlePlaceId,
+                day = event.day,
+                sequence = newSequence,
+                startTime = if (lastPlace == null) {
+                    null
+                } else {
+                    (
+                        lastPlace.startTime + lastPlace.userData.estimatedDuration +
+                            (newTransportSegment?.duration ?: 0.hours)
+                        )
+                        .parseDurationToTimeString()
+                },
+                estimatedDuration = 60,
+                cost = null,
+                memo = null,
+                distanceKm = distanceKm,
+                transportation = transportation,
+            )
+        }.onSuccess { response ->
+            val newPlace = TravelPlace(
+                id = response.id,
+                placeInfo = PlaceInfo(
+                    googlePlaceId = response.place.googlePlaceId,
+                    name = response.place.name,
+                    placeType = response.place.category.toPlaceType(),
+                    day = response.day,
+                    sequence = response.sequence,
+                    thumbnail = response.place.thumbnail,
+                    latitude = response.place.latitude,
+                    longitude = response.place.longitude,
+                    googleMapsUri = response.place.googleMapsUri,
+                    estimatedDuration = response.estimatedDuration.minutes,
+                ),
+                regularOpeningHours = response.place.regularOpeningHours,
+                userData = TravelPlace.UserData(
+                    estimatedDuration = response.estimatedDuration.minutes,
+                ),
+                startTime = (lastPlace?.startTime ?: Itinerary.DEFAULT_START_TIME.hours) +
+                    (lastPlace?.placeInfo?.estimatedDuration ?: 1.hours) + (newTransportSegment?.duration ?: 0.hours),
+                transportToNext = null,
+            )
+
+            val updatedPlaces = if (currentItinerary.places.isNotEmpty()) {
+                val lastPlace = currentItinerary.places.last()
+                val transportSegment = if (distanceKm != null && transportation != null) {
+                    TransportSegment(
+                        googlePlaceId = event.googlePlaceId,
+                        type = TransportType.TRANSIT,
+                        duration = (transportation.first().timeMin * 60).seconds,
+                        distance = (distanceKm * 1000).toInt(),
+                    )
+                } else {
+                    null
+                }
+                val placesWithTransport = currentItinerary.places.dropLast(1) + lastPlace.copy(transportToNext = transportSegment)
+                placesWithTransport + newPlace
             } else {
-                null
+                listOf(newPlace)
             }
+
+            reduce {
+                val updatedItineraries = itineraries.mapIndexed { index, itinerary ->
+                    if (index == dayIndex) {
+                        itinerary.copy(places = updatedPlaces)
+                    } else {
+                        itinerary
+                    }
+                }
+                copy(itineraries = updatedItineraries)
+            }
+
+            postSideEffect(TravelDetailSideEffect.ScrollToPlace(newPlace.id))
+            postSideEffect(TravelDetailSideEffect.ShowSnackbar(TravelDetailSideEffect.SNACKBAR_ADDED_TO_MY_TRAVEL))
+        }.onFailure {
+            // TODO: Handle API failure
         }
     }
 
-    override suspend fun handleIntent(intent: TravelDetailIntent) {
-        when (intent) {
-            is TravelDetailIntent.SelectDay -> selectDay(intent.day)
-            is TravelDetailIntent.ClickStartTimeSetting -> clickStartTimeSetting()
-            is TravelDetailIntent.ClickEditTravel -> clickEditTravel()
-            is TravelDetailIntent.ClickAddScheduleButton -> clickAddScheduleButton()
-            is TravelDetailIntent.CheckPlaceItem -> checkPlaceItem(intent.placeId)
-            is TravelDetailIntent.CheckSelectAll -> checkSelectAll()
-            is TravelDetailIntent.ClickDeleteSelectedPlaces -> clickDeleteSelectedPlaces()
-            is TravelDetailIntent.ConfirmDeleteSelectedPlaces -> confirmDeleteSelectedPlaces()
-            is TravelDetailIntent.DismissDeleteModal -> dismissDeleteModal()
-            is TravelDetailIntent.ClickBack -> clickBack()
-            is TravelDetailIntent.ConfirmCancelEditMode -> confirmCancelEditMode()
-            is TravelDetailIntent.DismissCancelEditModal -> dismissCancelEditModal()
-            is TravelDetailIntent.LongClickPlaceItem -> longClickPlaceItem()
-            is TravelDetailIntent.DismissStartTimeSettingBottomSheet -> dismissStartTimeSettingBottomSheet()
-            is TravelDetailIntent.ConfirmStartTimeSetting -> confirmStartTimeSetting(intent.startTime)
-            is TravelDetailIntent.ReorderPlaces -> reorderPlaces(intent.dayIndex, intent.fromIndex, intent.toIndex)
-            is TravelDetailIntent.ConfirmEditMode -> confirmEditMode()
-            is TravelDetailIntent.ClickTransportSegment -> clickTransportSegment(intent.place)
-            is TravelDetailIntent.DismissTransportBottomSheet -> dismissTransportBottomSheet()
-            is TravelDetailIntent.ConfirmChangeTransportSegment -> confirmChangeTransportSegment(intent.segment)
-            is TravelDetailIntent.ClickPlaceItem -> clickPlaceItem(intent.place)
-            is TravelDetailIntent.DismissPlaceBottomSheet -> dismissPlaceBottomSheet()
-            is TravelDetailIntent.NavigateToTravelPlaceDetail -> navigateToPlaceDetail(intent.placeId)
-            is TravelDetailIntent.ClickAddTime -> clickAddTime()
-            is TravelDetailIntent.ClickAddCost -> clickAddCost()
-            is TravelDetailIntent.ClickAddMemo -> clickAddMemo()
-            is TravelDetailIntent.ClickFindRoute -> clickFindRoute(intent.googleMapsUri)
-            is TravelDetailIntent.DismissTimeBottomSheet -> dismissTimeBottomSheet()
-            is TravelDetailIntent.ConfirmDuration -> confirmDuration(intent.duration)
-            is TravelDetailIntent.DismissCostModal -> dismissCostModal()
-            is TravelDetailIntent.ConfirmCost -> confirmCost(intent.cost)
-            is TravelDetailIntent.DismissMemoModal -> dismissMemoModal()
-            is TravelDetailIntent.ConfirmMemo -> confirmMemo(intent.memo)
+    private suspend fun handleChangePlace(event: ChangePlaceEvent) {
+        val dayIndex = event.day - 1
+        val currentItinerary = state.value.itineraries.getOrNull(dayIndex) ?: return
+        val targetPlace = currentItinerary.places.find { it.id == event.itineraryId } ?: return
+        val targetIndex = currentItinerary.places.indexOf(targetPlace)
+
+        val newPlaceResponse = suspendRunCatching {
+            placeRepository.getPlace(event.newGooglePlaceId)
+        }.getOrNull() ?: return
+
+        val newPlaceInfo = newPlaceResponse.toPlaceInfo().copy(
+            day = targetPlace.placeInfo.day,
+            sequence = targetPlace.placeInfo.sequence,
+            tipContent = null, // 장소 변경 시 꿀팁 제거
+            alternativePlaces = null, // 장소 변경 시 대체 장소(planB) 제거
+        )
+        val newRegularOpeningHours = newPlaceResponse.place.regularOpeningHours?.toOpeningHours(
+            startDate = state.value.startDate,
+            day = event.day,
+        )
+        val replacedPlace = targetPlace.copy(
+            placeInfo = newPlaceInfo,
+            regularOpeningHours = newRegularOpeningHours,
+            transportToNext = null, // 장소 변경 시 교통수단 재계산 필요
+        )
+        val updatedPlaces = currentItinerary.places.mapIndexed { index, place ->
+            if (index == targetIndex) {
+                replacedPlace
+            } else {
+                place
+            }
+        }
+        val recalculatedPlaces = recalculateTransportSegments(updatedPlaces)
+        val firstPlaceStartTime = currentItinerary.places.firstOrNull()?.startTime ?: Itinerary.DEFAULT_START_TIME.hours
+        val timedPlaces = calculatePlaceStartTimes(recalculatedPlaces, firstPlaceStartTime)
+        val updatedItinerary = currentItinerary.copy(places = timedPlaces)
+        val updatedItineraries = state.value.itineraries.mapIndexed { index, itinerary ->
+            if (index == dayIndex) updatedItinerary else itinerary
+        }
+
+        updateItinerary(updatedItineraries).onSuccess {
+            reduce {
+                val updatedItineraries = itineraries.mapIndexed { index, itinerary ->
+                    if (index == dayIndex) updatedItinerary else itinerary
+                }
+                copy(itineraries = updatedItineraries)
+            }
+
+            postSideEffect(TravelDetailSideEffect.AnimatePlaceChange(event.newGooglePlaceId))
+            postSideEffect(TravelDetailSideEffect.ShowSnackbar(TravelDetailSideEffect.SNACKBAR_PLACE_CHANGED))
+        }.onFailure {
+            // TODO: 에러 처리
         }
     }
 
@@ -310,6 +356,8 @@ class TravelDetailViewModel @AssistedInject constructor(
                 showDeleteModal = false,
             )
         }
+
+        postSideEffect(TravelDetailSideEffect.ShowSnackbar(TravelDetailSideEffect.SNACKBAR_PLACE_DELETED))
     }
 
     private fun dismissDeleteModal() {
@@ -436,17 +484,17 @@ class TravelDetailViewModel @AssistedInject constructor(
             }
         }
 
-        // 낙관적 업데이트: UI 먼저 업데이트
-        reduce {
-            copy(
-                itineraries = updatedItineraries,
-                isEditMode = false,
-                selectedPlaceIds = emptySet(),
-            )
+        updateItinerary(updatedItineraries).onSuccess {
+            reduce {
+                copy(
+                    itineraries = updatedItineraries,
+                    isEditMode = false,
+                    selectedPlaceIds = emptySet(),
+                )
+            }
+        }.onFailure {
+            // TODO: Handle failure
         }
-
-        // FIXME: API 실패 시 롤백 로직 필요
-        updateItinerary()
     }
 
     private fun clickTransportSegment(place: TravelPlace) = viewModelScope.launch {
@@ -508,18 +556,20 @@ class TravelDetailViewModel @AssistedInject constructor(
             }
         }
 
-        // 낙관적 업데이트: UI 먼저 업데이트
-        reduce {
-            copy(
-                itineraries = updatedItineraries,
-                selectedPlace = null,
-                showTransportBottomSheet = false,
-                availableTransports = emptyList(),
-            )
-        }
+        updateItinerary(updatedItineraries).onSuccess {
+            reduce {
+                copy(
+                    itineraries = updatedItineraries,
+                    selectedPlace = null,
+                    showTransportBottomSheet = false,
+                    availableTransports = emptyList(),
+                )
+            }
 
-        // FIXME: API 실패 시 롤백 로직 필요
-        updateItinerary()
+            postSideEffect(TravelDetailSideEffect.ShowSnackbar(TravelDetailSideEffect.SNACKBAR_TRANSPORT_CHANGED))
+        }.onFailure {
+            // TODO: Handle failure
+        }
     }
 
     private fun dismissTransportBottomSheet() {
@@ -556,9 +606,11 @@ class TravelDetailViewModel @AssistedInject constructor(
             TravelDetailSideEffect.NavigateToTravelPlaceDetail(
                 googlePlaceId = googlePlaceId,
                 tipContent = place.placeInfo.tipContent?.let {
-                    TipContent(creatorName = it.creatorName, tips = it.tips)
+                    TipContent(creatorName = state.value.creatorName, tips = it.tips)
                 },
                 alternativePlaces = place.placeInfo.alternativePlaces,
+                day = place.placeInfo.day,
+                itineraryId = place.id,
             ),
         )
         reduce {
@@ -593,22 +645,20 @@ class TravelDetailViewModel @AssistedInject constructor(
                 }
             }
             val firstPlaceStartTime = itinerary.places.firstOrNull()?.startTime ?: Itinerary.DEFAULT_START_TIME.hours
-            itinerary.copy(
-                places = calculatePlaceStartTimes(durationUpdatedPlaces, firstPlaceStartTime),
-            )
+            itinerary.copy(places = calculatePlaceStartTimes(durationUpdatedPlaces, firstPlaceStartTime))
         }
 
-        // 낙관적 업데이트: UI 먼저 업데이트
-        reduce {
-            copy(
-                itineraries = updatedItineraries,
-                selectedPlace = null,
-                showTimeBottomSheet = false,
-            )
+        updateItinerary(updatedItineraries).onSuccess {
+            reduce {
+                copy(
+                    itineraries = updatedItineraries,
+                    selectedPlace = null,
+                    showTimeBottomSheet = false,
+                )
+            }
+        }.onFailure {
+            // TODO: Handle failure
         }
-
-        // FIXME: API 실패 시 롤백 로직 필요
-        updateItinerary()
     }
 
     private fun clickAddCost() {
@@ -621,28 +671,41 @@ class TravelDetailViewModel @AssistedInject constructor(
         reduce { copy(showCostModal = false) }
     }
 
-    // FIXME : 비용 추가 관련 API 미제작
-    private fun confirmCost(cost: Int) {
-        reduce {
-            var updatedPlace: TravelPlace? = null
-            val updatedItineraries = itineraries.map { itinerary ->
-                itinerary.copy(
-                    places = itinerary.places.map { place ->
-                        if (place.id == selectedPlace?.id) {
-                            val updated = place.copy(userData = place.userData.copy(cost = cost))
-                            updatedPlace = updated
-                            updated
-                        } else {
-                            place
-                        }
-                    },
+    private fun confirmCost(cost: Int) = viewModelScope.launch {
+        val selectedPlace = state.value.selectedPlace ?: return@launch
+
+        suspendRunCatching {
+            userTravelRepository.updateTravelPlace(
+                travelId = travelId,
+                userTravelPlaceId = selectedPlace.id,
+                cost = cost,
+                memo = selectedPlace.userData.memo,
+            )
+        }.onSuccess {
+            reduce {
+                var updatedPlace: TravelPlace? = null
+                val updatedItineraries = itineraries.map { itinerary ->
+                    itinerary.copy(
+                        places = itinerary.places.map { place ->
+                            if (place.id == selectedPlace.id) {
+                                val updated = place.copy(userData = place.userData.copy(cost = cost))
+                                updatedPlace = updated
+                                updated
+                            } else {
+                                place
+                            }
+                        },
+                    )
+                }
+                copy(
+                    itineraries = updatedItineraries,
+                    selectedPlace = updatedPlace,
+                    showCostModal = false,
                 )
             }
-            copy(
-                itineraries = updatedItineraries,
-                selectedPlace = updatedPlace,
-                showCostModal = false,
-            )
+        }.onFailure {
+            // TODO: Handle failure
+            reduce { copy(showCostModal = false) }
         }
     }
 
@@ -656,28 +719,41 @@ class TravelDetailViewModel @AssistedInject constructor(
         reduce { copy(showMemoModal = false) }
     }
 
-    // FIXME: 메모 추가 관련 API 미제작
-    private fun confirmMemo(memo: String) {
-        reduce {
-            var updatedPlace: TravelPlace? = null
-            val updatedItineraries = itineraries.map { itinerary ->
-                itinerary.copy(
-                    places = itinerary.places.map { place ->
-                        if (place.id == selectedPlace?.id) {
-                            val updated = place.copy(userData = place.userData.copy(memo = memo.trim()))
-                            updatedPlace = updated
-                            updated
-                        } else {
-                            place
-                        }
-                    },
+    private fun confirmMemo(memo: String) = viewModelScope.launch {
+        val selectedPlace = state.value.selectedPlace ?: return@launch
+
+        suspendRunCatching {
+            userTravelRepository.updateTravelPlace(
+                travelId = travelId,
+                userTravelPlaceId = selectedPlace.id,
+                cost = selectedPlace.userData.cost,
+                memo = memo.trim(),
+            )
+        }.onSuccess {
+            reduce {
+                var updatedPlace: TravelPlace? = null
+                val updatedItineraries = itineraries.map { itinerary ->
+                    itinerary.copy(
+                        places = itinerary.places.map { place ->
+                            if (place.id == selectedPlace.id) {
+                                val updated = place.copy(userData = place.userData.copy(memo = memo.trim()))
+                                updatedPlace = updated
+                                updated
+                            } else {
+                                place
+                            }
+                        },
+                    )
+                }
+                copy(
+                    itineraries = updatedItineraries,
+                    selectedPlace = updatedPlace,
+                    showMemoModal = false,
                 )
             }
-            copy(
-                itineraries = updatedItineraries,
-                selectedPlace = updatedPlace,
-                showMemoModal = false,
-            )
+        }.onFailure {
+            // TODO: Handle failure
+            reduce { copy(showMemoModal = false) }
         }
     }
 
@@ -703,6 +779,15 @@ class TravelDetailViewModel @AssistedInject constructor(
 
         val transportOptions = travelModes.map { mode ->
             async {
+                computeRoute(
+                    originLatitude = from.placeInfo.latitude,
+                    originLongitude = from.placeInfo.longitude,
+                    destinationLatitude = to.placeInfo.latitude,
+                    destinationLongitude = to.placeInfo.longitude,
+                    newGooglePlaceId = to.placeInfo.googlePlaceId,
+                    travelMode = mode,
+                )
+
                 suspendRunCatching {
                     routeRepository.computeRoute(
                         originLatitude = from.placeInfo.latitude,
@@ -729,78 +814,83 @@ class TravelDetailViewModel @AssistedInject constructor(
         transportOptions.awaitAll().filterNotNull()
     }
 
-    // FIXME: 기획상 변경될 수 있음, 현재는 대중교통 고정
-    private suspend fun recalculateTransportSegments(places: List<TravelPlace>): List<TravelPlace> {
-        return places.mapIndexed { index, place ->
-            val nextPlace = places.getOrNull(index + 1)
-            val transportSegment = if (nextPlace != null) {
-                // googlePlaceId가 일치하면 기존 transportToNext 재사용
+    private suspend fun computeRoute(
+        originLatitude: Double,
+        originLongitude: Double,
+        destinationLatitude: Double,
+        destinationLongitude: Double,
+        newGooglePlaceId: String,
+        travelMode: TravelMode,
+    ): TransportSegment? {
+        return suspendRunCatching {
+            routeRepository.computeRoute(
+                originLatitude = originLatitude,
+                originLongitude = originLongitude,
+                destinationLatitude = destinationLatitude,
+                destinationLongitude = destinationLongitude,
+                travelMode = travelMode,
+            )
+        }.getOrNull()?.let { routeInfo ->
+            if (routeInfo.distanceMeters > 0) {
+                TransportSegment(
+                    googlePlaceId = newGooglePlaceId,
+                    type = travelMode.toTransportType(),
+                    duration = routeInfo.duration.removeSuffix("s").toLong().seconds,
+                    distance = routeInfo.distanceMeters,
+                )
+            } else {
+                null
+            }
+        }
+    }
+
+    // FIXME: 기획상 변경될 수 있음, 현재는 대중교통, 도보, 자동차, 자전거, 오토바이 순
+    private suspend fun recalculateTransportSegments(places: List<TravelPlace>): List<TravelPlace> = coroutineScope {
+        val travelModes = listOf(
+            TravelMode.TRANSIT,
+            TravelMode.WALK,
+            TravelMode.DRIVE,
+            TravelMode.BICYCLE,
+            TravelMode.TWO_WHEELER,
+        )
+
+        places.mapIndexed { index, place ->
+            async {
+                val nextPlace = places.getOrNull(index + 1) ?: return@async place.copy(transportToNext = null)
+
+                // 기존 최적화: 다음 장소 ID가 변하지 않았다면 기존 데이터 유지
                 if (place.transportToNext?.googlePlaceId == nextPlace.placeInfo.googlePlaceId) {
-                    place.transportToNext
+                    place
                 } else {
-                    // googlePlaceId가 다르면 새로 계산
-                    suspendRunCatching {
-                        routeRepository.computeRoute(
+                    var newSegment: TransportSegment? = null
+                    for (mode in travelModes) {
+                        val result = computeRoute(
                             originLatitude = place.placeInfo.latitude,
                             originLongitude = place.placeInfo.longitude,
                             destinationLatitude = nextPlace.placeInfo.latitude,
                             destinationLongitude = nextPlace.placeInfo.longitude,
-                            travelMode = TravelMode.TRANSIT,
+                            newGooglePlaceId = nextPlace.placeInfo.googlePlaceId,
+                            travelMode = mode,
                         )
-                    }.getOrNull()?.let { routeInfo ->
-                        if (routeInfo.distanceMeters > 0) {
-                            TransportSegment(
-                                googlePlaceId = nextPlace.placeInfo.googlePlaceId,
-                                type = TransportType.TRANSIT,
-                                duration = routeInfo.duration.removeSuffix("s").toInt().seconds,
-                                distance = routeInfo.distanceMeters,
-                            )
-                        } else {
-                            null
+
+                        if (result != null) {
+                            newSegment = result
+                            break
                         }
                     }
-                }
-            } else {
-                null
-            }
 
-            place.copy(transportToNext = transportSegment)
-        }
+                    place.copy(transportToNext = newSegment)
+                }
+            }
+        }.awaitAll()
     }
 
-    private fun updateItinerary() = viewModelScope.launch {
-        val allItineraryItems = state.value.itineraries.flatMapIndexed { dayIndex, itinerary ->
-            val day = dayIndex + 1
-            itinerary.places.map { place ->
-                ItineraryUpdateItem(
-                    placeId = place.id,
-                    day = day,
-                    sequence = place.placeInfo.sequence,
-                    startTime = place.startTime.parseDurationToTimeString(),
-                    estimatedDuration = place.userData.estimatedDuration.inWholeMinutes.toInt(),
-                    memo = place.userData.memo,
-                    distanceKm = place.transportToNext?.let { it.distance / 1000.0 },
-                    transportation = place.transportToNext?.let {
-                        listOf(
-                            TransportationItem(
-                                mode = it.type.toTransportCategory(),
-                                timeMin = it.duration.inWholeMinutes.toInt(),
-                            ),
-                        )
-                    },
-                )
-            }
-        }
-
-        suspendRunCatching {
+    private suspend fun updateItinerary(updatedItineraries: List<Itinerary>): Result<Unit> {
+        return suspendRunCatching {
             userTravelRepository.updateItinerary(
                 travelId = travelId,
-                itineraries = allItineraryItems,
+                itineraries = updatedItineraries.toUpdateItems(),
             )
-        }.onSuccess {
-            // FIXME: 성공 처리
-        }.onFailure {
-            // FIXME: 에러 처리
         }
     }
 
@@ -843,6 +933,7 @@ class TravelDetailViewModel @AssistedInject constructor(
                 userData = TravelPlace.UserData(
                     estimatedDuration = item.estimatedDuration.minutes,
                     memo = item.memo,
+                    cost = item.cost,
                 ),
                 startTime = parseTimeStringToDuration(item.startTime) ?: 0.hours,
                 transportToNext = nextItem?.transportation?.firstOrNull()?.let { transport ->
@@ -856,7 +947,6 @@ class TravelDetailViewModel @AssistedInject constructor(
             )
         }
 
-        // isStartTimeSet이 false면 클라이언트에서 시간 계산
         val finalPlaces = if (!isStartTimeSet && places.isNotEmpty()) {
             calculatePlaceStartTimes(places, Itinerary.DEFAULT_START_TIME.hours)
         } else {
@@ -886,6 +976,65 @@ class TravelDetailViewModel @AssistedInject constructor(
             summary = program.summary,
         ),
     )
+
+    private fun List<Itinerary>.toUpdateItems(): List<ItineraryUpdateItem> {
+        return this.flatMapIndexed { dayIndex, itinerary ->
+            val day = dayIndex + 1
+            itinerary.places.map { place ->
+                ItineraryUpdateItem(
+                    googlePlaceId = place.placeInfo.googlePlaceId,
+                    day = day,
+                    sequence = place.placeInfo.sequence,
+                    startTime = if (itinerary.isStartTimeSet) place.startTime.parseDurationToTimeString() else null,
+                    estimatedDuration = place.userData.estimatedDuration.inWholeMinutes.toInt(),
+                    memo = place.userData.memo,
+                    cost = place.userData.cost,
+                    distanceKm = place.transportToNext?.distanceKm, // 지난번 만든 프로퍼티 활용
+                    transportation = place.transportToNext?.let {
+                        listOf(it.toTransportationItem())
+                    },
+                )
+            }
+        }
+    }
+
+    override suspend fun handleIntent(intent: TravelDetailIntent) {
+        when (intent) {
+            is TravelDetailIntent.SelectDay -> selectDay(intent.day)
+            is TravelDetailIntent.ClickStartTimeSetting -> clickStartTimeSetting()
+            is TravelDetailIntent.ClickEditTravel -> clickEditTravel()
+            is TravelDetailIntent.ClickAddScheduleButton -> clickAddScheduleButton()
+            is TravelDetailIntent.CheckPlaceItem -> checkPlaceItem(intent.placeId)
+            is TravelDetailIntent.CheckSelectAll -> checkSelectAll()
+            is TravelDetailIntent.ClickDeleteSelectedPlaces -> clickDeleteSelectedPlaces()
+            is TravelDetailIntent.ConfirmDeleteSelectedPlaces -> confirmDeleteSelectedPlaces()
+            is TravelDetailIntent.DismissDeleteModal -> dismissDeleteModal()
+            is TravelDetailIntent.ClickBack -> clickBack()
+            is TravelDetailIntent.ConfirmCancelEditMode -> confirmCancelEditMode()
+            is TravelDetailIntent.DismissCancelEditModal -> dismissCancelEditModal()
+            is TravelDetailIntent.LongClickPlaceItem -> longClickPlaceItem()
+            is TravelDetailIntent.DismissStartTimeSettingBottomSheet -> dismissStartTimeSettingBottomSheet()
+            is TravelDetailIntent.ConfirmStartTimeSetting -> confirmStartTimeSetting(intent.startTime)
+            is TravelDetailIntent.ReorderPlaces -> reorderPlaces(intent.dayIndex, intent.fromIndex, intent.toIndex)
+            is TravelDetailIntent.ConfirmEditMode -> confirmEditMode()
+            is TravelDetailIntent.ClickTransportSegment -> clickTransportSegment(intent.place)
+            is TravelDetailIntent.DismissTransportBottomSheet -> dismissTransportBottomSheet()
+            is TravelDetailIntent.ConfirmChangeTransportSegment -> confirmChangeTransportSegment(intent.segment)
+            is TravelDetailIntent.ClickPlaceItem -> clickPlaceItem(intent.place)
+            is TravelDetailIntent.DismissPlaceBottomSheet -> dismissPlaceBottomSheet()
+            is TravelDetailIntent.NavigateToTravelPlaceDetail -> navigateToPlaceDetail(intent.placeId)
+            is TravelDetailIntent.ClickAddTime -> clickAddTime()
+            is TravelDetailIntent.ClickAddCost -> clickAddCost()
+            is TravelDetailIntent.ClickAddMemo -> clickAddMemo()
+            is TravelDetailIntent.ClickFindRoute -> clickFindRoute(intent.googleMapsUri)
+            is TravelDetailIntent.DismissTimeBottomSheet -> dismissTimeBottomSheet()
+            is TravelDetailIntent.ConfirmDuration -> confirmDuration(intent.duration)
+            is TravelDetailIntent.DismissCostModal -> dismissCostModal()
+            is TravelDetailIntent.ConfirmCost -> confirmCost(intent.cost)
+            is TravelDetailIntent.DismissMemoModal -> dismissMemoModal()
+            is TravelDetailIntent.ConfirmMemo -> confirmMemo(intent.memo)
+        }
+    }
 
     @AssistedFactory
     interface Factory {

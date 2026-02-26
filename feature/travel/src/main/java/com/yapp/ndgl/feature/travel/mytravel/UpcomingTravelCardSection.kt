@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DatePickerDefaults.dateFormatter
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,6 +23,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
@@ -115,8 +115,10 @@ private fun UpcomingTravelCard(
                     DayTag(dDay = travel.dDay)
                     Text(
                         text = travel.title,
-                        style = NDGLTheme.typography.subtitleMdSemiBold,
                         color = NDGLTheme.colors.black700,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = NDGLTheme.typography.subtitleMdSemiBold,
                     )
                 }
                 Text(
@@ -182,15 +184,28 @@ private fun InProgressTravelCard(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = stringResource(
-                        R.string.my_travel_upcoming_travel_in_progress_title,
-                        travel.title,
-                        travel.dayCount,
-                    ),
-                    style = NDGLTheme.typography.subtitleMdSemiBold,
-                    color = NDGLTheme.colors.black700,
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = travel.title,
+                        modifier = Modifier.weight(1f, fill = false),
+                        style = NDGLTheme.typography.subtitleMdSemiBold,
+                        color = NDGLTheme.colors.black700,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = stringResource(
+                            R.string.my_travel_upcoming_travel_in_progress_day_count,
+                            travel.dayCount,
+                        ),
+                        style = NDGLTheme.typography.subtitleMdSemiBold,
+                        color = NDGLTheme.colors.black700,
+                        maxLines = 1,
+                    )
+                }
                 Text(
                     text = stringResource(
                         R.string.my_travel_upcoming_travel_travel_duration,
@@ -264,6 +279,8 @@ private fun PlaceInfoCard(
             Text(
                 text = place.name,
                 color = NDGLTheme.colors.black900,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 style = NDGLTheme.typography.bodyLgSemiBold,
             )
         }

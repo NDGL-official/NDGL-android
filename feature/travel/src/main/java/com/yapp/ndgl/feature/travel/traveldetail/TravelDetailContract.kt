@@ -15,6 +15,8 @@ import kotlin.time.Duration.Companion.hours
 data class TravelDetailState(
     val contentInfo: ContentInfo = ContentInfo(),
     val countryCode: String = "",
+    val creatorName: String = "",
+    val startDate: String = "",
     val days: Int = 1,
     val selectedDay: Int = 1,
     val itineraries: List<Itinerary> = emptyList(),
@@ -42,10 +44,13 @@ data class TravelDetailState(
     val currentPlaces: List<TravelPlace>
         get() = currentItinerary?.places.orEmpty()
 
+    val isEmptyItinerary: Boolean
+        get() = currentItinerary?.places.isNullOrEmpty()
+
     val representativeLatLng: LatLng
         get() {
             val currentDayPlaces = itineraries.getOrNull(selectedDay - 1)?.places
-            val firstPlaceInSelectedDay = currentDayPlaces?.firstOrNull()
+            val firstPlaceInSelectedDay = currentDayPlaces?.lastOrNull()
 
             if (firstPlaceInSelectedDay != null) {
                 return LatLng(firstPlaceInSelectedDay.placeInfo.latitude, firstPlaceInSelectedDay.placeInfo.longitude)
@@ -54,12 +59,13 @@ data class TravelDetailState(
             return itineraries
                 .flatMap { it.places }
                 .firstOrNull()
-                ?.let { LatLng(it.placeInfo.latitude, it.placeInfo.longitude) } ?: LatLng(37.5665, 126.9780) // 모든 일차가 비어 있다면 '서울' 좌표 반환
+                ?.let { LatLng(it.placeInfo.latitude, it.placeInfo.longitude) } ?: LatLng(37.5665, 126.9780) // FIXME: 모든 일차가 비어 있다면 '서울' 좌표 반환
         }
 
-    // 헤더(0) + stickyHeader(1) + 맵 아이템(2) = 3개가 장소 아이템 앞에 위치
-    val placesOffset: Int
-        get() = 3
+    companion object {
+        // 헤더(0) + stickyHeader(1) + 맵 아이템(2) = 3개가 장소 아이템 앞에 위치
+        const val PLACES_OFFSET = 3
+    }
 }
 
 data class Itinerary(
@@ -138,6 +144,8 @@ sealed interface TravelDetailSideEffect : UiSideEffect {
         val googlePlaceId: String,
         val tipContent: TipContent?,
         val alternativePlaces: List<AlternativePlace>?,
+        val day: Int,
+        val itineraryId: Long,
     ) : TravelDetailSideEffect
 
     data class NavigateToBrowser(val url: String) : TravelDetailSideEffect
@@ -150,4 +158,13 @@ sealed interface TravelDetailSideEffect : UiSideEffect {
 
     data object NavigateToMyTravel : TravelDetailSideEffect
     data class ScrollToPlace(val placeId: Long) : TravelDetailSideEffect
+    data class AnimatePlaceChange(val googlePlaceId: String) : TravelDetailSideEffect
+    data class ShowSnackbar(val message: String) : TravelDetailSideEffect
+
+    companion object {
+        const val SNACKBAR_ADDED_TO_MY_TRAVEL = "내 여행에 추가되었습니다"
+        const val SNACKBAR_PLACE_CHANGED = "장소가 변경되었습니다"
+        const val SNACKBAR_TRANSPORT_CHANGED = "교통수단이 변경되었습니다"
+        const val SNACKBAR_PLACE_DELETED = "장소가 삭제되었습니다"
+    }
 }

@@ -29,12 +29,19 @@ class HomeViewModel @Inject constructor(
 ) {
     init {
         loadHomeContents()
+        subscribeToTravelCreatedEvent()
     }
 
     private fun loadHomeContents() {
         loadMyTravel()
         loadPopularTemplates()
         loadRecommendedTravel()
+    }
+
+    private fun subscribeToTravelCreatedEvent() = viewModelScope.launch {
+        userTravelRepository.travelCreatedEvent.collect { _ ->
+            loadMyTravel()
+        }
     }
 
     private fun loadMyTravel() {
@@ -74,6 +81,7 @@ class HomeViewModel @Inject constructor(
                                 endDate = travel.endDate,
                                 currentPlace = upcomingPlace?.place?.let { place ->
                                     HomeState.TravelPlace(
+                                        googlePlaceId = place.googlePlaceId,
                                         category = place.category,
                                         estimatedDuration = upcomingPlace.estimatedDuration,
                                         name = place.name,
@@ -185,6 +193,7 @@ class HomeViewModel @Inject constructor(
             is HomeIntent.ClickTravel -> postNavigateToTravelTemplate(travelId = intent.travelId, days = intent.days)
             HomeIntent.ClickTravelMore -> postNavigateToTravelMore()
             is HomeIntent.ClickMyTravel -> postNavigateToTravelDetail(travelId = intent.travelId, days = intent.days)
+            is HomeIntent.ClickMyTravelPlace -> postNavigateToPlaceDetail(placeId = intent.placeId)
         }
     }
 
@@ -206,6 +215,10 @@ class HomeViewModel @Inject constructor(
 
     private fun postNavigateToTravelDetail(travelId: Long, days: Int) {
         postSideEffect(HomeSideEffect.NavigateToTravelDetail(travelId = travelId, days = days))
+    }
+
+    private fun postNavigateToPlaceDetail(placeId: String) {
+        postSideEffect(HomeSideEffect.NavigateToPlaceDetail(placeId))
     }
 
     companion object {

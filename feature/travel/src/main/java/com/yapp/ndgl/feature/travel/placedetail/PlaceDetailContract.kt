@@ -29,4 +29,5 @@ sealed interface PlaceDetailIntent : UiIntent {
 sealed interface PlaceDetailSideEffect : UiSideEffect {
     data class NavigateToBrowser(val url: String) : PlaceDetailSideEffect
     data class NavigateToAlternativePlaceDetail(val googlePlaceId: String) : PlaceDetailSideEffect
+    data object NavigateBack : PlaceDetailSideEffect
 }

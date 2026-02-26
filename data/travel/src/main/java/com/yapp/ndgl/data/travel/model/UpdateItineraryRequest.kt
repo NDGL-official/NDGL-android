@@ -10,19 +10,14 @@ data class UpdateItineraryRequest(
 
 @Serializable
 data class ItineraryUpdateItem(
-    val placeId: Long,
+    val googlePlaceId: String,
     val day: Int,
     val sequence: Int,
-    val startTime: String,
+    val startTime: String? = null,
     val estimatedDuration: Int,
-    @SerialName("travelerTip")
-    val memo: String?,
+    val memo: String? = null,
+    @SerialName("budget")
+    val cost: Int? = null,
     val distanceKm: Double? = null,
     val transportation: List<TransportationItem>? = null,
-)
-
-@Serializable
-data class TransportationItem(
-    val mode: TransportCategory,
-    val timeMin: Int,
 )
