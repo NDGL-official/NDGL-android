@@ -12,25 +12,29 @@ plugins {
     alias(libs.plugins.hilt) apply false
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.android.test) apply false
+    alias(libs.plugins.baselineprofile) apply false
 }
 
 subprojects {
-    apply {
-        plugin(rootProject.libs.plugins.ktlint.get().pluginId)
-        plugin(rootProject.libs.plugins.detekt.get().pluginId)
-    }
+    if (name != "baselineprofile") {
+        apply {
+            plugin(rootProject.libs.plugins.ktlint.get().pluginId)
+            plugin(rootProject.libs.plugins.detekt.get().pluginId)
+        }
 
-    configure<KtlintExtension> {
-        version.set(rootProject.libs.versions.ktlint.source.get())
-        android.set(true)
-        verbose.set(true)
-    }
+        configure<KtlintExtension> {
+            version.set(rootProject.libs.versions.ktlint.source.get())
+            android.set(true)
+            verbose.set(true)
+        }
 
-    configure<DetektExtension> {
-        parallel = true
-        buildUponDefaultConfig = true
-        toolVersion = rootProject.libs.versions.detekt.get()
-        config.setFrom(files("$rootDir/detekt-config.yml"))
+        configure<DetektExtension> {
+            parallel = true
+            buildUponDefaultConfig = true
+            toolVersion = rootProject.libs.versions.detekt.get()
+            config.setFrom(files("$rootDir/detekt-config.yml"))
+        }
     }
 
     afterEvaluate {

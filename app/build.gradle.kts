@@ -4,6 +4,7 @@ plugins {
     id("ndgl.application")
     alias(libs.plugins.google.services)
     alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.baselineprofile)
 }
 
 android {
@@ -72,4 +73,7 @@ dependencies {
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.profileinstaller)
+
+    "baselineProfile"(project(":baselineprofile"))
 }
