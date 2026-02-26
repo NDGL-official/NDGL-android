@@ -41,6 +41,7 @@ import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.yapp.ndgl.core.ui.theme.NDGLTheme
 import com.yapp.ndgl.feature.travelhelper.R
@@ -113,7 +114,7 @@ internal fun CurrencyCalculatorSection(
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(
-                            imageVector = ImageVector.vectorResource(R.drawable.ic_24_updown),
+                            imageVector = ImageVector.vectorResource(CoreR.drawable.ic_24_change),
                             contentDescription = null,
                             modifier = Modifier.size(24.dp),
                             tint = NDGLTheme.colors.black900,
@@ -173,7 +174,7 @@ private fun CurrencyCard(
     ) {
         ForeignCurrencyLeft(
             modifier = Modifier.wrapContentWidth(),
-            showCurrencySelector = isEditable,
+            isEditable = isEditable,
             flagEmoji = flagEmoji,
             currencyName = currencyName,
             currencyCode = currencyCode,
@@ -194,7 +195,7 @@ private fun CurrencyCard(
 @Composable
 private fun ForeignCurrencyLeft(
     modifier: Modifier,
-    showCurrencySelector: Boolean,
+    isEditable: Boolean,
     flagEmoji: String,
     currencyName: String,
     currencyCode: String,
@@ -211,7 +212,7 @@ private fun ForeignCurrencyLeft(
                 shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp),
             )
             .then(
-                if (showCurrencySelector) {
+                if (isEditable) {
                     Modifier.clickable(
                         interactionSource = null,
                         indication = ripple(),
@@ -241,7 +242,7 @@ private fun ForeignCurrencyLeft(
                 Text(
                     text = currencyName,
                     modifier = Modifier.fillMaxWidth(),
-                    color = NDGLTheme.colors.black800,
+                    color = if (isEditable) NDGLTheme.colors.black800 else NDGLTheme.colors.black500,
                     overflow = TextOverflow.Ellipsis,
                     maxLines = 1,
                     style = NDGLTheme.typography.bodyLgSemiBold,
@@ -249,12 +250,12 @@ private fun ForeignCurrencyLeft(
                 Text(
                     text = currencyCode,
                     modifier = Modifier.fillMaxWidth(),
-                    color = NDGLTheme.colors.black400,
+                    color = if (isEditable) NDGLTheme.colors.black400 else NDGLTheme.colors.black300,
                     style = NDGLTheme.typography.bodyMdMedium,
                 )
             }
         }
-        if (showCurrencySelector) {
+        if (isEditable) {
             Icon(
                 imageVector = ImageVector.vectorResource(CoreR.drawable.ic_24_chevron_down),
                 contentDescription = null,
@@ -265,7 +266,7 @@ private fun ForeignCurrencyLeft(
             Box(modifier = Modifier.size(24.dp))
         }
     }
-    if (showCurrencySelector) {
+    if (isEditable) {
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
@@ -352,10 +353,17 @@ private fun ForeignCurrencyRight(
             onValueChange = onInputChange,
             modifier = Modifier.fillMaxWidth(),
             readOnly = isEditable.not(),
-            textStyle = NDGLTheme.typography.bodyLgSemiBold.copy(
-                color = NDGLTheme.colors.black800,
-                textAlign = TextAlign.End,
-            ),
+            textStyle = if (isEditable) {
+                NDGLTheme.typography.bodyLgSemiBold.copy(
+                    color = NDGLTheme.colors.green500,
+                    textAlign = TextAlign.End,
+                )
+            } else {
+                NDGLTheme.typography.bodyLgMedium.copy(
+                    color = NDGLTheme.colors.black500,
+                    textAlign = TextAlign.End,
+                )
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             singleLine = true,
             cursorBrush = SolidColor(NDGLTheme.colors.green500),
@@ -389,7 +397,7 @@ private fun ForeignCurrencyRight(
         Text(
             text = "$displayInput $currencyLabel",
             modifier = Modifier.fillMaxWidth(),
-            color = NDGLTheme.colors.black400,
+            color = if (isEditable) NDGLTheme.colors.black400 else NDGLTheme.colors.black300,
             textAlign = TextAlign.End,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
@@ -435,5 +443,39 @@ private class ThousandSeparatorTransformation : VisualTransformation {
             }
         }
         return TransformedText(AnnotatedString(formatted), offsetMapping)
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CurrencyCalculatorSectionPreview() {
+    NDGLTheme {
+        CurrencyCalculatorSection(
+            exchangeRateInfo = ExchangeRateInfo(
+                topCurrency = TravelHelperState.CurrencyInfo(
+                    currencyCode = "JPY",
+                    currencyLabel = "엔",
+                    countryName = "일본",
+                    flagEmoji = "\uD83C\uDDEF\uD83C\uDDF5",
+                ),
+                bottomCurrency = TravelHelperState.CurrencyInfo(
+                    currencyCode = "KRW",
+                    currencyLabel = "원",
+                    countryName = "대한민국",
+                    flagEmoji = "\uD83C\uDDF0\uD83C\uDDF7",
+                ),
+                rate = 9.5,
+                rateDate = java.time.LocalDate.of(2025, 1, 1),
+            ),
+            currencyInput = "1000",
+            convertedAmount = 9500.0,
+            availableCurrencies = persistentListOf(
+                CurrencyOption(currencyCode = "JPY", countryName = "일본"),
+                CurrencyOption(currencyCode = "KRW", countryName = "대한민국"),
+            ),
+            onInputChange = {},
+            onSwap = {},
+            onCurrencySelect = {},
+        )
     }
 }
