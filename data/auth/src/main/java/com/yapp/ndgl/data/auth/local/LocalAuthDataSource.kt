@@ -45,15 +45,28 @@ class LocalAuthDataSource @Inject constructor(
         }
     }
 
+    suspend fun getNickname(): String = dataStore.data
+        .handleException()
+        .map { preferences -> preferences[NICKNAME_KEY] ?: "" }
+        .first()
+
+    suspend fun setNickname(nickname: String) {
+        dataStore.edit { preferences ->
+            preferences[NICKNAME_KEY] = nickname
+        }
+    }
+
     suspend fun clearSession() {
         dataStore.edit { preferences ->
             preferences.remove(ACCESS_TOKEN_KEY)
             preferences.remove(UUID_KEY)
+            preferences.remove(NICKNAME_KEY)
         }
     }
 
     private companion object {
         private val ACCESS_TOKEN_KEY = stringPreferencesKey("access_token")
         private val UUID_KEY = stringPreferencesKey("uuid")
+        private val NICKNAME_KEY = stringPreferencesKey("nickname")
     }
 }
