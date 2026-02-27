@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.yapp.ndgl.core.ui.CommonErrorView
 import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButton
 import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButtonAttr
 import com.yapp.ndgl.core.ui.designsystem.NDGLSearchNavigationBar
@@ -118,7 +119,7 @@ private fun TemplateSearchScreen(
                         )
                     }
 
-                    TemplateSearchState.SearchResult.Error -> item { ErrorView() }
+                    TemplateSearchState.SearchResult.Error -> item { CommonErrorView() }
                 }
             }
 
@@ -208,41 +209,6 @@ private fun EmptyResultView() {
     }
 }
 
-@Composable
-private fun ErrorView() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 165.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Image(
-            painter = painterResource(CoreR.drawable.img_empty_browser),
-            contentDescription = null,
-            modifier = Modifier.size(100.dp),
-        )
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = stringResource(R.string.home_template_search_error_title),
-                color = NDGLTheme.colors.black500,
-                textAlign = TextAlign.Center,
-                style = NDGLTheme.typography.subtitleMdSemiBold,
-            )
-            Text(
-                text = stringResource(R.string.home_template_search_error_description),
-                color = NDGLTheme.colors.black400,
-                textAlign = TextAlign.Center,
-                style = NDGLTheme.typography.bodyLgRegular,
-            )
-        }
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 private fun InitialEmptyViewPreview() {
@@ -261,20 +227,13 @@ private fun EmptyResultViewPreview() {
 
 @Preview(showBackground = true)
 @Composable
-private fun ErrorViewPreview() {
-    NDGLTheme {
-        ErrorView()
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
 private fun TemplateSearchScreenFilledPreview() {
     val sampleTravels = listOf(
         TravelContent(
             travelId = 1,
             title = "곽준빈의 신혼여행",
             country = "FR",
+            countryName = "프랑스",
             city = "파리",
             nights = 7,
             days = 9,
@@ -286,6 +245,7 @@ private fun TemplateSearchScreenFilledPreview() {
             travelId = 2,
             title = "스위스 여행",
             country = "CH",
+            countryName = "스위스",
             city = "스위스",
             nights = 5,
             days = 6,
@@ -297,6 +257,7 @@ private fun TemplateSearchScreenFilledPreview() {
             travelId = 3,
             title = "충격적인 북유럽 물가",
             country = "DK",
+            countryName = "덴마크",
             city = "덴마크",
             nights = 4,
             days = 6,

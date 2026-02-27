@@ -26,8 +26,6 @@
     <string name="home_template_search_idle_description">좋아하는 유튜버나 가고 싶은\n여행지를 검색할 수 있어요</string>
     <string name="home_template_search_empty_title">검색 결과가 없어요</string>
     <string name="home_template_search_empty_description">철자를 확인하거나\n다른 키워드로 검색해보세요.</string>
-    <string name="home_template_search_error_title">정보를 불러올 수 없어요</string>
-    <string name="home_template_search_error_description">인터넷 연결 확인 후 다시 시도해 주세요</string>
 
     <!-- Settings -->
     <string name="home_settings_title">설정</string>

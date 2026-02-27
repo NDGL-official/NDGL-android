@@ -104,7 +104,8 @@ private fun HorizontalCardSection(
             }.toPersistentList(),
             selectedIndex = selectedTabIndex,
             onTabSelected = onTabSelected,
-            modifier = Modifier.padding(start = 24.dp),
+            modifier = Modifier,
+            contentPadding = PaddingValues(horizontal = 24.dp),
         )
 
         if (columns.isNotEmpty()) {
@@ -155,6 +156,7 @@ private fun PopularTravelSectionPreview() {
             travelId = 1,
             title = "곽준빈의 신혼여행",
             country = "FR",
+            countryName = "프랑스",
             city = "파리",
             nights = 7,
             days = 9,
@@ -166,6 +168,7 @@ private fun PopularTravelSectionPreview() {
             travelId = 2,
             title = "스위스 여행",
             country = "CH",
+            countryName = "스위스",
             city = "스위스",
             nights = 5,
             days = 6,
@@ -177,6 +180,7 @@ private fun PopularTravelSectionPreview() {
             travelId = 3,
             title = "충격적인 북유럽 물가",
             country = "DK",
+            countryName = "덴마크",
             city = "덴마크",
             nights = 4,
             days = 6,

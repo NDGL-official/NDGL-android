@@ -7,6 +7,7 @@ data class TravelTemplateSummary(
     val id: Long,
     val title: String,
     val country: String,
+    val countryName: String,
     val city: String,
     val nights: Int,
     val days: Int,

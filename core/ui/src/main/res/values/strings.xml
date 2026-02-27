@@ -15,6 +15,9 @@
     <string name="common_dot_separator">•</string>
     <string name="common_retry">다시 시도</string>
     <string name="common_all">전체</string>
+    <string name="common_err_unknown">알 수 없는 오류입니다</string>
+    <string name="common_error_title">정보를 불러올 수 없어요</string>
+    <string name="common_error_description">인터넷 연결 확인 후 다시 시도해 주세요</string>
 
     <!-- User Guide Modal -->
     <string name="user_guide_modal_title">서비스 이용 전\n반드시 확인해주세요.</string>

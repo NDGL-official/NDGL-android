@@ -3,6 +3,7 @@ package com.yapp.ndgl.feature.home.main
 import androidx.lifecycle.viewModelScope
 import com.yapp.ndgl.core.base.BaseViewModel
 import com.yapp.ndgl.core.util.suspendRunCatching
+import com.yapp.ndgl.data.auth.repository.AuthRepository
 import com.yapp.ndgl.data.travel.model.TravelProgram
 import com.yapp.ndgl.data.travel.model.TravelTemplateSummary
 import com.yapp.ndgl.data.travel.repository.TravelProgramRepository
@@ -21,6 +22,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    private val authRepository: AuthRepository,
     private val travelProgramRepository: TravelProgramRepository,
     private val travelTemplateRepository: TravelTemplateRepository,
     private val userTravelRepository: UserTravelRepository,
@@ -28,8 +30,16 @@ class HomeViewModel @Inject constructor(
     initialState = HomeState(),
 ) {
     init {
+        loadUserName()
         loadHomeContents()
         subscribeToTravelCreatedEvent()
+    }
+
+    private fun loadUserName() {
+        viewModelScope.launch {
+            val nickname = authRepository.getNickname()
+            reduce { copy(userName = nickname) }
+        }
     }
 
     private fun loadHomeContents() {
@@ -61,7 +71,7 @@ class HomeViewModel @Inject constructor(
                                 travelId = travel.userTravelId,
                                 days = travel.days,
                                 title = travel.title,
-                                imageUrl = travel.upcomingUserTravelPlace?.place?.thumbnail ?: "",
+                                imageUrl = travel.thumbnail ?: "",
                                 dDay = dDay,
                                 startDate = travel.startDate,
                                 endDate = travel.endDate,
@@ -174,6 +184,7 @@ class HomeViewModel @Inject constructor(
         travelId = id,
         title = title,
         country = country,
+        countryName = countryName,
         city = city,
         nights = nights,
         days = days,

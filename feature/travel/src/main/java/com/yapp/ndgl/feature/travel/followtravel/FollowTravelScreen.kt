@@ -3,6 +3,7 @@ package com.yapp.ndgl.feature.travel.followtravel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -145,13 +146,13 @@ private fun FollowTravelScreen(
                             } else {
                                 Modifier.padding(top = 22.dp)
                             },
-                        )
-                        .padding(horizontal = 24.dp),
+                        ),
                 ) {
                     NDGLChipTab(
                         tabs = tabs,
                         selectedIndex = state.selectedDay - 1,
                         onTabSelected = { index -> selectDay(index + 1) },
+                        contentPadding = PaddingValues(horizontal = 24.dp),
                     )
                     Spacer(Modifier.height(16.dp))
                 }

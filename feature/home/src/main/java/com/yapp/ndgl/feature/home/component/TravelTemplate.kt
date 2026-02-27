@@ -61,7 +61,7 @@ internal fun TravelTemplate(
                     style = NDGLTheme.typography.bodyLgMedium,
                 )
                 Text(
-                    text = travel.country,
+                    text = travel.countryName,
                     color = NDGLTheme.colors.black400,
                     style = NDGLTheme.typography.bodyMdMedium,
                 )

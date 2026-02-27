@@ -39,6 +39,7 @@ class AuthRepository @Inject constructor(
 
         localAuthDataSource.setAccessToken(response.accessToken)
         localAuthDataSource.setUuid(response.uuid)
+        localAuthDataSource.setNickname(response.nickname)
         return isFirstUser
     }
 
@@ -65,6 +66,8 @@ class AuthRepository @Inject constructor(
             throw IllegalStateException("Failed to get FCM token", e)
         }
     }
+
+    suspend fun getNickname(): String = localAuthDataSource.getNickname()
 
     suspend fun getIdentifierCode(): String = localAuthDataSource.getUuid()
 }
