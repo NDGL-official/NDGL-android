@@ -358,13 +358,13 @@ private fun TravelDetailScreen(
                             } else {
                                 Modifier.padding(top = 22.dp)
                             },
-                        )
-                        .padding(horizontal = 24.dp),
+                        ),
                 ) {
                     NDGLChipTab(
                         tabs = tabs,
                         selectedIndex = state.selectedDay - 1,
                         onTabSelected = { index -> selectDay(index + 1) },
+                        contentPadding = PaddingValues(horizontal = 24.dp),
                     )
                     Spacer(Modifier.height(16.dp))
                 }
