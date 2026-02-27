@@ -8,6 +8,7 @@ data class TravelContent(
     val travelId: Long,
     val title: String,
     val country: String,
+    val countryName: String,
     val city: String,
     val nights: Int,
     val days: Int,
