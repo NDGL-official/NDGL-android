@@ -61,7 +61,7 @@ fun CommonErrorView(
 private fun CommonErrorViewPreview() {
     NDGLTheme {
         CommonErrorView(
-            modifier = Modifier
+            modifier = Modifier,
         )
     }
 }

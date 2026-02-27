@@ -18,13 +18,14 @@ import javax.inject.Singleton
 class TravelTemplateRepository @Inject constructor(
     private val travelTemplateApi: TravelTemplateApi,
 ) {
-    suspend fun getAllPopularTravelTemplates(): PopularTravelTemplates {
-        return travelTemplateApi.getPopularTravelTemplates().getData()
+    suspend fun getAllPopularTravelTemplates(page: Int = 0): PopularTravelTemplates {
+        return travelTemplateApi.getPopularTravelTemplates(page = page).getData()
     }
 
-    suspend fun getPopularTravelTemplates(travelProgramId: Long): PopularTravelTemplates {
+    suspend fun getPopularTravelTemplates(travelProgramId: Long, page: Int = 0): PopularTravelTemplates {
         return travelTemplateApi.getPopularTravelTemplates(
             travelProgramId = travelProgramId,
+            page = page,
         ).getData()
     }
 
