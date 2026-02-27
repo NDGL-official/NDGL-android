@@ -150,7 +150,7 @@ private fun DayTag(
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = if (dDay <= 0) {
+            text = if (dDay > 0) {
                 stringResource(R.string.my_travel_upcoming_travel_d_day_minus, dDay)
             } else {
                 stringResource(R.string.my_travel_upcoming_travel_d_day_plus, dDay)
@@ -324,7 +324,7 @@ private fun UpcomingTravelCardPreview() {
                 title = "도쿄 여행",
                 startDate = LocalDate.of(2025, 2, 15),
                 endDate = LocalDate.of(2025, 2, 20),
-                dDay = -7,
+                dDay = 7,
                 imageUrl = "",
             ),
             onTravelClick = { _, _ -> },

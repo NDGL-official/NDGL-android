@@ -71,7 +71,7 @@ class HomeViewModel @Inject constructor(
                                 travelId = travel.userTravelId,
                                 days = travel.days,
                                 title = travel.title,
-                                imageUrl = travel.upcomingUserTravelPlace?.place?.thumbnail ?: "",
+                                imageUrl = travel.thumbnail ?: "",
                                 dDay = dDay,
                                 startDate = travel.startDate,
                                 endDate = travel.endDate,

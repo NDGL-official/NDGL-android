@@ -178,19 +178,19 @@ private fun DayTag(
         modifier = modifier
             .background(
                 color = NDGLTheme.colors.black100,
-                shape = RoundedCornerShape(999.dp),
+                shape = CircleShape,
             )
             .padding(horizontal = 12.dp, vertical = 4.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = if (dDay <= 0) {
+            text = if (dDay > 0) {
                 stringResource(R.string.home_my_travel_card_d_day_minus, dDay)
             } else {
                 stringResource(R.string.home_my_travel_card_d_day_plus, dDay)
             },
-            style = NDGLTheme.typography.bodyMdMedium,
             color = NDGLTheme.colors.black400,
+            style = NDGLTheme.typography.bodyMdMedium,
         )
     }
 }
@@ -369,7 +369,7 @@ private fun UpcomingTravelCardPreview() {
                 travelId = 1,
                 days = 6,
                 title = "도쿄 여행",
-                dDay = -7,
+                dDay = 7,
                 startDate = LocalDate.of(2025, 2, 15),
                 endDate = LocalDate.of(2025, 2, 20),
                 imageUrl = "",
