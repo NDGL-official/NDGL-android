@@ -97,6 +97,7 @@ class PopularTravelListViewModel @Inject constructor(
         travelId = id,
         title = title,
         country = country,
+        countryName = countryName,
         city = city,
         nights = nights,
         days = days,

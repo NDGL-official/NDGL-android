@@ -42,6 +42,7 @@ class TemplateSearchViewModel @Inject constructor(
                             travelId = travel.id,
                             title = travel.title,
                             country = travel.country,
+                            countryName = travel.countryName,
                             city = travel.city,
                             nights = travel.nights,
                             days = travel.days,

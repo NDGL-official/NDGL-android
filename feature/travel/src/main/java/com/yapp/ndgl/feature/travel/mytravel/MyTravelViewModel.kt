@@ -60,7 +60,7 @@ class MyTravelViewModel @Inject constructor(
                     title = travel.title,
                     startDate = travel.startDate,
                     endDate = travel.endDate,
-                    imageUrl = travel.upcomingUserTravelPlace?.place?.thumbnail ?: "",
+                    imageUrl = travel.thumbnail ?: "",
                     dDay = dDay,
                 )
             }

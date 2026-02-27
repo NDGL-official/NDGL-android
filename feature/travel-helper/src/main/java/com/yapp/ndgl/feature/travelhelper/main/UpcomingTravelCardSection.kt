@@ -151,13 +151,13 @@ private fun DayTag(
         modifier = modifier
             .background(
                 color = NDGLTheme.colors.black100,
-                shape = RoundedCornerShape(999.dp),
+                shape = CircleShape,
             )
             .padding(horizontal = 12.dp, vertical = 4.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = if (dDay <= 0) {
+            text = if (dDay > 0) {
                 stringResource(R.string.travel_helper_card_d_day_minus, dDay)
             } else {
                 stringResource(R.string.travel_helper_card_d_day_plus, dDay)
