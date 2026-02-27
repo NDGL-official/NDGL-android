@@ -104,7 +104,8 @@ private fun HorizontalCardSection(
             }.toPersistentList(),
             selectedIndex = selectedTabIndex,
             onTabSelected = onTabSelected,
-            modifier = Modifier.padding(start = 24.dp),
+            modifier = Modifier,
+            contentPadding = PaddingValues(horizontal = 24.dp),
         )
 
         if (columns.isNotEmpty()) {

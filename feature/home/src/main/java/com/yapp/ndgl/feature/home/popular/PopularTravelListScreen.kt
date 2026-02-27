@@ -196,7 +196,8 @@ private fun PopularTravelListContent(
             }.toPersistentList(),
             selectedIndex = state.selectedTabIndex,
             onTabSelected = onTabSelected,
-            modifier = Modifier.padding(start = 24.dp, top = 20.dp),
+            modifier = Modifier.padding(top = 20.dp),
+            contentPadding = PaddingValues(horizontal = 24.dp),
         )
 
         LazyColumn(

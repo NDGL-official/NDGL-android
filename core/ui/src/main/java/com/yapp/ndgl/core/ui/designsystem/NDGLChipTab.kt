@@ -4,13 +4,14 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -45,14 +46,17 @@ fun NDGLChipTab(
     selectedIndex: Int,
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
-    val scrollState = rememberScrollState()
-
-    Row(
-        modifier = modifier.horizontalScroll(scrollState),
+    LazyRow(
+        modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = contentPadding,
     ) {
-        tabs.forEachIndexed { index, tab ->
+        itemsIndexed(
+            items = tabs,
+            key = { index, tab -> "${index}_${tab.tag}" },
+        ) { index, tab ->
             NDGLChipTabItem(
                 isSelected = index == selectedIndex,
                 name = tab.name,
