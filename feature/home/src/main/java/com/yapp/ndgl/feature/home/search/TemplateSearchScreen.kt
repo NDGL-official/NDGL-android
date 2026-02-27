@@ -24,6 +24,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.yapp.ndgl.core.ui.CommonErrorView
 import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButton
 import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButtonAttr
 import com.yapp.ndgl.core.ui.designsystem.NDGLSearchNavigationBar
@@ -118,7 +119,7 @@ private fun TemplateSearchScreen(
                         )
                     }
 
-                    TemplateSearchState.SearchResult.Error -> item { ErrorView() }
+                    TemplateSearchState.SearchResult.Error -> item { CommonErrorView() }
                 }
             }
 
@@ -208,41 +209,6 @@ private fun EmptyResultView() {
     }
 }
 
-@Composable
-private fun ErrorView() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 165.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Image(
-            painter = painterResource(CoreR.drawable.img_empty_browser),
-            contentDescription = null,
-            modifier = Modifier.size(100.dp),
-        )
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = stringResource(R.string.home_template_search_error_title),
-                color = NDGLTheme.colors.black500,
-                textAlign = TextAlign.Center,
-                style = NDGLTheme.typography.subtitleMdSemiBold,
-            )
-            Text(
-                text = stringResource(R.string.home_template_search_error_description),
-                color = NDGLTheme.colors.black400,
-                textAlign = TextAlign.Center,
-                style = NDGLTheme.typography.bodyLgRegular,
-            )
-        }
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
 private fun InitialEmptyViewPreview() {
@@ -256,14 +222,6 @@ private fun InitialEmptyViewPreview() {
 private fun EmptyResultViewPreview() {
     NDGLTheme {
         EmptyResultView()
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun ErrorViewPreview() {
-    NDGLTheme {
-        ErrorView()
     }
 }
 
