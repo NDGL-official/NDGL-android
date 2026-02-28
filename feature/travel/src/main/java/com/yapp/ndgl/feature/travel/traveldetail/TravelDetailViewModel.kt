@@ -980,7 +980,9 @@ class TravelDetailViewModel @AssistedInject constructor(
     private fun List<Itinerary>.toUpdateItems(): List<ItineraryUpdateItem> {
         return this.flatMapIndexed { dayIndex, itinerary ->
             val day = dayIndex + 1
-            itinerary.places.map { place ->
+            itinerary.places.mapIndexed { index, place ->
+                val prevPlace = itinerary.places.getOrNull(index - 1)
+
                 ItineraryUpdateItem(
                     googlePlaceId = place.placeInfo.googlePlaceId,
                     day = day,
@@ -989,8 +991,8 @@ class TravelDetailViewModel @AssistedInject constructor(
                     estimatedDuration = place.userData.estimatedDuration.inWholeMinutes.toInt(),
                     memo = place.userData.memo,
                     cost = place.userData.cost,
-                    distanceKm = place.transportToNext?.distanceKm, // 지난번 만든 프로퍼티 활용
-                    transportation = place.transportToNext?.let {
+                    distanceKm = prevPlace?.transportToNext?.distanceKm,
+                    transportation = prevPlace?.transportToNext?.let {
                         listOf(it.toTransportationItem())
                     },
                 )
