@@ -797,11 +797,12 @@ class TravelDetailViewModel @AssistedInject constructor(
                         travelMode = mode,
                     )
                 }.getOrNull()?.let { routeInfo ->
-                    if (routeInfo.distanceMeters > 0) {
+                    val durationSeconds = routeInfo.duration.removeSuffix("s").toLongOrNull()?.seconds
+                    if (routeInfo.distanceMeters > 0 && durationSeconds != null) {
                         TransportSegment(
                             googlePlaceId = to.placeInfo.googlePlaceId,
                             type = mode.toTransportTypeFromMode(),
-                            duration = routeInfo.duration.removeSuffix("s").toInt().seconds,
+                            duration = durationSeconds,
                             distance = routeInfo.distanceMeters,
                         )
                     } else {
@@ -831,11 +832,12 @@ class TravelDetailViewModel @AssistedInject constructor(
                 travelMode = travelMode,
             )
         }.getOrNull()?.let { routeInfo ->
-            if (routeInfo.distanceMeters > 0) {
+            val durationSeconds = routeInfo.duration.removeSuffix("s").toLongOrNull()?.seconds
+            if (routeInfo.distanceMeters > 0 && durationSeconds != null) {
                 TransportSegment(
                     googlePlaceId = newGooglePlaceId,
                     type = travelMode.toTransportType(),
-                    duration = routeInfo.duration.removeSuffix("s").toLong().seconds,
+                    duration = durationSeconds,
                     distance = routeInfo.distanceMeters,
                 )
             } else {
