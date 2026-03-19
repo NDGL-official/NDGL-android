@@ -450,6 +450,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             copy(
                 isEditMode = true,
                 selectedPlaceIds = emptySet(),
+                tempItineraries = itineraries,
             )
         }
     }
