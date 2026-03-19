@@ -133,8 +133,8 @@ class TravelDetailViewModel @AssistedInject constructor(
             null
         }
 
-        val (distanceKm, transportation) = if (currentItinerary.places.isNotEmpty()) {
-            newTransportSegment?.distanceKm to listOfNotNull(newTransportSegment?.toTransportationItem())
+        val (distanceKm, transportation) = if (currentItinerary.places.isNotEmpty() && newTransportSegment != null) {
+            newTransportSegment.distanceKm to listOf(newTransportSegment.toTransportationItem())
         } else {
             null to null
         }
