@@ -45,7 +45,7 @@ internal fun AddItineraryRoute(
         when (sideEffect) {
             is AddItinerarySideEffect.NavigateBack -> navigateBack()
             is AddItinerarySideEffect.NavigateToBrowser -> context.launchBrowser(sideEffect.url)
-            is AddItinerarySideEffect.NavigateToAddPlace -> navigateToAddPlace(sideEffect.placeId)
+            is AddItinerarySideEffect.NavigateToAddPlace -> navigateToAddPlace(sideEffect.googlePlaceId)
         }
     }
 

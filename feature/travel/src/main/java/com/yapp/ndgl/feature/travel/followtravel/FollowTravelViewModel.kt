@@ -83,7 +83,7 @@ class FollowTravelViewModel @AssistedInject constructor(
             is FollowTravelIntent.ClickPlaceItem -> {
                 postSideEffect(
                     FollowTravelSideEffect.NavigateToFollowPlaceDetail(
-                        placeId = intent.place.placeInfo.googlePlaceId,
+                        googlePlaceId = intent.place.placeInfo.googlePlaceId,
                         tipContent = intent.place.placeInfo.tipContent?.let {
                             TipContent(creatorName = state.value.creatorName, tips = it.tips)
                         },

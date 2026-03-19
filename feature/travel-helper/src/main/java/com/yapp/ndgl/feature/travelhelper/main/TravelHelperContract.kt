@@ -102,12 +102,12 @@ sealed interface TravelHelperIntent : UiIntent {
     data object SwapCurrency : TravelHelperIntent
     data class SelectCurrency(val currencyCode: String) : TravelHelperIntent
     data class ClickTravelCard(val travelId: Long, val days: Int) : TravelHelperIntent
-    data class ClickPlace(val placeId: String) : TravelHelperIntent
+    data class ClickPlace(val googlePlaceId: String) : TravelHelperIntent
 }
 
 sealed interface TravelHelperSideEffect : UiSideEffect {
     data object NavigateToSearch : TravelHelperSideEffect
     data object ShowExchangeRateError : TravelHelperSideEffect
     data class NavigateToTravelDetail(val travelId: Long, val days: Int) : TravelHelperSideEffect
-    data class NavigateToPlaceDetail(val placeId: String) : TravelHelperSideEffect
+    data class NavigateToPlaceDetail(val googlePlaceId: String) : TravelHelperSideEffect
 }

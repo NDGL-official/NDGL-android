@@ -59,7 +59,7 @@ internal fun FollowTravelRoute(
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             is FollowTravelSideEffect.NavigateToFollowPlaceDetail ->
-                navigateToFollowPlaceDetail(sideEffect.placeId, sideEffect.tipContent, sideEffect.alternativePlaces)
+                navigateToFollowPlaceDetail(sideEffect.googlePlaceId, sideEffect.tipContent, sideEffect.alternativePlaces)
         }
     }
 

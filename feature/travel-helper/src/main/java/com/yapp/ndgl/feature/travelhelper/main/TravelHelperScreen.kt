@@ -89,7 +89,7 @@ internal fun TravelHelperRoute(
                 }
             }
 
-            is TravelHelperSideEffect.NavigateToPlaceDetail -> navigateToPlaceDetail(sideEffect.placeId)
+            is TravelHelperSideEffect.NavigateToPlaceDetail -> navigateToPlaceDetail(sideEffect.googlePlaceId)
         }
     }
 }

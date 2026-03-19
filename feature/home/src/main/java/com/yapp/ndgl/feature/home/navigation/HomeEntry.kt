@@ -29,8 +29,8 @@ fun EntryProviderScope<NavKey>.homeEntry(
             navigateToTravelDetail = { travelId, days ->
                 navigator.navigate(Route.TravelDetail(travelId = travelId, days = days))
             },
-            navigateToPlaceDetail = { placeId ->
-                navigator.navigate(Route.PlaceDetail(googlePlaceId = placeId))
+            navigateToPlaceDetail = { googlePlaceId ->
+                navigator.navigate(Route.PlaceDetail(googlePlaceId = googlePlaceId))
             },
         )
     }

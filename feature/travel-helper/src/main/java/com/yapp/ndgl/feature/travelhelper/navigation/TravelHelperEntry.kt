@@ -14,7 +14,7 @@ fun EntryProviderScope<NavKey>.travelHelperEntry(navigator: Navigator) {
                 navigator.navigate(Route.TravelDetail(travelId, days))
             },
             navigateToPopularTravelList = { navigator.navigate(Route.PopularTravelList) },
-            navigateToPlaceDetail = { placeId -> navigator.navigate(Route.PlaceDetail(placeId)) },
+            navigateToPlaceDetail = { googlePlaceId -> navigator.navigate(Route.PlaceDetail(googlePlaceId)) },
         )
     }
 }

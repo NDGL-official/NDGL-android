@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel(assistedFactory = AddPlaceViewModel.Factory::class)
 class AddPlaceViewModel @AssistedInject constructor(
-    @Assisted private val placeId: String,
+    @Assisted private val googlePlaceId: String,
     private val placeRepository: PlaceRepository,
 ) : BaseViewModel<AddPlaceState, AddPlaceIntent, AddPlaceSideEffect>(
     initialState = AddPlaceState(),
@@ -27,7 +27,7 @@ class AddPlaceViewModel @AssistedInject constructor(
 
     private fun loadPlaceDetail() = viewModelScope.launch {
         suspendRunCatching {
-            placeRepository.getPlace(placeId)
+            placeRepository.getPlace(googlePlaceId)
         }.onSuccess { response ->
             loadPlacePhotos()
             reduce {
@@ -41,7 +41,7 @@ class AddPlaceViewModel @AssistedInject constructor(
     private fun loadPlacePhotos() = viewModelScope.launch {
         repeat(3) {
             delay(1000)
-            val result = suspendRunCatching { placeRepository.getPlacePhotos(placeId) }
+            val result = suspendRunCatching { placeRepository.getPlacePhotos(googlePlaceId) }
             val photos = result.getOrNull()?.photos
 
             if (!photos.isNullOrEmpty()) {
@@ -91,6 +91,6 @@ class AddPlaceViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(placeId: String): AddPlaceViewModel
+        fun create(googlePlaceId: String): AddPlaceViewModel
     }
 }

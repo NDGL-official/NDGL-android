@@ -283,7 +283,7 @@ class TravelHelperViewModel @Inject constructor(
             }
 
             is TravelHelperIntent.ClickPlace -> {
-                postSideEffect(TravelHelperSideEffect.NavigateToPlaceDetail(intent.placeId))
+                postSideEffect(TravelHelperSideEffect.NavigateToPlaceDetail(intent.googlePlaceId))
             }
         }
     }

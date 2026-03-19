@@ -82,12 +82,12 @@ sealed interface AddItineraryIntent : UiIntent {
     data object ClickAddItinerary : AddItineraryIntent
     data object ClickAddress : AddItineraryIntent
     data object ClickMenu : AddItineraryIntent
-    data class BookMarkPlace(val placeId: String) : AddItineraryIntent
+    data class BookMarkPlace(val googlePlaceId: String) : AddItineraryIntent
     data class ClickSelectablePlace(val googlePlaceId: String) : AddItineraryIntent
 }
 
 sealed interface AddItinerarySideEffect : UiSideEffect {
     data object NavigateBack : AddItinerarySideEffect
     data class NavigateToBrowser(val url: String) : AddItinerarySideEffect
-    data class NavigateToAddPlace(val placeId: String) : AddItinerarySideEffect
+    data class NavigateToAddPlace(val googlePlaceId: String) : AddItinerarySideEffect
 }

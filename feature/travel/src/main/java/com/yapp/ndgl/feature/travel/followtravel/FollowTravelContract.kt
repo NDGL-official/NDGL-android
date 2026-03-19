@@ -38,7 +38,7 @@ sealed interface FollowTravelIntent : UiIntent {
 
 sealed interface FollowTravelSideEffect : UiSideEffect {
     data class NavigateToFollowPlaceDetail(
-        val placeId: String,
+        val googlePlaceId: String,
         val tipContent: TipContent?,
         val alternativePlaces: List<AlternativePlace>?,
     ) :

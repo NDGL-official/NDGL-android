@@ -1024,7 +1024,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             is TravelDetailIntent.ConfirmChangeTransportSegment -> confirmChangeTransportSegment(intent.segment)
             is TravelDetailIntent.ClickPlaceItem -> clickPlaceItem(intent.place)
             is TravelDetailIntent.DismissPlaceBottomSheet -> dismissPlaceBottomSheet()
-            is TravelDetailIntent.NavigateToTravelPlaceDetail -> navigateToPlaceDetail(intent.placeId)
+            is TravelDetailIntent.NavigateToTravelPlaceDetail -> navigateToPlaceDetail(intent.googlePlaceId)
             is TravelDetailIntent.ClickAddTime -> clickAddTime()
             is TravelDetailIntent.ClickAddCost -> clickAddCost()
             is TravelDetailIntent.ClickAddMemo -> clickAddMemo()

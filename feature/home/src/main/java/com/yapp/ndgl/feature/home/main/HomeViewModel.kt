@@ -204,7 +204,7 @@ class HomeViewModel @Inject constructor(
             is HomeIntent.ClickTravel -> postNavigateToTravelTemplate(travelId = intent.travelId, days = intent.days)
             HomeIntent.ClickTravelMore -> postNavigateToTravelMore()
             is HomeIntent.ClickMyTravel -> postNavigateToTravelDetail(travelId = intent.travelId, days = intent.days)
-            is HomeIntent.ClickMyTravelPlace -> postNavigateToPlaceDetail(placeId = intent.placeId)
+            is HomeIntent.ClickMyTravelPlace -> postNavigateToPlaceDetail(googlePlaceId = intent.googlePlaceId)
         }
     }
 
@@ -228,8 +228,8 @@ class HomeViewModel @Inject constructor(
         postSideEffect(HomeSideEffect.NavigateToTravelDetail(travelId = travelId, days = days))
     }
 
-    private fun postNavigateToPlaceDetail(placeId: String) {
-        postSideEffect(HomeSideEffect.NavigateToPlaceDetail(placeId))
+    private fun postNavigateToPlaceDetail(googlePlaceId: String) {
+        postSideEffect(HomeSideEffect.NavigateToPlaceDetail(googlePlaceId))
     }
 
     companion object {

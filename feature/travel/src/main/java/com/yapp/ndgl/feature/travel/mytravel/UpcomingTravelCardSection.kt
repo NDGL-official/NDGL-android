@@ -220,7 +220,7 @@ private fun InProgressTravelCard(
             if (travel.currentPlace != null) {
                 PlaceInfoCard(
                     place = travel.currentPlace,
-                    onPlaceClick = { onPlaceClick(travel.currentPlace.placeId) },
+                    onPlaceClick = { onPlaceClick(travel.currentPlace.googlePlaceId) },
                 )
             }
         }
@@ -346,7 +346,7 @@ private fun InProgressTravelCardPreview() {
                 endDate = LocalDate.of(2025, 2, 10),
                 dayCount = 3,
                 currentPlace = TravelPlace(
-                    placeId = "place1",
+                    googlePlaceId = "",
                     category = PlaceCategory.ATTRACTION,
                     estimatedDuration = 60,
                     name = "인도 국제 공항",
