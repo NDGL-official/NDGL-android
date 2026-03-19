@@ -74,7 +74,7 @@ sealed interface HomeIntent : UiIntent {
     data class ClickTravel(val travelId: Long, val days: Int) : HomeIntent
     data object ClickTravelMore : HomeIntent
     data class ClickMyTravel(val travelId: Long, val days: Int) : HomeIntent
-    data class ClickMyTravelPlace(val placeId: String) : HomeIntent
+    data class ClickMyTravelPlace(val googlePlaceId: String) : HomeIntent
 }
 
 sealed interface HomeSideEffect : UiSideEffect {
@@ -83,5 +83,5 @@ sealed interface HomeSideEffect : UiSideEffect {
     data class NavigateToFollowTravel(val travelId: Long, val days: Int) : HomeSideEffect
     data object NavigateToTravelMore : HomeSideEffect
     data class NavigateToTravelDetail(val travelId: Long, val days: Int) : HomeSideEffect
-    data class NavigateToPlaceDetail(val placeId: String) : HomeSideEffect
+    data class NavigateToPlaceDetail(val googlePlaceId: String) : HomeSideEffect
 }

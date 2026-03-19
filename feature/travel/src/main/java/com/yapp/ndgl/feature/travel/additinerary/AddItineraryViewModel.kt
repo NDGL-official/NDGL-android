@@ -119,7 +119,7 @@ class AddItineraryViewModel @AssistedInject constructor(
             is AddItineraryIntent.ClickAddItinerary -> clickAddItinerary()
             is AddItineraryIntent.ClickAddress -> clickAddress()
             is AddItineraryIntent.ClickMenu -> clickMenu()
-            is AddItineraryIntent.BookMarkPlace -> bookmarkPlace(intent.placeId)
+            is AddItineraryIntent.BookMarkPlace -> bookmarkPlace(intent.googlePlaceId)
             is AddItineraryIntent.ClickSelectablePlace -> clickSelectablePlace(intent.googlePlaceId)
         }
     }
@@ -217,11 +217,11 @@ class AddItineraryViewModel @AssistedInject constructor(
         }
     }
 
-    private fun loadPlaceDetail(placeId: String) = viewModelScope.launch {
+    private fun loadPlaceDetail(googlePlaceId: String) = viewModelScope.launch {
         suspendRunCatching {
-            placeRepository.getPlace(placeId)
+            placeRepository.getPlace(googlePlaceId)
         }.onSuccess { response ->
-            loadPlacePhotos(placeId)
+            loadPlacePhotos(googlePlaceId)
             reduce {
                 val currentDetail = selectedPlaceDetail ?: SelectedPlaceDetail()
                 copy(
@@ -235,10 +235,10 @@ class AddItineraryViewModel @AssistedInject constructor(
         }
     }
 
-    private fun loadPlacePhotos(placeId: String) = viewModelScope.launch {
+    private fun loadPlacePhotos(googlePlaceId: String) = viewModelScope.launch {
         repeat(3) {
             delay(1000)
-            val result = suspendRunCatching { placeRepository.getPlacePhotos(placeId) }
+            val result = suspendRunCatching { placeRepository.getPlacePhotos(googlePlaceId) }
             val photos = result.getOrNull()?.photos
             if (!photos.isNullOrEmpty()) {
                 reduce {
@@ -346,15 +346,15 @@ class AddItineraryViewModel @AssistedInject constructor(
         postSideEffect(AddItinerarySideEffect.NavigateToBrowser(url))
     }
 
-    private fun bookmarkPlace(placeId: String) = viewModelScope.launch {
+    private fun bookmarkPlace(googlePlaceId: String) = viewModelScope.launch {
         val currentPlaceDetail = state.value.selectedPlaceDetail
         val isBookmarked = currentPlaceDetail?.placeInfo?.isBookMarked ?: false
 
         suspendRunCatching {
             if (isBookmarked) {
-                placeRepository.unBookmarkPlace(placeId)
+                placeRepository.unBookmarkPlace(googlePlaceId)
             } else {
-                placeRepository.bookmarkPlace(placeId)
+                placeRepository.bookmarkPlace(googlePlaceId)
             }
         }.onSuccess {
             currentPlaceDetail?.let { detail ->

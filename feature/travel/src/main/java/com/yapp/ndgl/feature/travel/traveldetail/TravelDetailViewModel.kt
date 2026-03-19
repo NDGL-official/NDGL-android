@@ -114,6 +114,72 @@ class TravelDetailViewModel @AssistedInject constructor(
     }
 
     private suspend fun handleAddPlace(event: AddPlaceEvent) {
+        if (state.value.isEditMode) {
+            handleAddPlaceInEditMode(event)
+        } else {
+            handleAddPlaceNormally(event)
+        }
+    }
+
+    private fun handleAddPlaceInEditMode(event: AddPlaceEvent) = viewModelScope.launch {
+        val dayIndex = event.day - 1
+        val currentItinerary = state.value.tempItineraries.getOrNull(dayIndex) ?: return@launch
+        val newSequence = currentItinerary.places.size + 1
+
+        suspendRunCatching {
+            userTravelRepository.addItinerary(
+                travelId = travelId,
+                googlePlaceId = event.googlePlaceId,
+                day = event.day,
+                sequence = newSequence,
+                startTime = null,
+                estimatedDuration = 60,
+                cost = null,
+                memo = null,
+                distanceKm = null,
+                transportation = null,
+            )
+        }.onSuccess { response ->
+            val newPlace = TravelPlace(
+                id = response.id,
+                placeInfo = PlaceInfo(
+                    googlePlaceId = response.place.googlePlaceId,
+                    name = response.place.name,
+                    placeType = response.place.category.toPlaceType(),
+                    day = response.day,
+                    sequence = response.sequence,
+                    thumbnail = response.place.thumbnail,
+                    latitude = response.place.latitude,
+                    longitude = response.place.longitude,
+                    googleMapsUri = response.place.googleMapsUri,
+                    estimatedDuration = response.estimatedDuration.minutes,
+                ),
+                regularOpeningHours = response.place.regularOpeningHours,
+                userData = TravelPlace.UserData(
+                    estimatedDuration = response.estimatedDuration.minutes,
+                ),
+                startTime = 0.hours,
+                transportToNext = null,
+            )
+
+            reduce {
+                val updatedItineraries = tempItineraries.mapIndexed { index, itinerary ->
+                    if (index == dayIndex) {
+                        itinerary.copy(places = itinerary.places + newPlace)
+                    } else {
+                        itinerary
+                    }
+                }
+                copy(tempItineraries = updatedItineraries)
+            }
+
+            postSideEffect(TravelDetailSideEffect.ScrollToPlace(newPlace.id))
+        }.onFailure {
+            // TODO: Handle API failure
+        }
+    }
+
+    private suspend fun handleAddPlaceNormally(event: AddPlaceEvent) {
         val dayIndex = event.day - 1
         val currentItinerary = state.value.itineraries.getOrNull(dayIndex) ?: return
         val newSequence = currentItinerary.places.size + 1
@@ -133,8 +199,8 @@ class TravelDetailViewModel @AssistedInject constructor(
             null
         }
 
-        val (distanceKm, transportation) = if (currentItinerary.places.isNotEmpty()) {
-            newTransportSegment?.distanceKm to listOfNotNull(newTransportSegment?.toTransportationItem())
+        val (distanceKm, transportation) = if (currentItinerary.places.isNotEmpty() && newTransportSegment != null) {
+            newTransportSegment.distanceKm to listOf(newTransportSegment.toTransportationItem())
         } else {
             null to null
         }
@@ -384,6 +450,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             copy(
                 isEditMode = true,
                 selectedPlaceIds = emptySet(),
+                tempItineraries = itineraries,
             )
         }
     }
@@ -468,7 +535,7 @@ class TravelDetailViewModel @AssistedInject constructor(
     }
 
     private fun confirmEditMode() = viewModelScope.launch {
-        // 일차별로 변경 사항 감지, 교통수단 재계산 및 시간 재계산
+        // 교통수단 재계산 및 시간 재계산
         val updatedItineraries = state.value.tempItineraries.mapIndexed { dayIndex, tempItinerary ->
             val originalItinerary = state.value.itineraries.getOrNull(dayIndex)
             val hasChanges = originalItinerary == null || tempItinerary.places.map { it.id } != originalItinerary.places.map { it.id }
@@ -484,6 +551,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             }
         }
 
+        // updateItinerary API로 순서 및 교통수단 업데이트
         updateItinerary(updatedItineraries).onSuccess {
             reduce {
                 copy(
@@ -797,11 +865,12 @@ class TravelDetailViewModel @AssistedInject constructor(
                         travelMode = mode,
                     )
                 }.getOrNull()?.let { routeInfo ->
-                    if (routeInfo.distanceMeters > 0) {
+                    val durationSeconds = routeInfo.duration.removeSuffix("s").toLongOrNull()?.seconds
+                    if (routeInfo.distanceMeters > 0 && durationSeconds != null) {
                         TransportSegment(
                             googlePlaceId = to.placeInfo.googlePlaceId,
                             type = mode.toTransportTypeFromMode(),
-                            duration = routeInfo.duration.removeSuffix("s").toInt().seconds,
+                            duration = durationSeconds,
                             distance = routeInfo.distanceMeters,
                         )
                     } else {
@@ -831,11 +900,12 @@ class TravelDetailViewModel @AssistedInject constructor(
                 travelMode = travelMode,
             )
         }.getOrNull()?.let { routeInfo ->
-            if (routeInfo.distanceMeters > 0) {
+            val durationSeconds = routeInfo.duration.removeSuffix("s").toLongOrNull()?.seconds
+            if (routeInfo.distanceMeters > 0 && durationSeconds != null) {
                 TransportSegment(
                     googlePlaceId = newGooglePlaceId,
                     type = travelMode.toTransportType(),
-                    duration = routeInfo.duration.removeSuffix("s").toLong().seconds,
+                    duration = durationSeconds,
                     distance = routeInfo.distanceMeters,
                 )
             } else {
@@ -1024,7 +1094,7 @@ class TravelDetailViewModel @AssistedInject constructor(
             is TravelDetailIntent.ConfirmChangeTransportSegment -> confirmChangeTransportSegment(intent.segment)
             is TravelDetailIntent.ClickPlaceItem -> clickPlaceItem(intent.place)
             is TravelDetailIntent.DismissPlaceBottomSheet -> dismissPlaceBottomSheet()
-            is TravelDetailIntent.NavigateToTravelPlaceDetail -> navigateToPlaceDetail(intent.placeId)
+            is TravelDetailIntent.NavigateToTravelPlaceDetail -> navigateToPlaceDetail(intent.googlePlaceId)
             is TravelDetailIntent.ClickAddTime -> clickAddTime()
             is TravelDetailIntent.ClickAddCost -> clickAddCost()
             is TravelDetailIntent.ClickAddMemo -> clickAddMemo()

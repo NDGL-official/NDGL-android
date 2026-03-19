@@ -42,6 +42,8 @@ internal fun TravelMap(
     places: List<TravelPlace>,
     onScrollEnabledChange: (Boolean) -> Unit,
 ) {
+    require(places.isNotEmpty()) { "TravelMap requires at least one place" }
+
     val routePoints = remember(places) {
         places.map { place ->
             LatLng(place.placeInfo.latitude, place.placeInfo.longitude)

@@ -37,16 +37,7 @@ fun SplashRoute(
         )
 
         onDispose {
-            activity?.enableEdgeToEdge(
-                statusBarStyle = SystemBarStyle.auto(
-                    android.graphics.Color.TRANSPARENT,
-                    android.graphics.Color.TRANSPARENT,
-                ),
-                navigationBarStyle = SystemBarStyle.auto(
-                    android.graphics.Color.TRANSPARENT,
-                    android.graphics.Color.TRANSPARENT,
-                ),
-            )
+            activity?.enableEdgeToEdge()
         }
     }
 

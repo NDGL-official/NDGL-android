@@ -45,8 +45,8 @@ internal fun MyTravelRoute(
         onTravelClick = { travelId, days ->
             viewModel.onIntent(MyTravelIntent.ClickTravelDetail(travelId = travelId, days = days))
         },
-        onPlaceClick = { placeId ->
-            viewModel.onIntent(MyTravelIntent.ClickPlaceDetail(placeId = placeId))
+        onPlaceClick = { googlePlaceId ->
+            viewModel.onIntent(MyTravelIntent.ClickPlaceDetail(googlePlaceId = googlePlaceId))
         },
         onNewTravelFindClick = {
             viewModel.onIntent(MyTravelIntent.ClickFindNewTravel)
@@ -73,7 +73,7 @@ internal fun MyTravelRoute(
             )
 
             is MyTravelSideEffect.NavigateToTravelPlace -> navigateToTravelPlace(
-                sideEffect.placeId,
+                sideEffect.googlePlaceId,
             )
 
             MyTravelSideEffect.NavigateToPopularTravelList -> navigateToPopularTravelList()

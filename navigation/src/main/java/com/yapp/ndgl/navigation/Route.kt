@@ -61,7 +61,7 @@ sealed interface Route : NavKey {
     ) : Route
 
     @Serializable
-    data class AddPlace(val placeId: String) : Route
+    data class AddPlace(val googlePlaceId: String) : Route
 
     @Serializable
     data object TravelHelper : Route

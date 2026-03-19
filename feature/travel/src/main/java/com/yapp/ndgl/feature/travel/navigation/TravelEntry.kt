@@ -39,8 +39,8 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
             navigateToTravelDetail = { travelId, days ->
                 navigator.navigate(Route.TravelDetail(travelId, days))
             },
-            navigateToTravelPlace = { placeId ->
-                navigator.navigate(Route.PlaceDetail(placeId))
+            navigateToTravelPlace = { googlePlaceId ->
+                navigator.navigate(Route.PlaceDetail(googlePlaceId))
             },
             navigateToPopularTravelList = {
                 navigator.navigate(Route.PopularTravelList)
@@ -171,13 +171,13 @@ fun EntryProviderScope<NavKey>.travelEntry(navigator: Navigator) {
         AddItineraryRoute(
             viewModel = viewModel,
             navigateBack = { navigator.goBack() },
-            navigateToAddPlace = { placeId -> navigator.navigate(Route.AddPlace(placeId)) },
+            navigateToAddPlace = { googlePlaceId -> navigator.navigate(Route.AddPlace(googlePlaceId)) },
         )
     }
     entry<Route.AddPlace> { route ->
         val viewModel =
             hiltViewModel<AddPlaceViewModel, AddPlaceViewModel.Factory> { factory ->
-                factory.create(placeId = route.placeId)
+                factory.create(googlePlaceId = route.googlePlaceId)
             }
         AddPlaceRoute(
             viewModel = viewModel,

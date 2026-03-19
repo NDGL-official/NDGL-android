@@ -77,7 +77,7 @@ internal fun HomeRoute(
                 sideEffect.days,
             )
 
-            is HomeSideEffect.NavigateToPlaceDetail -> navigateToPlaceDetail(sideEffect.placeId)
+            is HomeSideEffect.NavigateToPlaceDetail -> navigateToPlaceDetail(sideEffect.googlePlaceId)
         }
     }
 }

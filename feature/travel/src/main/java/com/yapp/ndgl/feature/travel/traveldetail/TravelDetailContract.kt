@@ -129,7 +129,7 @@ sealed interface TravelDetailIntent : UiIntent {
     data class ClickAddMemo(val placeId: Long) : TravelDetailIntent
     data class ClickFindRoute(val googleMapsUri: String) : TravelDetailIntent
     data object DismissPlaceBottomSheet : TravelDetailIntent
-    data class NavigateToTravelPlaceDetail(val placeId: String) : TravelDetailIntent
+    data class NavigateToTravelPlaceDetail(val googlePlaceId: String) : TravelDetailIntent
     data object DismissTimeBottomSheet : TravelDetailIntent
     data class ConfirmDuration(val duration: Duration) : TravelDetailIntent
     data object DismissCostModal : TravelDetailIntent

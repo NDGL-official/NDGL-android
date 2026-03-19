@@ -47,7 +47,7 @@ data class MyTravelState(
 
     @Immutable
     data class TravelPlace(
-        val placeId: String,
+        val googlePlaceId: String,
         val category: PlaceCategory,
         val estimatedDuration: Int,
         val name: String,
@@ -83,7 +83,7 @@ sealed interface MyTravelIntent : UiIntent {
     data object ClickSettings : MyTravelIntent
     data class ClickTravel(val travelId: Long, val days: Int) : MyTravelIntent
     data class ClickTravelDetail(val travelId: Long, val days: Int) : MyTravelIntent
-    data class ClickPlaceDetail(val placeId: String) : MyTravelIntent
+    data class ClickPlaceDetail(val googlePlaceId: String) : MyTravelIntent
     data object ClickFindNewTravel : MyTravelIntent
 }
 
@@ -92,6 +92,6 @@ sealed interface MyTravelSideEffect : UiSideEffect {
     data object NavigateToSettings : MyTravelSideEffect
     data class NavigateToFollowTravel(val travelId: Long, val days: Int) : MyTravelSideEffect
     data class NavigateToTravelDetail(val travelId: Long, val days: Int) : MyTravelSideEffect
-    data class NavigateToTravelPlace(val placeId: String) : MyTravelSideEffect
+    data class NavigateToTravelPlace(val googlePlaceId: String) : MyTravelSideEffect
     data object NavigateToPopularTravelList : MyTravelSideEffect
 }

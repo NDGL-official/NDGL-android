@@ -39,7 +39,7 @@ internal fun PlaceInfoTab(
     onAddressClick: () -> Unit = {},
     onMenuClick: () -> Unit = {},
     onAlternativePlaceClick: (String) -> Unit = {},
-    onChangePlaceClick: (AlternativePlace) -> Unit = {},
+    onChangePlaceClick: ((AlternativePlace) -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),

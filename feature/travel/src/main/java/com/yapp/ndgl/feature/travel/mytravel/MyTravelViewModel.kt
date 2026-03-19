@@ -77,7 +77,7 @@ class MyTravelViewModel @Inject constructor(
                     dayCount = dayCount,
                     currentPlace = upcomingPlace?.place?.let { place ->
                         MyTravelState.TravelPlace(
-                            placeId = place.googlePlaceId,
+                            googlePlaceId = place.googlePlaceId,
                             category = place.category,
                             estimatedDuration = upcomingPlace.estimatedDuration,
                             name = place.name,
@@ -159,7 +159,7 @@ class MyTravelViewModel @Inject constructor(
             MyTravelIntent.ClickSettings -> postNavigateToSettings()
             is MyTravelIntent.ClickTravel -> postNavigateToFollowTravel(travelId = intent.travelId, days = intent.days)
             is MyTravelIntent.ClickTravelDetail -> postNavigateToTravelDetail(travelId = intent.travelId, days = intent.days)
-            is MyTravelIntent.ClickPlaceDetail -> postNavigateToPlaceDetail(placeId = intent.placeId)
+            is MyTravelIntent.ClickPlaceDetail -> postNavigateToPlaceDetail(googlePlaceId = intent.googlePlaceId)
             MyTravelIntent.ClickFindNewTravel -> postNavigateToPopularTravelList()
         }
     }
@@ -180,8 +180,8 @@ class MyTravelViewModel @Inject constructor(
         postSideEffect(MyTravelSideEffect.NavigateToTravelDetail(travelId = travelId, days = days))
     }
 
-    private fun postNavigateToPlaceDetail(placeId: String) {
-        postSideEffect(MyTravelSideEffect.NavigateToTravelPlace(placeId = placeId))
+    private fun postNavigateToPlaceDetail(googlePlaceId: String) {
+        postSideEffect(MyTravelSideEffect.NavigateToTravelPlace(googlePlaceId = googlePlaceId))
     }
 
     private fun postNavigateToPopularTravelList() {
