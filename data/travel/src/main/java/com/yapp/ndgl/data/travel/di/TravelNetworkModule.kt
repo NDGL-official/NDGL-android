@@ -41,6 +41,7 @@ object TravelNetworkModule {
     private const val WEATHER_BASE_URL = "https://weather.googleapis.com/"
     private const val GEOCODING_BASE_URL = "https://maps.googleapis.com/"
     private const val EXCHANGE_RATE_BASE_URL = "https://v6.exchangerate-api.com/"
+    private const val YOUTUBE_OEMBED_BASE_URL = "https://www.youtube.com/"
 
     @Provides
     @Singleton
