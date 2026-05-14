@@ -12,6 +12,7 @@ import com.yapp.ndgl.data.core.di.RouteBaseUrl
 import com.yapp.ndgl.data.core.di.RouteClient
 import com.yapp.ndgl.data.core.di.WeatherApiKey
 import com.yapp.ndgl.data.core.di.WeatherClient
+import com.yapp.ndgl.data.core.di.YoutubeOembedClient
 import com.yapp.ndgl.data.travel.BuildConfig
 import com.yapp.ndgl.data.travel.api.ExchangeRateApi
 import com.yapp.ndgl.data.travel.api.GeocodingApi
@@ -21,6 +22,7 @@ import com.yapp.ndgl.data.travel.api.TravelProgramApi
 import com.yapp.ndgl.data.travel.api.TravelTemplateApi
 import com.yapp.ndgl.data.travel.api.UserTravelApi
 import com.yapp.ndgl.data.travel.api.WeatherApi
+import com.yapp.ndgl.data.travel.api.YoutubeOembedApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,6 +41,7 @@ object TravelNetworkModule {
     private const val WEATHER_BASE_URL = "https://weather.googleapis.com/"
     private const val GEOCODING_BASE_URL = "https://maps.googleapis.com/"
     private const val EXCHANGE_RATE_BASE_URL = "https://v6.exchangerate-api.com/"
+    private const val YOUTUBE_OEMBED_BASE_URL = "https://www.youtube.com/"
 
     @Provides
     @Singleton
@@ -167,4 +170,22 @@ object TravelNetworkModule {
     fun provideExchangeRateApi(
         @ExchangeRateClient retrofit: Retrofit,
     ): ExchangeRateApi = retrofit.create(ExchangeRateApi::class.java)
+
+    @YoutubeOembedClient
+    @Provides
+    @Singleton
+    fun provideYoutubeOembedRetrofit(
+        @YoutubeOembedClient okHttpClient: OkHttpClient,
+        json: Json,
+    ): Retrofit = Retrofit.Builder()
+        .baseUrl(YOUTUBE_OEMBED_BASE_URL)
+        .client(okHttpClient)
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+        .build()
+
+    @Provides
+    @Singleton
+    fun provideYoutubeOembedApi(
+        @YoutubeOembedClient retrofit: Retrofit,
+    ): YoutubeOembedApi = retrofit.create(YoutubeOembedApi::class.java)
 }

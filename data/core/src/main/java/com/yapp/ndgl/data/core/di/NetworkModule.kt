@@ -145,6 +145,15 @@ object NetworkModule {
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(httpLoggingInterceptor)
         .build()
+
+    @YoutubeOembedClient
+    @Singleton
+    @Provides
+    fun provideYoutubeOembedOkHttpClient(
+        httpLoggingInterceptor: HttpLoggingInterceptor,
+    ): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(httpLoggingInterceptor)
+        .build()
 }
 
 @Qualifier
@@ -190,3 +199,7 @@ annotation class ExchangeRateApiKey
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class ExchangeRateClient
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class YoutubeOembedClient

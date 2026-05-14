@@ -36,6 +36,9 @@ google-services.json
 # Claude Code local settings
 .claude/settings.local.json
 .mcp.json
+AGENTS.md
+CLAUDE.md
+.omc/
 
 # Android Profiling
 *.hprof
