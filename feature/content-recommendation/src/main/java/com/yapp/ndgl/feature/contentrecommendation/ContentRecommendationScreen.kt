@@ -1,5 +1,13 @@
 package com.yapp.ndgl.feature.contentrecommendation
 
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,15 +22,21 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButton
 import com.yapp.ndgl.core.ui.designsystem.NDGLCTAButtonAttr
+import com.yapp.ndgl.core.ui.designsystem.NDGLModal
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBar
 import com.yapp.ndgl.core.ui.designsystem.NDGLNavigationBarAttr
 import com.yapp.ndgl.core.ui.designsystem.NDGLSnackbar
@@ -41,8 +55,47 @@ internal fun ContentRecommendationRoute(
     val state by viewModel.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    val successMessage = stringResource(R.string.content_recommendation_submit_success)
-    val errorMessage = stringResource(R.string.content_recommendation_submit_error)
+    val context = LocalContext.current
+
+    var showSuccessModal by remember { mutableStateOf(false) }
+    var showDuplicateModal by remember { mutableStateOf(false) }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) {
+        navigateBack()
+    }
+
+    fun requestNotificationOrNavigate() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val hasPermission = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS,
+            ) == PackageManager.PERMISSION_GRANTED
+
+            val shouldShowRationale = ActivityCompat.shouldShowRequestPermissionRationale(
+                context as Activity,
+                Manifest.permission.POST_NOTIFICATIONS,
+            )
+
+            when {
+                hasPermission -> navigateBack()
+
+                shouldShowRationale -> {
+                    context.startActivity(
+                        Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                            putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                        },
+                    )
+                    navigateBack()
+                }
+
+                else -> notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            navigateBack()
+        }
+    }
 
     ContentRecommendationScreen(
         state = state,
@@ -50,25 +103,52 @@ internal fun ContentRecommendationRoute(
         onUrlChange = { viewModel.onIntent(ContentRecommendationIntent.UpdateUrl(it)) },
         onThemeToggle = { viewModel.onIntent(ContentRecommendationIntent.ToggleTheme(it)) },
         onReasonChange = { viewModel.onIntent(ContentRecommendationIntent.UpdateReason(it)) },
-        onSubmit = { viewModel.onIntent(ContentRecommendationIntent.Submit) },
+        onSubmit = { viewModel.onIntent(ContentRecommendationIntent.SubmitForm) },
         onBackClick = { viewModel.onIntent(ContentRecommendationIntent.NavigateBack) },
     )
 
     viewModel.collectSideEffect { sideEffect ->
         when (sideEffect) {
             ContentRecommendationSideEffect.NavigateBack -> navigateBack()
-            ContentRecommendationSideEffect.ShowSubmitSuccess -> {
+            ContentRecommendationSideEffect.ShowSuccessModal -> showSuccessModal = true
+            ContentRecommendationSideEffect.ShowDuplicateModal -> showDuplicateModal = true
+            is ContentRecommendationSideEffect.ShowSnackbar -> {
                 coroutineScope.launch {
-                    snackbarHostState.showSnackbar(successMessage)
+                    snackbarHostState.showSnackbar(sideEffect.message)
                 }
             }
 
-            ContentRecommendationSideEffect.ShowSubmitError -> {
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar(errorMessage)
-                }
-            }
+            ContentRecommendationSideEffect.NotifySubscribeSuccess -> requestNotificationOrNavigate()
         }
+    }
+
+    if (showSuccessModal) {
+        NDGLModal(
+            onDismissRequest = { showSuccessModal = false },
+            title = stringResource(R.string.content_recommendation_success_modal_title),
+            body = stringResource(R.string.content_recommendation_success_modal_body),
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false,
+            positiveButtonText = stringResource(R.string.content_recommendation_success_modal_confirm),
+            onPositiveButtonClick = { requestNotificationOrNavigate() },
+        )
+    }
+
+    if (showDuplicateModal) {
+        NDGLModal(
+            onDismissRequest = { showDuplicateModal = false },
+            title = stringResource(R.string.content_recommendation_duplicate_modal_title),
+            body = stringResource(R.string.content_recommendation_duplicate_modal_body),
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false,
+            negativeButtonText = stringResource(R.string.content_recommendation_duplicate_modal_cancel),
+            onNegativeButtonClick = { showDuplicateModal = false },
+            positiveButtonText = stringResource(R.string.content_recommendation_duplicate_modal_notify),
+            onPositiveButtonClick = {
+                showDuplicateModal = false
+                viewModel.onIntent(ContentRecommendationIntent.SubscribeNotification)
+            },
+        )
     }
 }
 
@@ -86,7 +166,7 @@ private fun ContentRecommendationScreen(
         snackbarHost = {
             SnackbarHost(snackbarHostState) { data ->
                 NDGLSnackbar(
-                    modifier = Modifier.padding(bottom = 100.dp),
+                    modifier = Modifier.padding(bottom = 20.dp),
                     snackbarData = data,
                 )
             }
@@ -207,7 +287,7 @@ private fun ContentRecommendationScreenSuccessPreview() {
                     channelName = "여행유튜버",
                     thumbnailUrl = "",
                 ),
-                selectedThemes = persistentSetOf(TravelTheme.HEALING_SCENERY, TravelTheme.LANDMARK),
+                selectedThemes = persistentSetOf(TravelTheme.HEALING, TravelTheme.ATTRACTION),
                 reason = "경복궁과 북촌이 너무 예뻐요",
             ),
             snackbarHostState = SnackbarHostState(),
