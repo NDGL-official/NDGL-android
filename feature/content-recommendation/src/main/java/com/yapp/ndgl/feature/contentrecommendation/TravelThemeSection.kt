@@ -98,7 +98,7 @@ private fun TravelThemeChip(
 private fun TravelThemeSectionPreview() {
     NDGLTheme {
         TravelThemeSection(
-            selectedThemes = persistentSetOf(TravelTheme.FOOD, TravelTheme.CAFE_DESSERT),
+            selectedThemes = persistentSetOf(TravelTheme.FOOD, TravelTheme.CAFE),
             onThemeToggle = {},
         )
     }

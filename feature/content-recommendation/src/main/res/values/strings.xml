@@ -12,8 +12,15 @@
     <string name="content_recommendation_reason_placeholder">기억에 남는 장면이나 여행지를 알려주세요</string>
     <string name="content_recommendation_reason_count">%d/200</string>
     <string name="content_recommendation_submit_button">추천 보내기</string>
-    <string name="content_recommendation_submit_success">추천이 전송되었어요</string>
     <string name="content_recommendation_submit_error">추천 전송에 실패했어요. 다시 시도해주세요</string>
+    <string name="content_recommendation_subscribe_error">알림 신청에 실패했어요. 다시 시도해주세요</string>
+    <string name="content_recommendation_success_modal_title">추천이 접수되었어요</string>
+    <string name="content_recommendation_success_modal_body">요청한 콘텐츠가 준비되면 알려드릴게요</string>
+    <string name="content_recommendation_success_modal_confirm">확인</string>
+    <string name="content_recommendation_duplicate_modal_title">이미 추천된 콘텐츠예요</string>
+    <string name="content_recommendation_duplicate_modal_body">준비되면 알려드릴까요?</string>
+    <string name="content_recommendation_duplicate_modal_cancel">닫기</string>
+    <string name="content_recommendation_duplicate_modal_notify">알림 받기</string>
     <string name="content_recommendation_invalid_url">올바른 링크를 입력해주세요</string>
     <string name="content_recommendation_no_link_prefix">링크가 없나요?\u0020</string>
     <string name="content_recommendation_no_link_channel">문의 채널</string>

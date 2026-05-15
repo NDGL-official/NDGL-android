@@ -3,7 +3,9 @@ package com.yapp.ndgl.feature.contentrecommendation
 import androidx.lifecycle.viewModelScope
 import com.yapp.ndgl.core.base.BaseViewModel
 import com.yapp.ndgl.core.util.suspendRunCatching
+import com.yapp.ndgl.data.travel.exception.DuplicateSuggestedTemplateException
 import com.yapp.ndgl.data.travel.repository.ContentMetadataRepository
+import com.yapp.ndgl.data.travel.repository.TravelTemplateRepository
 import com.yapp.ndgl.feature.contentrecommendation.ContentRecommendationState.MetadataState
 import com.yapp.ndgl.feature.contentrecommendation.model.TravelTheme
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,6 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ContentRecommendationViewModel @Inject constructor(
     private val contentMetadataRepository: ContentMetadataRepository,
+    private val travelTemplateRepository: TravelTemplateRepository,
 ) : BaseViewModel<ContentRecommendationState, ContentRecommendationIntent, ContentRecommendationSideEffect>(
     initialState = ContentRecommendationState(),
 ) {
@@ -22,7 +25,8 @@ class ContentRecommendationViewModel @Inject constructor(
             is ContentRecommendationIntent.UpdateUrl -> updateUrl(intent.url)
             is ContentRecommendationIntent.ToggleTheme -> toggleTheme(intent.theme)
             is ContentRecommendationIntent.UpdateReason -> updateReason(intent.reason)
-            is ContentRecommendationIntent.Submit -> submit()
+            is ContentRecommendationIntent.SubmitForm -> submitForm()
+            is ContentRecommendationIntent.SubscribeNotification -> subscribeNotification()
             is ContentRecommendationIntent.NavigateBack -> postSideEffect(ContentRecommendationSideEffect.NavigateBack)
         }
     }
@@ -90,11 +94,58 @@ class ContentRecommendationViewModel @Inject constructor(
         }
     }
 
-    private fun submit() {
+    private fun submitForm() {
         val currentState = state.value
         if (!currentState.isSubmitEnabled) return
 
-        // TODO 콘텐츠 제안 API연동
+        viewModelScope.launch {
+            suspendRunCatching {
+                travelTemplateRepository.suggestTemplate(
+                    videoLink = currentState.contentUrl,
+                    recommendReason = currentState.reason,
+                    category = currentState.selectedThemes.map { it.name },
+                )
+            }.onSuccess {
+                postSideEffect(ContentRecommendationSideEffect.ShowSuccessModal)
+            }.onFailure { e ->
+                if (e is DuplicateSuggestedTemplateException) {
+                    when (e.reason) {
+                        DuplicateSuggestedTemplateException.Reason.ALREADY_PUBLISHED ->
+                            postSideEffect(ContentRecommendationSideEffect.ShowSnackbar(ContentRecommendationSideEffect.SNACKBAR_ALREADY_PUBLISHED))
+
+                        DuplicateSuggestedTemplateException.Reason.OTHER_USER_PENDING ->
+                            postSideEffect(ContentRecommendationSideEffect.ShowDuplicateModal)
+
+                        DuplicateSuggestedTemplateException.Reason.SELF_PENDING ->
+                            postSideEffect(ContentRecommendationSideEffect.ShowSnackbar(ContentRecommendationSideEffect.SNACKBAR_SELF_PENDING))
+
+                        DuplicateSuggestedTemplateException.Reason.ALREADY_SUBSCRIBED ->
+                            postSideEffect(ContentRecommendationSideEffect.ShowSnackbar(ContentRecommendationSideEffect.SNACKBAR_ALREADY_SUBSCRIBED))
+                    }
+                } else {
+                    postSideEffect(ContentRecommendationSideEffect.ShowSnackbar(ContentRecommendationSideEffect.SNACKBAR_SUBMIT_ERROR))
+                }
+            }
+        }
+    }
+
+    private fun subscribeNotification() {
+        val currentState = state.value
+
+        viewModelScope.launch {
+            suspendRunCatching {
+                travelTemplateRepository.subscribeTemplate(videoLink = currentState.contentUrl)
+            }.onSuccess {
+                postSideEffect(ContentRecommendationSideEffect.NotifySubscribeSuccess)
+            }.onFailure { e ->
+                val message = if (e is DuplicateSuggestedTemplateException) {
+                    ContentRecommendationSideEffect.SNACKBAR_ALREADY_SUBSCRIBED
+                } else {
+                    ContentRecommendationSideEffect.SNACKBAR_SUBSCRIBE_ERROR
+                }
+                postSideEffect(ContentRecommendationSideEffect.ShowSnackbar(message))
+            }
+        }
     }
 
     companion object {
