@@ -6,6 +6,8 @@ import com.yapp.ndgl.data.travel.model.CreateTravelFromTemplateResponse
 import com.yapp.ndgl.data.travel.model.PopularTravelTemplates
 import com.yapp.ndgl.data.travel.model.RecommendTravelTemplates
 import com.yapp.ndgl.data.travel.model.SearchTravelTemplates
+import com.yapp.ndgl.data.travel.model.SubscribeTemplateRequest
+import com.yapp.ndgl.data.travel.model.SuggestTemplateRequest
 import com.yapp.ndgl.data.travel.model.TravelTemplateContentInfo
 import com.yapp.ndgl.data.travel.model.TravelTemplateItinerary
 import retrofit2.http.Body
@@ -47,4 +49,14 @@ interface TravelTemplateApi {
     suspend fun createTravelFromTemplate(
         @Body request: CreateTravelFromTemplateRequest,
     ): BaseResponse<CreateTravelFromTemplateResponse>
+
+    @POST("/api/v1/suggested-templates")
+    suspend fun suggestTemplate(
+        @Body request: SuggestTemplateRequest,
+    ): BaseResponse<Unit>
+
+    @POST("/api/v1/suggested-templates/subscribe")
+    suspend fun subscribeTemplate(
+        @Body request: SubscribeTemplateRequest,
+    ): BaseResponse<Unit>
 }
